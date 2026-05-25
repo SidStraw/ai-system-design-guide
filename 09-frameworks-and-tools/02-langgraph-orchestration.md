@@ -1,6 +1,6 @@
-# LangGraph Orchestration (Dec 2025)
+# LangGraph Orchestration
 
-LangGraph is the **de facto standard** for building stateful, multi-agent systems in late 2025. Unlike simple chains, LangGraph allows for **Cycles**, **State Persistence**, and **Human-in-the-Loop** interventions.
+LangGraph is the **de facto standard** for building stateful, multi-agent systems. It reached v1.0 in late 2025 and surpassed CrewAI in GitHub stars in early 2026 thanks to enterprise adoption of its graph-based runtime. Unlike simple chains, LangGraph allows for **Cycles**, **State Persistence**, and **Human-in-the-Loop** interventions.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ LangGraph is the **de facto standard** for building stateful, multi-agent system
 ## The Graph Philosophy
 
 In 2023, agents were "Black Boxes."
-In 2025, agents are **Graphs**.
+Today, agents are **Graphs**.
 A graph consists of:
 - **Nodes**: Python functions (The LLM, a tool, or data processing).
 - **Edges**: Paths between nodes.

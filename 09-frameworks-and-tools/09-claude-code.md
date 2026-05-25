@@ -1,4 +1,4 @@
-# Claude Code: The Autonomous Coding Agent (March 2026)
+# Claude Code: The Autonomous Coding Agent
 
 Claude Code is Anthropic's **terminal-native autonomous coding agent**. Unlike IDE plugins that suggest completions, Claude Code acts as a full-stack software engineer: it reads your codebase, edits files, runs commands, executes tests, and iterates until the task is done.
 

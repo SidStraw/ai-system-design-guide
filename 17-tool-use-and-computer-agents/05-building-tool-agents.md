@@ -1,4 +1,4 @@
-# Building Tool-Use Agents (April 2026)
+# Building Tool-Use Agents
 
 This chapter covers the practical engineering of tool-use agents: designing tool schemas that LLMs can call reliably, building MCP servers to host those tools, composing tools into workflows, and testing the entire system. These are the patterns that separate a demo from a production deployment.
 

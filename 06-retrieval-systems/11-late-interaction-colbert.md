@@ -1,6 +1,6 @@
-# Late Interaction & ColBERT (Apr 2026)
+# Late Interaction & ColBERT
 
-Late Interaction is a retrieval paradigm that sits between fast-but-imprecise **bi-encoders** and accurate-but-slow **cross-encoders**. ColBERT (Contextualized Late Interaction over BERT) is the defining model in this space -- delivering cross-encoder-level accuracy at bi-encoder-level speed. By 2026, late interaction has matured into a production-ready alternative for high-precision search.
+Late Interaction is a retrieval paradigm that sits between fast-but-imprecise **bi-encoders** and accurate-but-slow **cross-encoders**. ColBERT (Contextualized Late Interaction over BERT) is the defining model in this space, delivering cross-encoder-level accuracy at bi-encoder-level speed. The late-interaction family has matured into a production-ready alternative for high-precision search, with multimodal extensions (ColPali, ColQwen2.5, ColNomic, and unified retrievers like Wholembed v3) now in the same toolkit.
 
 ## Table of Contents
 
@@ -65,7 +65,7 @@ CROSS-ENCODER (e.g., ms-marco-MiniLM):
                      all query AND document tokens
 ```
 
-**2026 Insight**: The critical difference is *when* the query and document interact. Bi-encoders never interact (independent encoding). Cross-encoders interact fully (joint encoding). Late interaction is the middle ground -- encode independently, then interact cheaply at the token level.
+**Insight**: The critical difference is *when* the query and document interact. Bi-encoders never interact (independent encoding). Cross-encoders interact fully (joint encoding). Late interaction is the middle ground: encode independently, then interact cheaply at the token level.
 
 ---
 
@@ -407,7 +407,7 @@ Best for: maximum accuracy at medium scale. Expensive but covers all retrieval m
 | 10M docs | ~30 GB | ~60-120 GB | 1-2 GPUs required |
 | 100M docs | ~300 GB | ~600 GB - 1.2 TB | Multi-GPU / distributed |
 
-**2026 Reality Check**: ColBERT's storage is 2-4x that of bi-encoders. For most RAG use cases (< 10M docs), this is manageable. For web-scale search (billions of pages), bi-encoders or learned sparse methods remain more practical for the first retrieval stage.
+**Reality check**: ColBERT's storage is 2-4x that of bi-encoders. For most RAG use cases (under 10M docs), this is manageable. For web-scale search (billions of pages), bi-encoders or learned sparse methods remain more practical for the first retrieval stage.
 
 ---
 

@@ -1,4 +1,4 @@
-# Architecture Patterns for Tool-Use Agents (April 2026)
+# Architecture Patterns for Tool-Use Agents
 
 Every tool-use agent in 2026 -- from OpenClaw to Claude Code to Cursor's Background Agents -- is built on one of a handful of core architecture patterns. Understanding these patterns lets you design agents from first principles rather than copying specific tools. This chapter breaks down each pattern with detailed diagrams, code examples, trade-offs, and guidance on when to use which.
 
@@ -534,9 +534,9 @@ Agent connects to multiple MCP servers simultaneously. Tool schemas are merged i
 ```
 Central gateway handles auth, rate limiting, and audit logging. Agents authenticate only with the gateway. Used for enterprise and multi-tenant deployments.
 
-### MCP 2026 Roadmap Gaps
+### MCP Roadmap Gaps
 
-The current MCP specification (as of April 2026) is missing three critical production primitives:
+The current MCP specification (as of May 2026) is missing three critical production primitives:
 
 1. **Identity Propagation**: No standardized way to pass user identity from client through to server. The gateway pattern is a workaround.
 2. **Adaptive Tool Budgeting**: No protocol-level support for limiting token/cost consumption per tool call.

@@ -1,6 +1,6 @@
-# The 2026 Tool-Use and Computer Agent Landscape (April 2026)
+# The 2026 Tool-Use and Computer Agent Landscape
 
-The way AI agents interact with the outside world has undergone a dramatic shift. In 2024, "tool use" meant a model emitting a JSON function call that your backend executed. By April 2026, we have full-blown autonomous agents that clone repos, run shell commands, control desktops via screenshots, and message you on WhatsApp -- all orchestrated through standardized protocols like MCP. This chapter maps the landscape of these tools, their architectures, and the design decisions that differentiate them.
+The way AI agents interact with the outside world has undergone a dramatic shift. In 2024, "tool use" meant a model emitting a JSON function call that your backend executed. Today we have full-blown autonomous agents that clone repos, run shell commands, control desktops via screenshots, and message you on WhatsApp, all orchestrated through standardized protocols like MCP. This chapter maps the landscape of these tools, their architectures, and the design decisions that differentiate them.
 
 ## Table of Contents
 
@@ -111,7 +111,7 @@ Agents that interact with software the way humans do -- by looking at screenshot
 
 OpenClaw is a self-hosted, open-source personal AI assistant created by Austrian developer Peter Steinberger. Originally published as "Clawdbot" in November 2025, it was renamed to OpenClaw in January 2026. It exploded from 0 to 346,000 GitHub stars in under five months, surpassing React as GitHub's most-starred software project on March 3, 2026.
 
-**By the numbers (April 2026):**
+**By the numbers (May 2026):**
 - 346,000+ GitHub stars
 - 3.2 million active users
 - 500,000+ running instances
@@ -170,7 +170,7 @@ OpenClaw's architecture has six core components:
 
 ### Security Concerns
 
-OpenClaw's rapid growth has outpaced security practices. As of April 2026, over 135,000 instances were found exposed on the public internet, many with default configurations. The ClawHub skills marketplace has minimal security oversight -- skills are Markdown with optional TypeScript, easy to create and install, and easy to abuse. This is a critical design consideration for anyone deploying OpenClaw in production.
+OpenClaw's rapid growth has outpaced security practices. As of May 2026, over 135,000 instances are exposed on the public internet, many with default configurations. The ClawHub skills marketplace has minimal security oversight: skills are Markdown with optional TypeScript, easy to create and install, and easy to abuse. This is a critical design consideration for anyone deploying OpenClaw in production.
 
 ---
 
@@ -298,7 +298,7 @@ Best for data analysis, file manipulation, and system administration tasks where
 
 ### What It Is
 
-Claude Computer Use is an Anthropic API feature that allows Claude to control a desktop via screenshots, mouse movements, keyboard input, and application interaction. Introduced in October 2024 as a beta, it has evolved significantly. By April 2026, models like Sonnet 4.6 achieve 72.5% on OSWorld-Verified benchmarks, up from 14.9% at launch.
+Claude Computer Use is an Anthropic API feature that allows Claude to control a desktop via screenshots, mouse movements, keyboard input, and application interaction. Introduced in October 2024 as a beta, it has evolved significantly. As of May 2026, Sonnet 4.6 reaches 72.5% on OSWorld-Verified, up from 14.9% at launch, with Opus 4.7 pushing further on agentic coding benchmarks (64.3% SWE-bench Pro).
 
 ### The Vision-Action Loop
 
@@ -475,7 +475,7 @@ Cline is a VS Code extension that operates as a full agent rather than an autoco
 ### The Numbers
 
 - **MCP ecosystem**: 10,000+ active servers, 97 million monthly SDK downloads
-- **Gartner projection**: 40% of enterprise applications will incorporate AI agents by end of 2026 (up from 5% in 2025)
+- **Gartner projection**: 40% of enterprise applications will incorporate AI agents by end of 2026 (up from under 5% in early 2025)
 - **OpenClaw**: Fastest project to 300K GitHub stars in history (under 5 months)
 - **Claude Code**: $2.5B ARR by February 2026 -- fastest enterprise software product to $1B
 - **Cursor**: $2B annualized revenue, half of Fortune 500

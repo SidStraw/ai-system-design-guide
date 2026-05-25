@@ -1,6 +1,6 @@
-# LangChain Deep Dive (Dec 2025)
+# LangChain Deep Dive
 
-In late 2025, LangChain is no longer just a "prompting library." It has matured into a **Modular Ecosystem** for building production-grade LLM applications. While critics point to its high abstraction, its **LCEL (LangChain Expression Language)** remains the fastest way to build composable chains.
+LangChain is no longer just a "prompting library." It has matured into a **Modular Ecosystem** for building production-grade LLM applications. LangGraph (which graduated to v1.0 in late 2025 and is the default runtime for all LangChain agents) handles the stateful orchestration. **LCEL (LangChain Expression Language)** remains the fastest way to build composable chains.
 
 ## Table of Contents
 
@@ -8,13 +8,13 @@ In late 2025, LangChain is no longer just a "prompting library." It has matured 
 - [LCEL: Programming with Pipes](#lcel)
 - [Standard Abstractions (Core)](#core)
 - [Managing Complexity (Community vs. Partner Packages)](#complexity)
-- [LangChain Modularity Push (2026)](#langchain-modularity-push-2026)
+- [LangChain Modularity Push](#langchain-modularity-push)
 - [Interview Questions](#interview-questions)
 - [References](#references)
 
 ---
 
-## The LangChain Stack (2025)
+## The LangChain Stack
 
 The ecosystem is now split into three distinct layers:
 1. **LangChain Core**: Minimal abstractions for Prompts, Output Parsers, and Runnables. (Low dependency footprint).
@@ -28,7 +28,7 @@ The ecosystem is now split into three distinct layers:
 LangChain Expression Language (LCEL) uses the `|` operator to create a **Directed Acyclic Graph (DAG)** of execution.
 
 ```python
-# The 2025 "Standard Chain"
+# Standard RAG chain
 chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     | prompt
@@ -36,7 +36,7 @@ chain = (
 )
 ```
 
-**Why LCEL in 2025?**
+**Why LCEL?**
 - **Async by Default**: Every chain supports `.ainvoke()` and `.astream()`.
 - **Parallelism**: Multiple branches run in parallel automatically.
 - **Observability**: Automatically integrates with **LangSmith** for full-trace visualization.
@@ -49,11 +49,11 @@ chain = (
 The "Base Class" for everything in LangChain. Runnables provide a unified interface for `.invoke`, `.batch`, and `.stream`.
 
 ### 2. Tools & Tool-Calling
-In Dec 2025, LangChain has first-class support for **MCP (Model Context Protocol)**. 
+LangChain has first-class support for **MCP (Model Context Protocol)**.
 - You can turn any MCP server into a LangChain `BaseTool`.
 
 ### 3. Output Parsers
-While early systems used regex, 2025 systems use `.with_structured_output()` which utilizes the model's native JSON capability (OpenAI `.json_mode` or Anthropic `tools`).
+While early systems used regex, modern code uses `.with_structured_output()` which utilizes the model's native JSON capability (OpenAI `.json_mode` or Anthropic `tools`).
 
 ---
 
@@ -64,7 +64,7 @@ While early systems used regex, 2025 systems use `.with_structured_output()` whi
 
 ---
 
-## LangChain Modularity Push (2026)
+## LangChain Modularity Push
 
 By May 2026 the ecosystem has finished its long migration from the monolithic `langchain` import to a tiered structure with clean dependency boundaries. The split exists so teams can pick exactly the surface area they need without dragging in 500+ integrations.
 
@@ -162,7 +162,7 @@ LCEL provides **Automatic Streaming and Parallelization**. In a traditional Pyth
 ### Q: LangChain is often criticized for being "too bloated." How do you architect a lean production system with it?
 
 **Strong answer:**
-The key is to **Import only Core**. I use `langchain-core` for the abstractions and specific **Partner Packages** (like `langchain-anthropic`) for the model. I avoid `langchain-community` and the legacy `Chain` classes (like `LLMChain` or `RetrievalQA`) which are effectively deprecated in late 2025. I build my logic using the **Runnable** primitives, which keeps the dependency tree small and the execution path transparent.
+The key is to **Import only Core**. I use `langchain-core` for the abstractions and specific **Partner Packages** (like `langchain-anthropic`) for the model. I avoid `langchain-community` and the legacy `Chain` classes (like `LLMChain` or `RetrievalQA`) which are effectively deprecated. I build my logic using the **Runnable** primitives, which keeps the dependency tree small and the execution path transparent.
 
 ---
 

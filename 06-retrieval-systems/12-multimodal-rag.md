@@ -1,6 +1,6 @@
-# Multi-Modal RAG (Apr 2026)
+# Multi-Modal RAG
 
-Multi-modal RAG extends retrieval-augmented generation beyond plain text to handle images, tables, charts, audio, and mixed-layout documents. In 2026, production systems routinely ingest PDFs with diagrams, slide decks, scanned invoices, and research papers where the visual layout *is* the meaning.
+Multi-modal RAG extends retrieval-augmented generation beyond plain text to handle images, tables, charts, audio, and mixed-layout documents. Production systems now routinely ingest PDFs with diagrams, slide decks, scanned invoices, and research papers where the visual layout *is* the meaning. Three architectures dominate: caption-and-index, unified vision-text embeddings (Cohere Embed v4, Voyage-Multimodal-3.5, Gemini Embedding 001), and page-as-image with late interaction (ColPali, ColQwen2.5, ColNomic).
 
 ## Table of Contents
 
@@ -30,7 +30,7 @@ Traditional RAG pipelines parse documents into text chunks, embed them, and retr
 | **Infographic** | Captures scattered text fragments | Visual hierarchy, spatial groupings |
 | **Photo with Caption** | Gets caption, loses image | Visual evidence, spatial context |
 
-**2026 Reality**: Enterprise documents are 40-60% non-textual content. A financial report's value is in its charts. A medical paper's key finding is in its figures. Ignoring visual content means ignoring most of the knowledge.
+**Reality**: Enterprise documents are 40-60% non-textual content. A financial report's value is in its charts. A medical paper's key finding is in its figures. Ignoring visual content means ignoring most of the knowledge.
 
 ---
 
@@ -85,7 +85,7 @@ There are three dominant patterns for multi-modal RAG, each with distinct trade-
 - **Pros**: No OCR, no layout parsing, no table extraction pipeline. End-to-end trainable.
 - **Cons**: Higher compute at indexing; loses fine-grained text search.
 
-**2026 Recommendation**: Pattern 3 (vision-first) is gaining ground fast for document-heavy use cases. Pattern 2 remains the production workhorse when you need precise text search alongside visual retrieval.
+**Recommendation**: Pattern 3 (vision-first) is gaining ground fast for document-heavy use cases. Pattern 2 remains the production workhorse when you need precise text search alongside visual retrieval.
 
 ---
 
@@ -136,17 +136,17 @@ Is it a mix of text, images, and structured data?
 
 ## Vision-Language Models for Document Understanding
 
-In 2026, VLMs serve two roles in multi-modal RAG: (1) as the **generator** that synthesizes answers from retrieved multi-modal context, and (2) as the **indexing engine** that extracts structured information at ingestion time.
+VLMs serve two roles in multi-modal RAG: (1) as the **generator** that synthesizes answers from retrieved multi-modal context, and (2) as the **indexing engine** that extracts structured information at ingestion time.
 
-### VLM Capabilities Comparison (Apr 2026)
+### VLM Capabilities Comparison
 
-| Capability | Claude Sonnet 4 | GPT-4o | Gemini 2.5 Pro |
-|-----------|-----------------|--------|----------------|
+| Capability | Claude Opus 4.7 / Sonnet 4.6 | GPT-5.5 | Gemini 3.1 Pro |
+|-----------|------------------------------|---------|----------------|
 | **Chart Reading** | Excellent | Excellent | Excellent |
 | **Table Extraction** | Excellent | Good | Excellent |
-| **Diagram Understanding** | Good | Good | Excellent |
+| **Diagram Understanding** | Excellent | Good | Excellent |
 | **Handwriting OCR** | Good | Good | Good |
-| **Multi-page Reasoning** | Excellent (200k ctx) | Good (128k ctx) | Excellent (1M ctx) |
+| **Multi-page Reasoning** | Excellent (1M ctx on Sonnet 4.6) | Excellent (1M ctx) | Excellent (1M ctx) |
 | **Structured Output** | Native JSON mode | Native JSON mode | Native JSON mode |
 
 ### VLM-Augmented Ingestion Pipeline
@@ -221,7 +221,7 @@ ColPali represents a paradigm shift: instead of building complex OCR + layout + 
 | **Retrieval Quality** | High on text, poor on visuals | High across all modalities |
 | **Storage** | Text index (~small) | Multi-vector index (~larger) |
 
-### ColPali Family (2025-2026)
+### ColPali Family
 
 - **ColPali (v1)**: PaliGemma-3B backbone. The original.
 - **ColQwen 2.5**: Qwen2-VL backbone. Better multilingual support, improved on Asian-language documents.
@@ -509,7 +509,7 @@ This is the cross-modal, cross-page retrieval problem. The solution has three pa
 
 1. **Retrieval diversity**: Ensure the retriever returns results from multiple modalities. Set minimum quotas -- at least 2 text results, 2 table results, and 1 visual result in every retrieval set, regardless of which modality scores highest.
 
-2. **Context assembly**: When assembling the VLM prompt, include all retrieved content with explicit provenance: "[Table from page 14: Q3 Revenue by Region]" and "[Chart from page 22: Revenue Trend 2023-2025]". The VLM can then reason across both.
+2. **Context assembly**: When assembling the VLM prompt, include all retrieved content with explicit provenance: "[Table from page 14: Q3 Revenue by Region]" and "[Chart from page 22: Revenue Trend 2024-2026]". The VLM can then reason across both.
 
 3. **Agentic fallback**: If the initial retrieval does not surface enough cross-modal context, an agentic layer can issue follow-up retrievals: "The table shows revenue numbers but the user asked about trends -- let me also search for charts related to revenue."
 

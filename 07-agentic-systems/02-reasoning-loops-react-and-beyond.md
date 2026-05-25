@@ -1,6 +1,6 @@
-# Reasoning Loops: ReAct and Beyond (Dec 2025)
+# Reasoning Loops: ReAct and Beyond
 
-Reasoning Loops define the control flow of an agent. While **ReAct** was the 2023 baseline, late 2025 systems use more sophisticated patterns like **Plan-and-Solve**, **Self-Reflexion**, and **Inference-Time Scaling**.
+Reasoning Loops define the control flow of an agent. While **ReAct** was the 2023 baseline, current systems use more sophisticated patterns like **Plan-and-Solve**, **Self-Reflexion**, and **Inference-Time Scaling** running on top of reasoning-native models.
 
 ## Table of Contents
 
@@ -20,7 +20,7 @@ Reasoning Loops define the control flow of an agent. While **ReAct** was the 202
 |-----|---------|-----------------|
 | **2023** | ReAct | Interleave thought and action. |
 | **2024** | Reflexion | Evaluate errors and re-try. |
-| **2025** | System 2 Loops | Use hidden CoT for robust multi-step logic. |
+| **Today** | System 2 Loops | Use hidden CoT for robust multi-step logic. |
 
 ---
 
@@ -32,7 +32,7 @@ The fundamental loop for 90% of agents:
 3. **Observation**: "X is at Y."
 4. **Repeat**.
 
-**2025 Critique**: ReAct is fragile. If the search returns "No results," a naive ReAct agent will often try the same search again. Modern loops inject **"Negative Constraints"** (e.g., "Don't try search results we've already seen").
+**Critique**: ReAct is fragile. If the search returns "No results," a naive ReAct agent will often try the same search again. Modern loops inject **"Negative Constraints"** (e.g., "Don't try search results we've already seen").
 
 ---
 
@@ -50,7 +50,7 @@ graph TD
     F --> B
 ```
 
-**The 2025 Benefit**: By storing these "Reflections" in short-term memory, the agent builds a "Mental Map" of what doesn't work during the current session.
+**Benefit**: By storing these "Reflections" in short-term memory, the agent builds a "Mental Map" of what doesn't work during the current session.
 
 ---
 
@@ -68,7 +68,7 @@ Instead of deciding one step at a time (greedy approach), the agent creates a **
 
 ## Flow Engineering (LangGraph)
 
-In late 2025, we have moved from "Chat interfaces" to **"State Machines."**
+Modern agentic systems have moved from "Chat interfaces" to **"State Machines."**
 
 - **Cyclic Graphs**: Instead of a linear sequence, we define a graph where the model can loop back to a "Cleaning" node or a "Validation" node multiple times.
 - **Micro-Agents**: Each node in the graph is a specialized "Prompt" or "Tool."

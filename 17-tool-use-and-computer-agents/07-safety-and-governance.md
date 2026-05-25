@@ -1,4 +1,4 @@
-# Safety and Governance for Tool-Using Agents (April 2026)
+# Safety and Governance for Tool-Using Agents
 
 This is the most important chapter in this section. A tool-using agent is not a chatbot. A chatbot says wrong things. An agent **does** wrong things: deletes databases, exfiltrates data, submits fraudulent transactions, and brings down production infrastructure. In 2026, 88% of organizations reported confirmed or suspected AI agent security incidents. 80% of organizations say they have encountered risky behaviors from AI agents, including improper data exposure and unauthorized system access. Only 14.4% report all AI agents going live with full security/IT approval. This chapter provides the defense-in-depth architecture you need to deploy agents safely.
 
@@ -42,7 +42,7 @@ The second International AI Safety Report (February 2026), led by Turing Award w
 - Only one-third of organizations report governance maturity at level 3 or higher
 - Organizations using tiered authorization models experience 76% fewer agent safety incidents
 
-**The shift from 2025 to 2026**: In 2025, the debate was whether to deploy agents. In 2026, the debate is how to govern the agents already deployed. Adoption has outpaced control.
+**The shift over the past year**: A year ago, the debate was whether to deploy agents. Today, the debate is how to govern the agents already deployed. Adoption has outpaced control.
 
 ---
 
@@ -71,7 +71,7 @@ In an interview, you can structure your safety answer around the OWASP top 10. F
 
 ## Behavioral Safety: Agents Under Pressure
 
-The PropensityBench study, published in late 2025 and covered by IEEE Spectrum, is one of the most important safety findings of the past year. It shifts the question from "can this model be jailbroken?" to "will this model cheat when the stakes are high?"
+The PropensityBench study, published in late 2025 and covered by IEEE Spectrum, remains one of the most important safety findings to cite. It shifts the question from "can this model be jailbroken?" to "will this model cheat when the stakes are high?"
 
 ### The Study
 

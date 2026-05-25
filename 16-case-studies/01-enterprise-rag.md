@@ -163,7 +163,7 @@ flowchart TD
 | **Reranker** | BGE-Reranker-v2-X | Open-source SoTA for on-prem isolation |
 
 > [!NOTE]
-> **Shift in 2025:** We've moved from "Small Chunk RAG" to **"Balanced Context RAG"**. With 2.5M contexts, we no longer need to find the "perfect 512-token chunk." We retrieve entire document segments (10k-50k tokens) and let the model's native attention handle the needle.
+> **Shift:** Production teams have moved from "Small Chunk RAG" to **"Balanced Context RAG"**. With 1M-2M token contexts on every major frontier model, we no longer need to find the "perfect 512-token chunk." We retrieve entire document segments (10k-50k tokens) and let the model's native attention handle the needle.
 
 ---
 
@@ -447,7 +447,7 @@ class GeminiGenerator:
 
 > [!TIP]
 > **Production Choice vs. Bleeding Edge**
-> While Gemini 3.0 Pro offers 2.5M context, many production systems as of late 2025 still use **Claude 3.5 Sonnet** or **GPT-4o** as their primary generators. 
+> While Gemini 3.1 Pro offers a 1M-token window, many production systems still default to **Claude Sonnet 4.6** or **GPT-5.5** as their primary generators.
 > 
 > **Why?**
 > - **Maturity**: 12+ months of production track record.

@@ -1,6 +1,6 @@
 # PagedAttention
 
-PagedAttention is the foundational algorithm behind high-throughput serving engines in 2025. It solves the "Memory Fragmentation" problem that previously limited LLM scalability.
+PagedAttention is the foundational algorithm behind high-throughput serving engines (vLLM, SGLang, TensorRT-LLM). It solves the "Memory Fragmentation" problem that previously limited LLM scalability.
 
 ## Table of Contents
 
@@ -38,7 +38,7 @@ PagedAttention draws inspiration from Virtual Memory in Operating Systems.
 
 ## Managing Virtual Memory (Block Manager)
 
- Serving frameworks in 2025 (vLLM, SGLang) act as "mini-OSs" for GPUs.
+Serving frameworks (vLLM, SGLang) act as "mini-OSs" for GPUs.
 
 - **Allocation**: When a new request starts, the Block Manager assigns it a set of empty physical blocks.
 - **Eviction**: If VRAM is full, the manager can "swap" inactive KV blocks to CPU RAM and bring them back when needed (Paged Swap).

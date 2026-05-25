@@ -1,6 +1,6 @@
-# Semantic Caching (Dec 2025)
+# Semantic Caching
 
-In late 2025, caching has evolved from exact string matching to **Semantic Matching**. Semantic caching reduces costs by **30-70%** and reduces latency from seconds to milliseconds by reusing completions for "equivalent" queries.
+Caching has evolved from exact string matching to **Semantic Matching**. Semantic caching reduces costs by **30-70%** and cuts latency from seconds to milliseconds by reusing completions for "equivalent" queries.
 
 ## Table of Contents
 
@@ -30,23 +30,23 @@ In late 2025, caching has evolved from exact string matching to **Semantic Match
 1. **Embed**: The incoming query is converted into a vector (e.g., using `text-embedding-3-small`).
 2. **Search**: Search the cache for the nearest neighbor.
 3. **Threshold Check**: If `distance < 0.05` (very similar), return the cached result.
-4. **LLM Verification (2025 nuance)**: For high-stakes queries, a tiny "Verifier Model" (e.g., GPT-4o-mini) checks if the cached response actually answers the new query.
+4. **LLM Verification**: For high-stakes queries, a tiny "Verifier Model" (e.g., GPT-5.5-mini, Claude Haiku 4.5) checks if the cached response actually answers the new query.
 5. **Update**: If no hit, call the LLM and store the new result in the vector cache.
 
 ---
 
 ## RedisVL and GPTCache
 
-Late 2025's standard stack:
+Standard stack:
 - **RedisVL**: Provides low-latency vector search directly within a Redis instance.
 - **Hybrid Caching**: Using Redis for both metadata (keys) and vector payloads.
-- **TTL**: Semantic caches should have a TTL (Time-To-Live). In 2025, we use **Dynamic TTL**: popular answers live longer, while "stale" information is evicted regularly.
+- **TTL**: Semantic caches should have a TTL (Time-To-Live). The common pattern is **Dynamic TTL**: popular answers live longer while "stale" information is evicted regularly.
 
 ---
 
 ## Multimodal Semantic Caching
 
-With the rise of Gemini 3 and GPT-5.2 Native Omni, we now cache **Image and Audio queries**.
+With native multimodal frontier models (Gemini 3.1 Pro, GPT-5.5, Claude Opus 4.7), we now cache **Image and Audio queries**.
 - **Visual Similarity**: Caching the description of an image if a semantically similar image was processed before.
 - **Audio Fingerprinting**: Caging transcripts for similar voice commands.
 

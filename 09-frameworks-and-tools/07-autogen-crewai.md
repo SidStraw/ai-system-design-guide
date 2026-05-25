@@ -1,12 +1,12 @@
-# Microsoft Agent Framework, CrewAI, and the Agent SDK Landscape (April 2026)
+# Microsoft Agent Framework, CrewAI, and the Agent SDK Landscape
 
-In 2025-2026, the multi-agent framework landscape consolidated significantly. Microsoft **retired AutoGen** and merged it with Semantic Kernel into the unified **Microsoft Agent Framework** (RC 1.0, February 2026). CrewAI matured to v1.13 with enterprise-grade features and reported use by 60%+ of Fortune 500 companies. Meanwhile, every major AI lab shipped its own agent SDK: Anthropic's Claude Agent SDK, OpenAI's Agents SDK, and Google's ADK.
+The multi-agent framework landscape consolidated significantly over the past year. Microsoft **retired AutoGen** and merged it with Semantic Kernel into the unified **Microsoft Agent Framework** (RC 1.0, February 2026; GA targeted Q2 2026). CrewAI matured to v1.13 with enterprise-grade features and reported use by 60%+ of Fortune 500 companies. Meanwhile, every major AI lab shipped its own agent SDK: Anthropic's Claude Agent SDK, OpenAI's Agents SDK, and Google's ADK.
 
 ## Table of Contents
 
 - [CrewAI: The Manager Perspective](#crewai)
 - [Microsoft Agent Framework (AutoGen's Successor)](#microsoft-agent-framework)
-- [The Agent SDK Landscape (2026)](#agent-sdk-landscape)
+- [The Agent SDK Landscape](#agent-sdk-landscape)
 - [Swarms and Peer-to-Peer Communication](#swarms)
 - [Framework Comparison Matrix](#comparison)
 - [Interview Questions](#interview-questions)
@@ -21,7 +21,7 @@ CrewAI is built around the concept of a **Process**.
 - **Tasks**: Explicit goals with specific outputs.
 - **Process Orchestration**: Sequential, Hierarchical, or Consensual (Consensus-based).
 
-### CrewAI Flows (2025 Addition)
+### CrewAI Flows
 
 CrewAI **Flows** add a **state-machine layer** on top of the classic Crew pattern:
 
@@ -45,7 +45,7 @@ class ContentFlow(Flow):
         return publisher.publish(article)
 ```
 
-### CrewAI v1.13 (April 2026 Updates)
+### CrewAI v1.13 highlights
 
 CrewAI v1.13 marks a turning point toward enterprise production readiness:
 
@@ -56,9 +56,9 @@ CrewAI v1.13 marks a turning point toward enterprise production readiness:
 - **NVIDIA NemoClaw Integration**: Infrastructure-level policy enforcement for secure enterprise deployment
 - **RuntimeState RootModel**: Unified state serialization for complex workflows
 
-**2026 Use Cases**: CrewAI + Flows is the best framework for **business process automation** (content pipelines, data analysis workflows) where the structure is well-defined. CrewAI reports powering roughly 2 billion agentic executions.
+**Use cases**: CrewAI + Flows is the best framework for **business process automation** (content pipelines, data analysis workflows) where the structure is well-defined. CrewAI reports powering roughly 2 billion agentic executions.
 
-> *Verified April 2026. Source: docs.crewai.com/en/changelog*
+> *Verified May 2026. Source: docs.crewai.com/en/changelog*
 
 ---
 
@@ -66,7 +66,7 @@ CrewAI v1.13 marks a turning point toward enterprise production readiness:
 
 ### The Merger: AutoGen + Semantic Kernel = Agent Framework
 
-In late 2025, Microsoft **retired AutoGen as a standalone product** and merged it with Semantic Kernel into the unified **Microsoft Agent Framework**. Release Candidate 1.0 shipped in February 2026, with GA targeted for Q2 2026.
+Microsoft retired AutoGen as a standalone product in late 2025 and merged it with Semantic Kernel into the unified **Microsoft Agent Framework**. Release Candidate 1.0 shipped in February 2026, with GA targeted for Q2 2026.
 
 **What the merger combines:**
 - **From AutoGen**: Simple abstractions for single- and multi-agent conversation patterns (group chat, round-robin, handoffs)
@@ -82,8 +82,8 @@ AutoGen continues to receive bug fixes and security patches, but **new features 
 # Microsoft Agent Framework: Graph-based workflow
 from agent_framework import Agent, Workflow, HandoffStep
 
-planner = Agent("Planner", model="gpt-4o", system_message="Decompose tasks.")
-executor = Agent("Executor", model="gpt-4o-mini", system_message="Execute sub-tasks.")
+planner = Agent("Planner", model="gpt-5.5", system_message="Decompose tasks.")
+executor = Agent("Executor", model="gpt-5.5-mini", system_message="Execute sub-tasks.")
 
 workflow = Workflow(
     steps=[
@@ -100,22 +100,22 @@ workflow = Workflow(
 - **MCP Support**: Native Model Context Protocol integration for tool access
 - **Multi-provider**: Supports OpenAI, Azure OpenAI, Anthropic, Google, and local models
 
-> *Verified April 2026. Source: learn.microsoft.com/en-us/agent-framework*
+> *Verified May 2026. Source: learn.microsoft.com/en-us/agent-framework*
 
 ---
 
-## The Agent SDK Landscape (2026)
+## The Agent SDK Landscape
 
-Every major AI lab now ships its own agent framework. Here is the landscape as of April 2026:
+Every major AI lab now ships its own agent framework. The landscape as of May 2026:
 
 ### Claude Agent SDK (Anthropic)
 
-The Claude Agent SDK (renamed from Claude Code SDK in late 2025) provides the same tools, agent loop, and context management that power Claude Code, available as a library in Python and TypeScript.
+The Claude Agent SDK (renamed from Claude Code SDK) provides the same tools, agent loop, and context management that power Claude Code, available as a library in Python and TypeScript.
 
 - **Built-in tools**: File reading, command execution, code editing — agents work immediately without custom tool implementation
 - **Supervisor pattern**: Hierarchical agent trees with delegation
 - **Deployment**: Supports AWS Bedrock, Google Vertex AI, and Azure
-- **As of March 2026**: Python v0.1.48, TypeScript v0.2.71
+- **As of May 2026**: Python v0.1.48+, TypeScript v0.2.71+
 
 ### OpenAI Agents SDK
 
@@ -130,18 +130,18 @@ OpenAI's lightweight framework for multi-agent workflows using native Python/Typ
 
 Google's framework optimized for the Google ecosystem but model-agnostic:
 
-- **Multi-language**: Python, TypeScript, Java, Go (all at 1.0.0 as of early 2026)
+- **Multi-language**: Python, TypeScript, Java, Go (all at 1.0+ as of May 2026)
 - **A2A native**: Built-in Agent-to-Agent protocol support for cross-vendor orchestration
 - **Vertex AI integration**: Deploy to Agent Engine Runtime for managed hosting
 - **Graph-based**: Agent workflows modeled as directed graphs
 
-> *Verified April 2026.*
+> *Verified May 2026.*
 
 ---
 
 ## Swarms and P2P
 
-In late 2025, both frameworks have adopted **Swarm Patterns**.
+Both frameworks (and the broader SDK landscape) have adopted **Swarm Patterns**.
 - **The Handoff**: Instead of a central supervisor, agents "Hand off" the conversation to the most relevant expert.
 - **Example**: A "Sales Agent" realizes the user is asking a technical question and hands off the thread to the "Support Agent."
 

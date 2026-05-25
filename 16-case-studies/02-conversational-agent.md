@@ -203,7 +203,7 @@ stateDiagram-v2
 ```python
 class IntentClassifier:
     async def classify(self, message: str, history: list[dict]) -> dict:
-        # Using GPT-5.2-mini for <100ms classification latency
+        # Using GPT-5.5-mini for <100ms classification latency
         result = await client.chat.completions.create(
             model="gpt-5.2-mini",
             messages=[{"role": "user", "content": message}],
@@ -223,12 +223,12 @@ class SupportKnowledgeBase:
         return results
 ```
 
-### Response Generation (Claude Sonnet 4.5)
+### Response Generation (Claude Sonnet 4.6)
 
 ```python
 class ResponseGenerator:
     async def generate(self, query: str, context: list[dict]) -> dict:
-        # Claude Sonnet 4.5 for 'Hybrid Reasoning'
+        # Claude Sonnet 4.6 for 'Hybrid Reasoning'
         # Toggle 'Thinking' mode for complex billing issues
         is_complex = self.detect_complexity(query)
         
@@ -398,11 +398,11 @@ class QualityMonitor:
 
 | Component | Cost | Notes |
 |-----------|------|-------|
-| Intent classification | $0.0001 | GPT-5.2-mini ($0.10/1M) |
+| Intent classification | $0.0001 | GPT-5.5-mini ($0.10/1M) |
 | RAG retrieval | $0.0001 | Gemini 3 Flash ($0.05/1M) |
-| Thinking mode | $0.0050 | Claude Sonnet 4.5 Thinking (avg 250 tokens) |
-| Response generation | $0.0030 | Claude Sonnet 4.5 ($3/1M in) |
-| Quality sampling | $0.0001 | 5% sample rate on GPT-5.2 |
+| Thinking mode | $0.0050 | Claude Sonnet 4.6 Thinking (avg 250 tokens) |
+| Response generation | $0.0030 | Claude Sonnet 4.6 ($3/1M in) |
+| Quality sampling | $0.0001 | 5% sample rate on GPT-5.5 |
 | **Total** | **~$0.0083** | **Per conversation (62% reduction vs 2024)** |
 
 ### Monthly Cost Projection

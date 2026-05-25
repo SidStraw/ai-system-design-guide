@@ -1,10 +1,10 @@
-# Production RAG at Scale (April 2026)
+# Production RAG at Scale
 
-Production RAG in 2026 is no longer a weekend project. It is a distributed system with retrieval pipelines, caching layers, routing logic, self-correction loops, multi-tenant isolation, and cost controls -- all operating under strict latency SLAs. This guide covers everything you need to design, deploy, and operate RAG at scale.
+Production RAG is no longer a weekend project. It is a distributed system with retrieval pipelines, caching layers, routing logic, self-correction loops, multi-tenant isolation, and cost controls, all operating under strict latency SLAs. When RAG fails in production, the failure is in retrieval roughly 73% of the time, not generation, so the enterprise deployments that succeed treat the knowledge source (not the model) as the primary investment.
 
 ## Table of Contents
 
-- [RAG vs Long Context in 2026](#rag-vs-long-context)
+- [RAG vs Long Context](#rag-vs-long-context)
 - [Query Routing and Classification](#query-routing)
 - [Semantic Caching for RAG](#semantic-caching)
 - [Multi-Index Strategies](#multi-index)
@@ -22,9 +22,9 @@ Production RAG in 2026 is no longer a weekend project. It is a distributed syste
 
 ---
 
-## RAG vs Long Context in 2026
+## RAG vs Long Context
 
-With five major models now supporting 1M+ token context windows (Claude Opus 4.6, GPT-5.4, Gemini 3.1 Pro, Qwen 3.6 Plus, Llama 4 Maverick), the question is no longer "RAG or long context?" but "When does each win?"
+With every major frontier family now supporting 1M+ token context windows (Claude Opus 4.7, Claude Sonnet 4.6, GPT-5.5, Gemini 3.1 Pro, Qwen 3.6 Plus, Llama 4 Maverick), the question is no longer "RAG or long context?" but "When does each win?"
 
 ### The Decision Matrix
 
@@ -64,7 +64,7 @@ With five major models now supporting 1M+ token context windows (Claude Opus 4.6
 
 LLMs do not attend uniformly across their context window. Information positioned in the middle of a long context sees 30%+ accuracy degradation compared to information at the beginning or end. RAG sidesteps this entirely by placing only the most relevant chunks into a short, focused context.
 
-### 2026 Best Practice: The Hybrid Pattern
+### Best Practice: The Hybrid Pattern
 
 The winning architecture combines both: use RAG to retrieve the top candidates from a large corpus, then load those candidates into a long context window for cross-document reasoning.
 
@@ -929,7 +929,7 @@ Agentic RAG introduces three additional failure patterns:
 
 ## Monitoring and Alerting
 
-Production RAG requires dedicated monitoring beyond standard application metrics. As of 2026, roughly 60% of new RAG deployments include systematic evaluation from day one.
+Production RAG requires dedicated monitoring beyond standard application metrics. Roughly 60% of new RAG deployments now include systematic evaluation from day one (up sharply from the "ship first, eval later" pattern of earlier RAG generations).
 
 ### The RAG Monitoring Stack
 

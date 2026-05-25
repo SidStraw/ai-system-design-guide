@@ -1,6 +1,6 @@
 # Knowledge Distillation
 
-Knowledge distillation is the process of transferring the intelligence from a large, complex model ("Teacher") to a smaller, more efficient one ("Student"). This is the secret to the high performance of small models in late 2025.
+Knowledge distillation is the process of transferring the intelligence from a large, complex model ("Teacher") to a smaller, more efficient one ("Student"). This is the secret to the high performance of today's small open-weight models that punch well above their parameter count.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ Knowledge distillation is the process of transferring the intelligence from a la
 
 ## The Teacher-Student Paradigm
 
-In 2025, small models (e.g., Llama 4 8B, Gemini 3 Flash) are not trained on raw web data alone. They are trained on **Synthetic Data** generated or curated by a much larger model (e.g., GPT-5.2 or Llama 4 405B).
+Small models (e.g., Llama 4 8B, Gemini 3.1 Flash, Claude Haiku 4.5) are not trained on raw web data alone. They are trained on **Synthetic Data** generated or curated by a much larger model (e.g., GPT-5.5, Claude Opus 4.7, or Llama 4 405B).
 
 | Model | Role | Intelligence Source |
 |-------|------|---------------------|
@@ -48,7 +48,7 @@ Student matches the teacher's text responses.
 - **Pros**: Easy to implement via API.
 - **Cons**: Only learns behavioral surface patterns.
 
-### Feature/Hidden State Distillation (Dec 2025 Standard)
+### Feature/Hidden State Distillation
 Student matches the inner **Hidden States** (vector representations) of the teacher.
 - **Requirement**: You need access to the teacher's weights (Open Weights).
 - **Pro**: The student learns the teacher's "internal conceptual map," leading to much higher reasoning depth.
@@ -57,8 +57,8 @@ Student matches the inner **Hidden States** (vector representations) of the teac
 
 ## Self-Distillation from Proof (SDP)
 
-**The 2025 Reasoning Breakthrough.**
-Models like o1 and DeepSeek-R1 use SDP to improve without new human data.
+**The reasoning breakthrough.**
+Models like o1, DeepSeek-R1, and Claude Opus 4.7 use SDP to improve without new human data.
 
 1. **Generation**: The model generates 100 possible solutions to a hard math/code problem.
 2. **Verification**: A rule-based system (compiler/calculator) identifies the 1 correct solution.
@@ -71,7 +71,7 @@ Models like o1 and DeepSeek-R1 use SDP to improve without new human data.
 ## Quantization-Aware Distillation
 
 Standard quantization (e.g., 16-bit to 4-bit) causes a small drop in accuracy.
-**The Fix**: Use Knowledge Distillation *during* the quantization process. The 16-bit model acts as the teacher, guiding the 4-bit model to minimize its error. This is how we get 4-bit models that match 16-bit performance in 2025.
+**The Fix**: Use Knowledge Distillation *during* the quantization process. The 16-bit model acts as the teacher, guiding the 4-bit model to minimize its error. This is how modern 4-bit models match 16-bit performance.
 
 ---
 
@@ -86,7 +86,7 @@ Training from scratch (Pretraining) on raw web data is noisy; the model spends a
 
 **Strong answer:**
 1. **Model Collapse**: If the student only sees the teacher's output, it may lose the "long tail" of creative or diverse knowledge and only learn the teacher's narrow biases.
-2. **License Violations**: Most proprietary models (OpenAI, Anthropic) have clauses forbidding the use of their outputs to train "competing" models. In 2025, this is a major legal risk for enterprises distilling their own models.
+2. **License Violations**: Most proprietary models (OpenAI, Anthropic) have clauses forbidding the use of their outputs to train "competing" models. This is a major legal risk for enterprises distilling their own models from API outputs.
 3. **Linguistic Mimicry**: The student might learn to *sound* confident (like the teacher) without actually having the same level of logical depth, leading to confident but incorrect hallucinations.
 
 ---

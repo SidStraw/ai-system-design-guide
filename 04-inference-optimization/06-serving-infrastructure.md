@@ -1,6 +1,6 @@
 # Serving Infrastructure
 
-Deploying LLMs at scale requires a robust infrastructure layer that handles load balancing, model parallelism, and multi-tenant isolation. In 2025, the focus has shifted from "serving a model" to "orchestrating an inference fleet."
+Deploying LLMs at scale requires a robust infrastructure layer that handles load balancing, model parallelism, and multi-tenant isolation. The focus has shifted from "serving a model" to "orchestrating an inference fleet."
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ Deploying LLMs at scale requires a robust infrastructure layer that handles load
 
 The gateway is the "Traffic Controller" for your AI workload.
 
-| Component | Responsibility (Dec 2025) |
+| Component | Responsibility |
 |-----------|---------------------------|
 | **Auth & Rate Limiting** | Token-based quotas and tenant isolation. |
 | **Model Router** | Directing requests to specific model versions (Canary/A-B). |
@@ -45,9 +45,9 @@ Splits different layers (e.g., layers 1-40 on GPU 1, 41-80 on GPU 2).
 
 ---
 
-## Multi-GPU Orchestration (Dec 2025)
+## Multi-GPU Orchestration
 
-In late 2025, Kubernetes operators (like **Kube-Ray** or **Gloo**) manage "GPU Pools."
+Kubernetes operators (like **Kube-Ray** or **Gloo**) manage "GPU Pools" in production.
 
 - **Heterogeneous Clusters**: Mixing H100s for frontier models and L4s for small models in the same cluster.
 - **Autoscaling**: Scaling based on **KV Cache utilization** rather than CPU or standard memory usage.
@@ -59,7 +59,7 @@ In late 2025, Kubernetes operators (like **Kube-Ray** or **Gloo**) manage "GPU P
 
 LLMs are almost always served via **Server-Sent Events (SSE)** or **WebSockets**.
 
-**The 2025 Infrastructure Challenge**: Standard load balancers (Layer 4) struggle with long-lived AI connections.
+**Infrastructure challenge**: Standard load balancers (Layer 4) struggle with long-lived AI connections.
 - **The Fix**: Use **Layer 7 Load Balancers** (Envoy/Istio) that understand the "End of Sequence" token and can re-balance traffic *between* user turns rather than just at the connection level.
 
 ---

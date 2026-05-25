@@ -1,13 +1,13 @@
-# RAG Fundamentals (Dec 2025)
+# RAG Fundamentals
 
-RAG in 2025-2026: from naive vector search to agentic and graph-based retrieval. When to choose RAG vs. long context, and the three retrieval gaps that cause production failures.
+How RAG evolved from naive vector search to agentic and graph-based retrieval. When to choose RAG vs. long context, and the three retrieval gaps that cause production failures.
 
-Retrieval-Augmented Generation (RAG) is the architectural pattern of providing an LLM with external, verifiable context to ground its responses. In late 2025, RAG has evolved from "simple vector search" to a complex, multi-stage reasoning pipeline. Deeper material lives in [Chunking Strategies](02-chunking-strategies.md), [Vector Databases](04-vector-databases.md), [Reranking](06-reranking-strategies.md), [Contextual Retrieval](10-contextual-retrieval.md), [ColBERT Late Interaction](11-late-interaction-colbert.md), and the [GraphRAG reframe](07-graph-rag.md).
+Retrieval-Augmented Generation (RAG) is the architectural pattern of providing an LLM with external, verifiable context to ground its responses. It has evolved from "simple vector search" into a multi-stage reasoning pipeline: hybrid retrieval, reranking, contextual chunking, and agentic loops are now table stakes for production. Deeper material lives in [Chunking Strategies](02-chunking-strategies.md), [Vector Databases](04-vector-databases.md), [Reranking](06-reranking-strategies.md), [Contextual Retrieval](10-contextual-retrieval.md), [ColBERT Late Interaction](11-late-interaction-colbert.md), and the [GraphRAG reframe](07-graph-rag.md).
 
 ## Table of Contents
 
 - [The Core Philosophy: Grounding vs. Training](#philosophy)
-- [The 2025 RAG Taxonomy](#taxonomy)
+- [The RAG Taxonomy](#taxonomy)
 - [RAG vs. 2M Context (The Hybrid Era)](#rag-vs-long-context)
 - [The Retrieval Quality Gap](#quality-gap)
 - [Interview Questions](#interview-questions)
@@ -24,17 +24,17 @@ Retrieval-Augmented Generation (RAG) is the architectural pattern of providing a
 | **Attribution** | None (Black box) | Explicit (Citations) |
 | **Privacy** | Hard to "Unlearn" | Easy to filter/delete |
 
-**2025 Insight**: Fine-tuning is for **Form** (style, tone, syntax); RAG is for **Fact** (knowledge, data, grounding).
+**Rule of thumb**: Fine-tuning is for **Form** (style, tone, syntax); RAG is for **Fact** (knowledge, data, grounding).
 
 ---
 
-## The 2025 RAG Taxonomy
+## The RAG Taxonomy
 
-Production RAG systems are now categorized by their "Agentic Depth":
+Production RAG systems are categorized by their "Agentic Depth":
 
 ### 1. Naive RAG (Retrieve-then-Generate)
 - **Flow**: User Query -> Vector Search -> Top-K -> LLM.
-- **2025 Status**: Deprecated for production due to "Retrieval Gap" and low precision.
+- **Status**: Deprecated for production due to "Retrieval Gap" and low precision.
 
 ### 2. Advanced RAG (Multi-Stage)
 - **Flow**: Query Transformation -> Hybrid Search -> Reranking -> LLM.
@@ -74,7 +74,7 @@ flowchart TD
 
 ## RAG vs. 2M Context (The "Hybrid Era")
 
-With context windows like Gemini 1.5 Pro (2M+) and Claude Sonnet 4.5 (1M+), RAG is changing.
+With context windows like Gemini 1.5 Pro (2M+) and Claude Sonnet 4.6 (1M+), RAG is changing.
 
 - **In-Context RAG (ICR)**: For datasets < 50k tokens, we skip the vector DB and put EVERYTHING in the prompt.
 - **Prompt Caching**: Makes Long-Context RAG 90% cheaper by caching the "Background Knowledge" on the GPU.
@@ -111,7 +111,7 @@ The "Retrieval Gap" is the #1 cause of RAG failure.
 
 ## Interview Questions
 
-### Q: In late 2025, why would you still use RAG if models have 2-million-token contexts?
+### Q: Why would you still use RAG if frontier models ship 1M-2M token contexts?
 
 **Strong answer:**
 Three tiers of reasons:
@@ -128,7 +128,7 @@ Advanced RAG is a **deterministic pipeline** (Linear: Rewrite -> Search -> Reran
 
 ## Key Takeaways
 
-- Naive RAG (vector search + top-K + LLM) is deprecated for production in 2026; ship Advanced RAG (hybrid + RRF + rerank) as the new baseline.
+- Naive RAG (vector search + top-K + LLM) is deprecated for production; ship Advanced RAG (hybrid + RRF + rerank) as the new baseline.
 - Long context windows do not kill RAG: cost, latency, freshness, and corpus scale all push you back to retrieval even at 2M context.
 - Choose by corpus size: under 50k tokens go in-context with prompt caching; over 100k go standard RAG; aggregative questions go GraphRAG.
 - Most RAG failures are retrieval failures, not generation failures; diagnose the three gaps (semantic, missing context, lost-in-the-middle) before tuning prompts.

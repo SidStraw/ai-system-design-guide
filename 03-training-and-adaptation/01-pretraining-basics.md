@@ -8,7 +8,7 @@ Pretraining is the most computationally expensive phase of building an LLM, wher
 - [Data Curriculum and Quality](#data-curriculum-and-quality)
 - [Scaling Laws (Inference-Optimal)](#scaling-laws)
 - [Computational Requirements](#computational-requirements)
-- [Training Stability (Dec 2025)](#training-stability)
+- [Training Stability](#training-stability)
 - [Interview Questions](#interview-questions)
 - [References](#references)
 
@@ -29,12 +29,12 @@ The model predicts the next token given the context. This simple objective, at s
 
 ## Data Curriculum and Quality
 
-In 2025, the focus has shifted from "More Data" to "Better Curriculum."
+The focus has shifted from "More Data" to "Better Curriculum."
 
 ### The 100T Token Horizon
-Frontier models (Llama 4, GPT-5.2) are trained on 15T to 100T tokens. At this scale, **Deduplication** and **Quality Filtering** are the primary differentiators.
+Frontier models (Llama 4, GPT-5.5, Claude Opus 4.7, Gemini 3.1 Pro) are trained on 15T to 100T tokens. At this scale, **Deduplication** and **Quality Filtering** are the primary differentiators.
 
-### Data Mixture (Dec 2025 Standard)
+### Data Mixture Standard
 | Component | Percentage | Purpose |
 |-----------|------------|---------|
 | Web (CommonCrawl) | 50-60% | General knowledge, diverse styles |
@@ -54,7 +54,7 @@ Research shows that increasing code in the pretraining mix improves a model's pe
 `Data Tokens (D) ≈ 20 * Parameters (N)`
 For a 70B model, this suggests ~1.4T tokens.
 
-### The Inference-Optimal Paradigm (Dec 2025)
+### The Inference-Optimal Paradigm
 Modern models (Llama 3, Llama 4) are **heavily overtrained** relative to Chinchilla.
 - **Why?**: Training cost is paid once; inference cost is paid billions of times.
 - **Result**: Small models (8B) are now trained on 15T+ tokens, making them as capable as older 70B models but much cheaper to serve.
@@ -66,18 +66,18 @@ Modern models (Llama 3, Llama 4) are **heavily overtrained** relative to Chinchi
 
 ---
 
-## Training Stability (Dec 2025 Nuances)
+## Training Stability
 
 Training at the "Ultra" scale (100k+ GPUs) faces massive stability issues.
 
 ### 1. Loss Spikes
 Sudden jumps in loss that can ruin a training run.
-- **2025 Fix**: **Periodic Checkpointing** and **Automatic Rollbacks**.
-- **Architecture Fix**: **Residual Scaling** (initializing weights such that the residual branch starts at near-zero).
+- **Standard fix**: **Periodic Checkpointing** and **Automatic Rollbacks**.
+- **Architecture fix**: **Residual Scaling** (initializing weights such that the residual branch starts at near-zero).
 
 ### 2. Precision: FP8 vs BF16
-- **BF16**: The 2023-2024 standard for stability.
-- **FP8**: The **2025 Production Standard**. Supported natively by H100/B200, it halves memory usage and doubles throughput while maintaining training stability through **Stochastic Rounding**.
+- **BF16**: The 2023-2024 stability standard.
+- **FP8**: The current production standard. Supported natively by H100/B200, it halves memory usage and doubles throughput while maintaining training stability through **Stochastic Rounding**.
 
 ---
 
@@ -91,7 +91,7 @@ Chinchilla optimality focuses on the best use of a fixed **training** compute bu
 ### Q: What is the "curriculum" in LLM pretraining?
 
 **Strong answer:**
-Curriculum refers to the order and mixture of data. A common 2025 pattern is:
+Curriculum refers to the order and mixture of data. A common modern pattern is:
 1. **General Knowledge Phase:** 80% of tokens (Web, Books).
 2. **Reasoning Focus Phase:** 15% tokens (Code, Math, Logic).
 3. **High-Quality "Cooling" Phase:** The last 1-5% of tokens are extremely high-quality, human-curated, or textbook data. This "cooling" phase helps the model jitter less and follow instructions better before any fine-tuning starts.

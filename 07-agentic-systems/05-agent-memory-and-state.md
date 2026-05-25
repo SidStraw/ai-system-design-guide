@@ -52,7 +52,7 @@ The tiers differ on more than purpose. Read pattern, write pattern, latency budg
 
 ## Short-Term: The Reasoning Trace
 
-In 2025, we no longer just store the "Messages." we store the **State Object**.
+Production agents no longer just store the "Messages"; they store the **State Object**.
 - **The Scratchpad**: A dedicated section of the prompt where the agent "writes notes" to itself that are NOT shown to the user.
 - **KV Cache Tiling**: For long-running agents, we use **Prefix Caching** to keep the "System Instruction" and "Standard Tools" warm in GPU memory, only swapping the dynamic task state.
 
@@ -72,7 +72,7 @@ Semantic memory stores "Facts" about the user or the environment.
 - *"The user prefers JSON output."*
 - *"The production DB is offline between 3 AM and 4 AM."*
 
-**2025 Best Practice**: Use a **Knowledge Graph** for semantic memory. Unlike vector search (which is fuzzy), a graph provides deterministic retrieval of entities and relationships (e.g., `User` -- `OWNER_OF` --> `Project_A`).
+**Best practice**: Use a **Knowledge Graph** for semantic memory. Unlike vector search (which is fuzzy), a graph provides deterministic retrieval of entities and relationships (e.g., `User` -- `OWNER_OF` --> `Project_A`).
 
 ---
 
@@ -219,7 +219,7 @@ Vector ANN returns a neighbor from another tenant; cached prompts contain anothe
 
 ## Mem0 and Agentic Personalization
 
-In late 2025, **Mem0** (and similar frameworks) has become the standard for "Smart Memory."
+**Mem0**, Zep, Letta, and Cognee are the standard frameworks for "Smart Memory" in agent stacks.
 - It automatically extracts "User Insights" from conversations.
 - It provides a "Memory API" that agents can call to `remember` or `forget` specific triplets of information.
 - **Impact**: Agents feel "Alive" because they remember a detail you mentioned 3 months ago in a different session.
@@ -350,7 +350,7 @@ The right framing: TTT-E2E moves memory governance from the storage layer to the
 - [Graphiti GitHub](https://github.com/getzep/graphiti)
 - [LangMem documentation](https://langchain-ai.github.io/langmem/)
 - [OpenAI Memory and new controls for ChatGPT](https://openai.com/index/memory-and-new-controls-for-chatgpt/)
-- [Cognition: Rebuilding Devin for Claude Sonnet 4.5](https://cognition.ai/blog/devin-sonnet-4-5-lessons-and-challenges)
+- [Cognition: Rebuilding Devin for Claude Sonnet 4.6](https://cognition.ai/blog/devin-sonnet-4-5-lessons-and-challenges)
 
 ### Research (2023-2026)
 - [Generative Agents: Interactive Simulacra of Human Behavior (Park et al. 2023)](https://arxiv.org/abs/2304.03442)

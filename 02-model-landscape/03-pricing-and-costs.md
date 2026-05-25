@@ -56,9 +56,11 @@ Committed (1-year): $2.00 / 1M input tokens (20% savings)
 
 ### May 2026 Pricing
 
-> **Last verified: May 17, 2026.** Prices change frequently. Always re-check: [OpenAI](https://developers.openai.com/api/docs/pricing), [Anthropic](https://platform.claude.com/docs/en/about-claude/pricing), [Google](https://ai.google.dev/gemini-api/docs/pricing), [xAI](https://docs.x.ai/developers/models), [DeepSeek](https://api-docs.deepseek.com/quick_start/pricing)
+> **Last verified: May 25, 2026.** Prices change frequently. Always re-check: [OpenAI](https://developers.openai.com/api/docs/pricing), [Anthropic](https://platform.claude.com/docs/en/about-claude/pricing), [Google](https://ai.google.dev/gemini-api/docs/pricing), [xAI](https://docs.x.ai/developers/models), [DeepSeek](https://api-docs.deepseek.com/quick_start/pricing)
 >
 > **Deprecations effective in 2026:** OpenAI retired GPT-4o, GPT-4.1, GPT-4.1-mini, o4-mini from ChatGPT on Feb 13, 2026; gpt-5.2-chat-latest and gpt-5.3-chat-latest deprecated May 8, 2026; Realtime API Beta removed May 12, 2026; Sora app shut down April 26, 2026 (API EOL Sep 24, 2026). Google Vertex retired `gemini-3-pro-preview` Mar 26, 2026; Project Mariner shut down May 4, 2026. Gemini 2.5 Pro/Flash deprecated June 17, 2026.
+>
+> **Price moves:** DeepSeek made its 75% V4 Pro discount **permanent** on May 22, 2026: from June 1, 2026 the new list price drops to 25% of the original ($0.435 / $0.87 per 1M input/output), and the cache-hit input price for all DeepSeek models was cut to 1/10 of the launch price on April 26, 2026. DeepSeek V4 Flash ($0.14 / $0.28 per 1M, 1M context) is now the cheapest frontier-class API by a wide margin.
 
 #### OpenAI (GPT-5.x Generation)
 | Model | Input / 1M | Output / 1M | Notes |
@@ -106,9 +108,9 @@ Committed (1-year): $2.00 / 1M input tokens (20% savings)
 #### Open-Weight Models via API (May 2026)
 | Model | Input / 1M | Output / 1M | Context | Provider Examples |
 |-------|------------|-------------|---------|-------------------|
-| **DeepSeek-V3.2** | $0.28 | $0.42 | 128K | DeepSeek API. 98% cache-hit discount; 50% off-peak discount. Effective rates can drop 10–30× via routing. |
-| **DeepSeek V4 Pro** ⭐ NEW | check latest | check latest | 1M | DeepSeek API (preview). ~27% compute / 10% memory of V3.2 at 1M tokens. |
-| **DeepSeek V4 Flash** ⭐ NEW | check latest | check latest | 1M | DeepSeek API (preview). 13B-active MoE; high-throughput tier. |
+| **DeepSeek-V3.2** | $0.28 | $0.42 | 128K | DeepSeek API. 98% cache-hit discount. Effective rates can drop 10–30× via routing. |
+| **DeepSeek V4 Pro** ⭐ NEW | $0.435 | $0.87 | 1M | DeepSeek API. 75% promotional discount made **permanent**: from June 1, 2026 the new list price is 25% of the original ($1.74 / $3.48). Cache-hit input: $0.003625/M. ~27% compute / 10% memory of V3.2 at 1M tokens. |
+| **DeepSeek V4 Flash** ⭐ NEW | $0.14 | $0.28 | 1M | DeepSeek API. Cache-hit input: $0.0028/M (98% discount). 13B-active MoE. Currently the cheapest frontier-class 1M-context API. |
 | **Mistral Medium 3.5** ⭐ NEW | $1.50 | check latest | 256K | Mistral API. Unified chat/reasoning/coding/vision; 77.6% SWE-Bench Verified. |
 | **Kimi K2.6** ⭐ NEW | check latest | check latest | - | Moonshot API. 1T MoE / 32B active; agent swarm to 300 sub-agents. |
 | **Qwen 3.6-35B-A3B** ⭐ NEW | check latest | check latest | - | Apache 2.0 weights; self-host or via API providers. |

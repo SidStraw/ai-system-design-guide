@@ -1,6 +1,6 @@
-# State Management Patterns (Dec 2025)
+# State Management Patterns
 
-State management in AI systems has moved from simple "sessions" to **Stateful Agent Graphs**. In late 2025, managing the flow and persistence of an agent's "mind" is as critical as the LLM itself.
+State management in AI systems has moved from simple "sessions" to **Stateful Agent Graphs**. Managing the flow and persistence of an agent's "mind" is as critical as the LLM itself: it is one of the main reasons LangGraph has become the default control-flow runtime for LangChain-built agents.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ class AgentState(TypedDict):
     user_context: dict[str, Any]
     iteration_count: int
 ```
-**2025 Best Practice**: State should be **Strictly Typed** and **Append-Only** whenever possible to prevent data loss during long execution loops.
+**Best practice**: State should be **Strictly Typed** and **Append-Only** whenever possible to prevent data loss during long execution loops.
 
 ---
 

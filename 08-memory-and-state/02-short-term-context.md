@@ -1,6 +1,6 @@
-# Short-Term Context Management (Dec 2025)
+# Short-Term Context Management
 
-Short-term context (L1 Memory) is the high-speed interface where reasoning happens. In late 2025, managing this context is no longer about "message lists," but about **KV Cache Optimization** and **Dynamic Context Allocation**.
+Short-term context (L1 Memory) is the high-speed interface where reasoning happens. Managing it well is no longer about "message lists" but about **KV Cache Optimization** and **Dynamic Context Allocation**.
 
 ## Table of Contents
 
@@ -23,7 +23,7 @@ Context goes through three stages:
 
 ---
 
-## KV Cache Tiling (Dec 2025 Tech)
+## KV Cache Tiling
 
 Modern inference engines (vLLM, TensorRT-LLM) use **PagedAttention**.
 - **Idea**: Instead of allocating a contiguous block of GPU memory for the context, memory is broken into **Blocks** (pages).
@@ -33,7 +33,7 @@ Modern inference engines (vLLM, TensorRT-LLM) use **PagedAttention**.
 
 ## Prefix Caching
 
-This is the **Holy Grail of Latency** in 2025.
+This is the **Holy Grail of Latency** for any production LLM stack.
 - **The Problem**: Every time an agent calls an LLM, it sends the same 2,000-token System Prompt + 50 Tool Schemas. This wastes compute.
 - **The Solution**: **Persistent Prefix Caching**. The server keeps the KV cache for the "Static" part of the prompt (the prefix) in memory.
 - **Result**: You only pay for (and wait for) the compute on the *new* part of the message.
@@ -46,13 +46,13 @@ This is the **Holy Grail of Latency** in 2025.
 |--------|-----------|-----|-----|
 | **Sliding Window** | Keep last N tokens exactly. | High fidelity for recent. | "Dory" effect (forgets start). |
 | **Summarization** | Compress old turns into text. | Preserves "Key Facts". | Loses nuance/formatting. |
-| **Hybrid (2025)** | Keep last 10 turns + 1 summary. | Best of both worlds. | Slightly higher complexity. |
+| **Hybrid** | Keep last 10 turns + 1 summary. | Best of both worlds. | Slightly higher complexity. |
 
 ---
 
 ## Contextual Compression
 
-Late 2025 models support **Prompt Hardening**.
+Current frontier models support **Prompt Hardening**.
 - **Selective Dropping**: Automatically stripping out irrelevant "Thought" blocks from previous turns to save space.
 - **Token Pruning**: Using a smaller model to rewrite a long user message into a 50% shorter, equivalent prompt before sending it to the "Reasoning" model.
 
@@ -68,7 +68,7 @@ The **Model Context Window** is the hard limit defined by the architecture (e.g.
 ### Q: How does "Prefix Caching" change how you design System Prompts?
 
 **Strong answer:**
-It forces me to move **Static content to the front** and **Dynamic content to the back**. In 2023, we often put the user's name or date at the very top. In 2025, that breaks the prefix cache. I now put the "Immutable Rules" and "Tool Schemas" at the beginning and the "User Context" (which changes every turn) at the end. This ensures the first 5,000 tokens are identical across all users, maximizing cache hits on the inference server.
+It forces me to move **Static content to the front** and **Dynamic content to the back**. Early-LLM patterns often put the user's name or date at the very top. That breaks the prefix cache. I put "Immutable Rules" and "Tool Schemas" at the beginning and the "User Context" (which changes every turn) at the end. This ensures the first 5,000 tokens are identical across all users, maximizing cache hits on the inference server.
 
 ---
 

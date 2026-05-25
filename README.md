@@ -40,7 +40,8 @@ A practical, continuously updated guide to AI system design, RAG architectures, 
 | **Evaluate AI in production** | [AI Evals Guide (Phoenix/Langfuse)](ai_evals_comprehensive_study_guide.md) → [AI Evals Guide (LangWatch/Langfuse)](ai_evals_complete_guide_langwatch_langfuse.md) |
 | **Find the best courses to learn AI** | [Recommended Courses & Learning Paths](COURSES.md) |
 | **Transition from my current role to AI** | [Role Transition Guide](TRANSITION_GUIDE.md) |
-| **Understand the 2026 AI job market** | [Job Market Trends - May 2026](00-interview-prep/06-job-market-trends-2026.md) ⭐ *NEW* |
+| **Understand the 2026 AI job market** | [Job Market Trends - May 2026](00-interview-prep/06-job-market-trends-2026.md) |
+| **Get a quick answer to a common question** | [FAQ](00-interview-prep/07-faq.md) (RAG, agents, models, eval, inference, memory, security) |
 | **Look up a term** | [Glossary](GLOSSARY.md) (every term defined) |
 
 ### Pick a path
@@ -73,7 +74,7 @@ flowchart TD
 | Real pricing with May 2026 verification dates | Already wrong |
 | Staff-level interview Q&A (110 questions through May 2026) + Job Market Trends | Generic questions |
 
-**Quick model picker (May 2026):** Claude Opus 4.7 for tool-use and long-context reasoning, GPT-5.5 for general production, Gemini 3.1 Pro for multimodal, DeepSeek V4 Pro and Llama 4 for self-hosted. Full breakdown in [Model Taxonomy](02-model-landscape/01-model-taxonomy.md).
+**Quick model picker (May 2026):** Claude Opus 4.7 for tool-use and long-context reasoning, GPT-5.5 for general production, Gemini 3.1 Pro for multimodal, DeepSeek V4 Flash ($0.14/$0.28 per 1M) or V4 Pro ($0.435/$0.87 after permanent May 22 discount) for cheap frontier-class output, Llama 4 for self-hosted. Full breakdown in [Model Taxonomy](02-model-landscape/01-model-taxonomy.md).
 
 ---
 

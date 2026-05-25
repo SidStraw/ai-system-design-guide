@@ -1,6 +1,6 @@
-# Agentic RAG (Dec 2025)
+# Agentic RAG
 
-Agentic RAG moves from a "Linear Pipeline" to a **"Reasoning Loop."** Instead of simply retrieving once, an agent decides *when* and *what* to retrieve to resolve a query.
+Agentic RAG moves from a "Linear Pipeline" to a **"Reasoning Loop."** Instead of retrieving once, an agent decides *when* and *what* to retrieve to resolve a query. The dominant production patterns are Self-RAG (model emits reflection tokens), Corrective RAG (retrieval evaluator with corrective routing), Adaptive RAG (classifier picks pipeline depth), ReAct over documents, and multi-hop query decomposition. LangGraph is the most common control-flow runtime for stateful loops; LlamaIndex Workflows is common for single-pipeline retrieval-heavy variants.
 
 ## Table of Contents
 
@@ -23,7 +23,7 @@ Agentic RAG moves from a "Linear Pipeline" to a **"Reasoning Loop."** Instead of
 | **Query Complexity**| Simple (1-step) | Hard (Multi-step) |
 | **Latency** | Low (Fixed) | Variable (Multiple turns) |
 
-**2025 Principle**: Use Agentic RAG when the query requires "Synthesized Proof" rather than just a "Document Match."
+**Principle**: Use Agentic RAG when the query requires "Synthesized Proof" rather than just a "Document Match." Budget for it: a 3-4 iteration loop typically takes 8-12s end-to-end, so route easy queries to a fast path (Adaptive RAG) if your UX needs sub-3s response.
 
 ---
 
@@ -61,7 +61,7 @@ For questions like "Who is the CEO of the company that acquired Figma?", the sys
 
 ## Agentic Filtering and Plan Revision
 
-In late 2025, agents use **Sub-Step Plans**.
+Modern agents use **Sub-Step Plans**.
 - Instead of one big retrieval, the agent writes a plan: "First I will check our internal database for X, then I will look at the public API for Y."
 - **Revised planning**: If Step 1 fails, the agent *rewrites* Step 2.
 
@@ -77,7 +77,7 @@ Every "Reasoning turn" in an agentic loop adds token cost and user latency. The 
 ### Q: Why does Agentic RAG often lead to higher quality but lower "Reliability" (Determinism)?
 
 **Strong answer:**
-Agentic RAG is non-deterministic because the model is "Deciding" its path at every step. A small change in the user query might cause the agent to pick a different tool or search strategy, leading to a different answer format. In 2025, we mitigate this by using **Constrained Agent Frameworks** (like LangGraph or DSPy) where the "Graph of possible paths" is strictly defined, even if the choice *between* those paths is stochastic.
+Agentic RAG is non-deterministic because the model is "Deciding" its path at every step. A small change in the user query might cause the agent to pick a different tool or search strategy, leading to a different answer format. The standard mitigation is **Constrained Agent Frameworks** (like LangGraph or DSPy) where the "Graph of possible paths" is strictly defined, even if the choice *between* those paths is stochastic.
 
 ---
 

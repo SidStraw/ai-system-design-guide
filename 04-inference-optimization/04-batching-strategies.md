@@ -1,11 +1,11 @@
 # Batching Strategies
 
-Batching is the primary lever for increasing LLM throughput and reducing cost. In 2025, serving frameworks have moved beyond simple request-level batching to sub-token, iteration-level orchestration.
+Batching is the primary lever for increasing LLM throughput and reducing cost. Serving frameworks have moved beyond simple request-level batching to sub-token, iteration-level orchestration.
 
 ## Table of Contents
 
 - [Static vs. Dynamic Batching](#static-vs-dynamic)
-- [Continuous Batching (The 2025 Standard)](#continuous-batching)
+- [Continuous Batching](#continuous-batching)
 - [In-Flight Batching (Prefill-Decode Fusion)](#in-flight-batching)
 - [Chunked Prefill & RAD-O](#chunked-prefill)
 - [Interview Questions](#interview-questions)
@@ -42,11 +42,11 @@ Previously, serving engines processed a batch of "Prefill" (heavy compute) OR a 
 
 ---
 
-## Chunked Prefill & RAD-O (Dec 2025)
+## Chunked Prefill & RAD-O
 
 Massive context prompts (1M+ tokens) can hang a batch for seconds during the Prefill phase, causing "stalls."
 
-**The 2025 Fix: Chunked Prefill**
+**The fix: Chunked Prefill**
 Instead of prefilling 128k tokens at once, the engine breaks the prefill into smaller chunks (e.g., 4k tokens each) and interleaves them with the ongoing Decode steps of other users. This maintains a steady **TPOT** even when heavy requests arrive.
 
 ---

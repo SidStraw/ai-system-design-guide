@@ -1,10 +1,10 @@
-# Framework Selection Guide (April 2026)
+# Framework Selection Guide
 
-The landscape of AI frameworks consolidated significantly in 2025-2026. Every major AI lab now ships an agent SDK, Microsoft merged AutoGen and Semantic Kernel into a unified Agent Framework, and interoperability protocols (MCP, A2A) are becoming table stakes. This guide provides the **Decision Matrix** for choosing your stack based on production requirements, team expertise, and system scale.
+The landscape of AI frameworks has consolidated significantly over the past year. Every major AI lab now ships an agent SDK, Microsoft merged AutoGen and Semantic Kernel into a unified Agent Framework, and interoperability protocols (MCP, A2A) are table stakes. This guide provides the **Decision Matrix** for choosing your stack based on production requirements, team expertise, and system scale.
 
 ## Table of Contents
 
-- [The 2026 Framework Landscape](#landscape)
+- [The Framework Landscape](#landscape)
 - [The Decision Matrix](#matrix)
 - [Build vs. Buy vs. Framework](#build-vs-buy)
 - [Anti-Patterns to Avoid](#anti-patterns)
@@ -13,7 +13,7 @@ The landscape of AI frameworks consolidated significantly in 2025-2026. Every ma
 
 ---
 
-## The 2026 Framework Landscape
+## The Framework Landscape
 
 ### Orchestration & Agent Frameworks
 
@@ -86,7 +86,7 @@ As a Staff Engineer, you must resist **Framework Bloat**.
 
 ---
 
-## Staff-Level Recommendation (April 2026)
+## Staff-Level Recommendation
 
 For a modern, production-grade agentic system:
 - **Orchestration**: LangGraph (for state and loops) or Microsoft Agent Framework (for .NET shops).
@@ -103,7 +103,7 @@ For a modern, production-grade agentic system:
 2. The protocol layer has matured: **MCP for agent-to-tool** and **A2A for agent-to-agent** are becoming infrastructure standards, not optional add-ons. Design your architecture to support both.
 3. Every lab shipping its own agent SDK creates a **vendor lock-in risk**. Mitigate by using MCP for tool access (portable across SDKs) and A2A for agent coordination (vendor-neutral).
 
-> *Updated April 2026.*
+> *Updated May 2026.*
 
 ---
 

@@ -1,11 +1,11 @@
 # Few-Shot and In-Context Learning (ICL)
 
-In-Context Learning (ICL) is the ability of an LLM to learn a new task simply by seeing examples in the prompt, without any weight updates. In 2025, maximizing ICL efficiency is the key to prompt stability.
+In-Context Learning (ICL) is the ability of an LLM to learn a new task simply by seeing examples in the prompt, without any weight updates. Maximizing ICL efficiency is a key lever for prompt stability.
 
 ## Table of Contents
 
 - [The Anatomy of a Few-Shot Example](#anatomy)
-- [How many examples? (The 2025 Standard)](#how-many)
+- [How many examples?](#how-many)
 - [Dynamic Example Selection](#dynamic-selection)
 - [The Importance of Labelling Nuance](#labelling)
 - [Advanced ICL: Analogy and Retraining-lite](#advanced-icl)
@@ -29,7 +29,7 @@ Sentiment: Mixed
 
 ---
 
-## How many examples? (The 2025 Standard)
+## How many examples?
 
 | Model Size | Sweet Spot | Scaling Behavior |
 |------------|------------|------------------|
@@ -37,7 +37,7 @@ Sentiment: Mixed
 | **Medium (70B)**| 3 - 5 | Plateaus early; more examples increase latency. |
 | **Frontier (405B)**| 1 - 2 | Highly capable; "Instruction Following" usually suffices. |
 
-**The 2025 Rule**: If you need more than 20 examples to get a stable output, your task is likely too complex for the model, or you should consider **Fine-tuning**.
+**Rule of thumb**: If you need more than 20 examples to get a stable output, your task is likely too complex for the model, or you should consider **Fine-tuning**.
 
 ---
 
@@ -57,7 +57,7 @@ In production RAG or Classification, don't use the same static examples for ever
 
 Frontier models are sensitive to **Distribution Bias** in examples.
 - If you provide 5 "Positive" examples and 1 "Negative," the model will bias toward "Positive."
-- **The 2025 Fix**: Always use **Label Balancing**. Ensure your few-shot examples roughly mirror the expected output distribution or are perfectly balanced (1:1).
+- **Fix**: Always use **Label Balancing**. Ensure your few-shot examples roughly mirror the expected output distribution or are perfectly balanced (1:1).
 
 ---
 
@@ -83,7 +83,7 @@ There are three primary reasons:
 ### Q: What is "Label Bias" in In-Context Learning?
 
 **Strong answer:**
-Label bias occurs when the model predicts a specific label more frequently simply because it appeared more often in the few-shot examples or because it appeared at the end of the list. In 2025, we mitigate this by:
+Label bias occurs when the model predicts a specific label more frequently simply because it appeared more often in the few-shot examples or because it appeared at the end of the list. The standard mitigations are:
 1. Shuffling the order of examples for different requests.
 2. Ensuring an equal number of positive/negative/neutral samples.
 3. Using "Permutation Testing" during prompt development to ensure the model responds to the content, not the order.

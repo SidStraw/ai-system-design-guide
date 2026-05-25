@@ -1,6 +1,6 @@
-# Embedding Models (Dec 2025)
+# Embedding Models
 
-Embedding models convert text into high-dimensional vectors. In late 2025, we have moved beyond "static vectors" to **Multi-Resolution & Late-Interaction** representations.
+Embedding models convert text into high-dimensional vectors. The frontier has moved past static single-vector representations to **multi-resolution, late-interaction, and multimodal** embeddings.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ Embedding models convert text into high-dimensional vectors. In late 2025, we ha
 
 Traditionally, if you embedded text into 1,536 dimensions, you were stuck using all 1,536 dimensions for search. 
 
-**2025 Innovation: Matryoshka Represenation Learning (MRL)**
+**Matryoshka Representation Learning (MRL)**
 - Models are trained to "store" the most important info in the first few dimensions.
 - **The Win**: You can embed at 1,536 dims, but index only the first **64 dims** for a "fast search" pass, then refine the top results with the full 1,536 dims.
 - **Efficiency**: 20x reduction in memory/index size with <2% drop in accuracy.
@@ -31,13 +31,13 @@ Standard embeddings are "Bi-Encoders" (one vector per chunk). **ColBERT** (Conte
 
 - **How**: Instead of 1 vector per chunk, ColBERT stores 1 vector **per token**.
 - **Interaction**: At query time, the model compares every token in your query to every token in the documents (the "MaxSim" operation).
-- **2025 Status**: ColBERT v2 is drastically compressed (PLAID indexing), making it feasible for production. It achieves much higher precision for "needle in a haystack" technical queries.
+- **Status**: ColBERT v2 (and successors like ColPali, ColQwen2.5, ColNomic for documents and pages-as-images) is drastically compressed via PLAID indexing, making it feasible for production. It achieves much higher precision for "needle in a haystack" technical queries.
 
 ---
 
 ## Binary and Int8 Quantization
 
-Storing `float32` vectors is expensive. In 2025, we use **In-Model Quantization**.
+Storing `float32` vectors is expensive. Production indexes lean heavily on **in-model quantization**.
 
 - **Binary Embeddings**: Convert vectors to 1s and 0s. 
   - **Memory**: 32x reduction.
@@ -46,22 +46,30 @@ Storing `float32` vectors is expensive. In 2025, we use **In-Model Quantization*
 
 ---
 
-## Model Selection Criteria (Dec 2025)
+## Model Selection Criteria
 
 | Model | Provider | Features | Context |
 |-------|----------|----------|---------|
-| **Text-Embedding-4** | OpenAI | Matryoshka, Native Int8 | 32k |
-| **Cohere Embed v3.5** | Cohere | Binary quantization, "Compressible" | 1M |
-| **BGE-M3** | Open Source | Multilingual, Multi-granularity | 8k |
-| **Jina-Embeddings-v3** | Jina AI | Late-interaction support | 128k |
+| **Gemini Embedding 001** | Google | Multimodal (text, image, video, audio, PDF), shared 3072-dim space, MTEB-English leader | 8k |
+| **Qwen3-Embedding-8B** | Open Source | MTEB-Multilingual leader, instruction-tuned, long-doc strength | 32k |
+| **Llama-Embed-Nemotron-8B** | NVIDIA | Top multilingual scores, open weights | 8k |
+| **Cohere Embed v4** | Cohere | Multimodal (text + image), Matryoshka, binary quantization | 128k |
+| **Voyage-Multimodal-3.5** | Voyage AI | Unified text/image, retrieval-tuned | 32k |
+| **OpenAI text-embedding-3-large** | OpenAI | Matryoshka, Native Int8, broad support | 8k |
+| **BGE-M3** | Open Source | Multilingual, multi-granularity (dense + sparse + late-interaction) | 8k |
+| **Jina-Embeddings-v3** | Jina AI | Late-interaction support, long context | 128k |
+
+Open-weight models (Qwen3, Llama-Embed-Nemotron, BGE) now match or beat the commercial APIs on pure MTEB scores. Pick commercial when you want managed infra and SLAs; pick open weights when cost-per-query at high volume matters more than latency floor.
 
 ---
 
 ## Multimodal Embeddings
 
-In late 2025, "Text-only RAG" is dying. 
-- **CLIP (2025 version)**: Embeds images and text into the *same* space.
-- **Architecture**: You can search a library of schematics (images) using a natural language query ("Where is the emergency shutoff valve?").
+Text-only RAG silently throws away the charts, tables, diagrams, and layout signal that often hold the answer. Modern stacks treat pages, screenshots, and figures as first-class retrieval objects:
+
+- **Unified vision-text embeddings**: Cohere Embed v4, Voyage-Multimodal-3.5, Gemini Embedding 001 all share a single vector space, so you can query "where is the emergency shutoff valve?" against schematics.
+- **Page-as-image with late interaction**: ColPali, ColQwen2.5, and ColNomic embed each page render directly, skipping fragile OCR and preserving visual hierarchy.
+- **CLIP-family models**: Still useful for image-heavy catalogs (e-commerce, media) where text-image alignment is the core signal.
 
 ---
 
@@ -70,7 +78,7 @@ In late 2025, "Text-only RAG" is dying.
 ### Q: What is the "Vocabulary Mismatch" problem in embeddings?
 
 **Strong answer:**
-Embeddings rely on the semantic space learned during training. If a user query uses a newer term (e.g., "DeepSeek-V3") that wasn't in the embedding model's training set, the model might assign it a generic "AI" vector, missing the specific nuances. In 2025, we solve this with **Hybrid Search** (using BM25 to catch the specific keyword) or **Cross-Encoder Reranking**, which is better at handling out-of-distribution vocabulary by looking at the query and document tokens simultaneously.
+Embeddings rely on the semantic space learned during training. If a user query uses a newer term (e.g., a model name released after the embedding model's cutoff) that wasn't in the embedding model's training set, the model might assign it a generic "AI" vector, missing the specific nuances. The standard fix is **Hybrid Search** (using BM25 to catch the specific keyword) plus **Cross-Encoder Reranking**, which handles out-of-distribution vocabulary better by looking at query and document tokens simultaneously.
 
 ### Q: Why would you choose a Matryoshka model for a 1-billion-vector index?
 

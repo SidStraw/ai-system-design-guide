@@ -1,13 +1,13 @@
 # Tree-of-Thought (ToT)
 
-Tree-of-Thought (ToT) is an advanced prompting architecture where a model explores multiple reasoning paths, evaluates them, and "backtracks" if a path leads to a dead end. In 2025, this is the blueprint for autonomous research agents.
+Tree-of-Thought (ToT) is an advanced prompting architecture where a model explores multiple reasoning paths, evaluates them, and "backtracks" if a path leads to a dead end. It is the blueprint behind modern autonomous research agents.
 
 ## Table of Contents
 
 - [The Tree vs. The Chain](#tree-vs-chain)
 - [The ToT Loop: Propose, Evaluate, Search](#tot-loop)
 - [Self-Correction & Backtracking](#self-correction)
-- [ToT in 2025: MCTS and Search-as-Service](#mcts)
+- [MCTS and Search-as-Service](#mcts)
 - [Interview Questions](#interview-questions)
 - [References](#references)
 
@@ -52,11 +52,11 @@ In a linear chain, if the model makes a mistake in Step 1, every subsequent step
 
 ---
 
-## ToT in 2025: MCTS and Search-as-Service
+## MCTS and Search-as-Service
 
-In late 2025, ToT has evolved into **Monte Carlo Tree Search (MCTS)** for LLMs.
+ToT has evolved into **Monte Carlo Tree Search (MCTS)** for LLMs.
 - **Search-time Compute Scaling**: Instead of one large prompt, we use 100 small prompts to "search" for the best answer.
-- **RAD-T (Reasoning-as-Data-Tree)**: Many teams now use specialized "Searcher" models (like Gemini 3 Ultra) that are natively trained to manage these branches.
+- **RAD-T (Reasoning-as-Data-Tree)**: Specialized "Searcher" models (Gemini 3.1 Pro Deep Think, GPT-5.5 extended thinking, Claude Opus 4.7) are natively trained to manage these branches.
 
 ---
 
@@ -70,7 +70,7 @@ ToT is superior when the problem has a "large search space" and requires "global
 ### Q: What is the main drawback of Tree-of-Thought in a consumer-facing app?
 
 **Strong answer:**
-The primary drawback is **Exponential Cost and Latency**. Exploring 3 branches to a depth of 5 can require 15-20 individual LLM calls. In a consumer app, this could result in a 30-second delay and a $0.50 cost for a single query. In 2025, we mitigate this by using a "Hybrid Model": Use ToT for high-stakes offline tasks (like generating golden datasets or security audits) and distill those results into a fast, linear model for real-time interaction.
+The primary drawback is **Exponential Cost and Latency**. Exploring 3 branches to a depth of 5 can require 15-20 individual LLM calls. In a consumer app, this could result in a 30-second delay and a $0.50 cost for a single query. The standard mitigation is a "Hybrid Model": use ToT for high-stakes offline tasks (like generating golden datasets or security audits) and distill those results into a fast, linear model for real-time interaction.
 
 ---
 

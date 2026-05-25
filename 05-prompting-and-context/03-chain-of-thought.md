@@ -1,6 +1,6 @@
 # Chain-of-Thought (CoT)
 
-Chain-of-Thought (CoT) is the technique of encouraging an LLM to generate intermediate reasoning steps before providing a final answer. In late 2025, this has evolved from a simple prompt phrase to the CORE architectural feature of reasoning models.
+Chain-of-Thought (CoT) is the technique of encouraging an LLM to generate intermediate reasoning steps before providing a final answer. It has evolved from a simple prompt phrase into the core architectural feature of reasoning models (o1, DeepSeek-R2, Claude Opus 4.7 with extended thinking, GPT-5.5 with extended thinking).
 
 ## Table of Contents
 
@@ -32,9 +32,9 @@ Standard LLMs are "Next Token Predictors." For complex math or logic, a single p
 
 ---
 
-## The Rise of "Thinking" Models (Dec 2025)
+## The Rise of "Thinking" Models
 
-Models like **OpenAI o1** and **DeepSeek-R1** have CoT "baked in" via Reinforcement Learning (RL).
+Models like **OpenAI o1/GPT-5.5 extended thinking**, **DeepSeek-R2**, and **Claude Opus 4.7** have CoT "baked in" via Reinforcement Learning (RL).
 
 1. **System-Level CoT**: The model doesn't just "print" reasoning; it has a dedicated "Thinking Window."
 2. **Hidden CoT**: In many enterprise versions, the reasoning chain is hidden from the user but verifiable by the system to prevent prompt injection or "thought leakage."
@@ -44,7 +44,7 @@ Models like **OpenAI o1** and **DeepSeek-R1** have CoT "baked in" via Reinforcem
 
 ## Self-Correction and Verification
 
-In 2025, we no longer trust a single Chain-of-Thought. We use **Self-Verification**.
+Production pipelines no longer trust a single Chain-of-Thought. They layer in **Self-Verification**.
 
 ```markdown
 # Process
@@ -53,7 +53,7 @@ In 2025, we no longer trust a single Chain-of-Thought. We use **Self-Verificatio
 3. If errors: "Correct the logic and provide Answer B."
 ```
 
-**The 2025 Nuance**: This is now integrated into **Execution-Verified CoT** for coding, where the model writes the logic, runs the code, and corrects itself if the code fails.
+**Nuance**: This is now integrated into **Execution-Verified CoT** for coding, where the model writes the logic, runs the code, and corrects itself if the code fails.
 
 ---
 

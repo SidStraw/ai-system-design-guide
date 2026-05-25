@@ -1,15 +1,15 @@
-# LlamaIndex (Dec 2025)
+# LlamaIndex
 
-While LangChain focuses on "Orchestration," **LlamaIndex** is the master of **Data-Centric AI**. In late 2025, it has evolved from a RAG library into a framework for **Workflows** and **Agentic Data Manipulation**.
+While LangChain focuses on "Orchestration," **LlamaIndex** is the master of **Data-Centric AI**. It has evolved from a RAG library into a framework for **Workflows** and **Agentic Data Manipulation**.
 
 ## Table of Contents
 
 - [The Data Framework Philosophy](#philosophy)
-- [LlamaIndex Workflows (Dec 2025)](#workflows)
+- [LlamaIndex Workflows](#workflows)
 - [Advanced Indexing: Beyond Vector Search](#indexing)
 - [LlamaCloud and Managed Ingestion](#llamacloud)
 - [Agents as Tools](#agents-as-tools)
-- [LlamaIndex Workflows: Event-Driven Application Framework (2026)](#llamaindex-workflows-event-driven-application-framework-2026)
+- [LlamaIndex Workflows: Event-Driven Application Framework](#llamaindex-workflows-event-driven-application-framework)
 - [Interview Questions](#interview-questions)
 - [References](#references)
 
@@ -23,14 +23,14 @@ LlamaIndex is built on the belief that **the data is more important than the mod
 
 ---
 
-## LlamaIndex Workflows (Dec 2025 Tech)
+## LlamaIndex Workflows
 
 In late 2024, LlamaIndex introduced **Workflows**, its answer to LangGraph.
 - **Event-Driven Architecture**: Nodes communicate by emitting `Events`.
 - **Concurrency**: Workflows are natively async and handle large-scale parallel data processing better than linear chains.
 
 ```python
-# Conceptual 2025 Workflow
+# Conceptual Workflow
 class RAGWorkflow(Workflow):
     @step
     async def ingest(self, ev: StartEvent) -> RetrievalEvent:
@@ -52,7 +52,7 @@ class RAGWorkflow(Workflow):
 
 For enterprise scale, LlamaIndex focuses on **LlamaCloud**.
 - **Managed Ingestion**: Handling PDF parsing, OCR, and Table extraction as a service.
-- **Parsing as a Model**: Using Vision-LLMs (like Gemini 3) to "Understand" layouts instead of using rule-based parsers.
+- **Parsing as a Model**: Using Vision-LLMs (Gemini 3.1 Pro, Claude Opus 4.7, GPT-5.5) to "Understand" layouts instead of using rule-based parsers.
 
 ---
 
@@ -64,13 +64,13 @@ LlamaIndex treats agents as **high-level retrievers**.
 
 ---
 
-## LlamaIndex Workflows: Event-Driven Application Framework (2026)
+## LlamaIndex Workflows: Event-Driven Application Framework
 
-The pitch in 2024 was "Workflows is our LangGraph." The pitch in 2026 is different: Workflows is a general-purpose event-driven framework for any AI application, with RAG as one possible use. The 1.x line of `llama-index-core` ships Workflows as the primary application surface, while the index / retriever classes have moved into integration packages around it ([LlamaIndex workflows docs](https://developers.llamaindex.ai/python/framework/understanding/workflows/)).
+The pitch in 2024 was "Workflows is our LangGraph." The pitch today is different: Workflows is a general-purpose event-driven framework for any AI application, with RAG as one possible use. The 1.x line of `llama-index-core` ships Workflows as the primary application surface, while the index / retriever classes have moved into integration packages around it ([LlamaIndex workflows docs](https://developers.llamaindex.ai/python/framework/understanding/workflows/)).
 
 ### What Changed Architecturally
 
-| Dimension | Pre-Workflows LlamaIndex | Workflows-First LlamaIndex (2026) |
+| Dimension | Pre-Workflows LlamaIndex | Workflows-First LlamaIndex |
 |-----------|--------------------------|-----------------------------------|
 | Primary abstraction | Query engine, chat engine | `Workflow` class with `@step` methods |
 | Control flow | Linear; nested query engines | Steps consume / emit typed `Event` subclasses |
@@ -152,7 +152,7 @@ When LangGraph wins:
 - You need **time-travel debugging** out of the box. LlamaIndex resume is good for crash recovery but not for branching from an arbitrary historical state the way LangGraph checkpoints do.
 - You are already on the LangSmith eval stack and want trace-level integration without bridging.
 
-### Real-World Posture in 2026
+### Real-World Posture
 
 Plenty of senior architectures run both: LlamaIndex Workflows for the data plane (ingestion, indexing, hybrid retrieval, reranking) wrapped as a tool, and LangGraph for the agent control plane on top. This is the pattern called out in the [AIMultiple framework comparison](https://research.aimultiple.com/agentic-ai-frameworks/) and in LlamaIndex's own [hybrid integration cookbook](https://developers.llamaindex.ai/python/framework/understanding/workflows/).
 

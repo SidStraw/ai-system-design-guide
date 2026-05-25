@@ -1,6 +1,6 @@
-# Agentic Memory with Mem0 (Dec 2025)
+# Agentic Memory with Mem0
 
-In late 2025, **Mem0** (and its successors) represents the shift from "passive logs" to **Active Memory**. These systems automatically digest conversations to create a persistent, evolving user profile that enhances personalization across every interaction.
+**Mem0** (and its peers Zep, Letta, Cognee) represents the shift from "passive logs" to **Active Memory**. These systems automatically digest conversations to create a persistent, evolving user profile that enhances personalization across every interaction. Pick Mem0 for the broadest standalone memory layer; Zep for temporal-aware production pipelines; Letta for long-running agents that need OS-style paging; Cognee for knowledge-graph-first RAG.
 
 ## Table of Contents
 
@@ -33,7 +33,7 @@ Instead of storing "The user said they like blue coffee mugs," Mem0 stores the f
 
 ## Self-Updating Memories
 
-Memory in 2025 is **Recursive**.
+Modern agentic memory is **Recursive**.
 - If a user mentions a task: "I need to finish the budget by Friday."
 - On Thursday, the agent should recall this and ask: "How is the budget coming along?"
 - This is achieved by **Periodic Reflection**. The memory layer runs a job once a day to review active "Goal Nodes" and generate "Proactive Reminders."
@@ -45,7 +45,7 @@ Memory in 2025 is **Recursive**.
 In a state-machine architecture, Mem0 acts as an **External State Provider**.
 
 ```python
-# Conceptual 2025 LangGraph node
+# Conceptual LangGraph node
 def memory_node(state: AgentState):
     # Pull user preferences from Mem0
     user_prefs = mem0.get(user_id=state.user_id)

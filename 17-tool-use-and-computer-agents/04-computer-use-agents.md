@@ -1,4 +1,4 @@
-# Computer-Use Agents (April 2026)
+# Computer-Use Agents
 
 Computer-use agents let an LLM see a screen, reason about it, and act through mouse clicks and keystrokes -- the same way a human operates a computer. Instead of calling structured APIs, the model works with raw pixels. This chapter covers how they work, when they beat traditional automation, and how to design production systems around them.
 

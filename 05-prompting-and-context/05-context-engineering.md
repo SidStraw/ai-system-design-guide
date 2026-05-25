@@ -1,12 +1,12 @@
 # Context Engineering
 
-Context engineering is the science of filling the LLM's finite "working memory" with the most valuable tokens. In 2025-2026, with context windows reaching 1M+ tokens and models gaining Extended Thinking, the focus has shifted from "fitting data" to "ranking relevance" and "managing compute budget."
+Context engineering is the science of filling the LLM's finite "working memory" with the most valuable tokens. With context windows now reaching 1M+ tokens (Claude Sonnet 4.6, Gemini 3.1 Pro, GPT-5.5) and models gaining Extended Thinking, the focus has shifted from "fitting data" to "ranking relevance" and "managing compute budget."
 
 ## Table of Contents
 
 - [The Long Context Paradigm (1M+ Tokens)](#long-context)
-- [Extended Thinking & Budget Tokens (2026)](#extended-thinking)
-- [Lost-in-the-Middle (2026 Update)](#lost-in-the-middle)
+- [Extended Thinking & Budget Tokens](#extended-thinking)
+- [Lost-in-the-Middle](#lost-in-the-middle)
 - [Context Budgeting & Token Awareness](#budgeting)
 - [Prompt Caching Economics](#prompt-caching)
 - [Contextual Compression (RAD-L)](#compression)
@@ -17,18 +17,18 @@ Context engineering is the science of filling the LLM's finite "working memory" 
 
 ## The Long Context Paradigm (1M+ Tokens)
 
-Models like Gemini 2.0 Flash (1M) and Claude 3.7 Sonnet (200K) have massive context windows.
+Models like Gemini 3.1 Pro (1M), Claude Sonnet 4.6 (1M), Claude Opus 4.7 (1M), and GPT-5.5 (1M) have massive context windows.
 
-**2026 Insight**: "Context is the new RAG."
+**Insight**: "Context is the new RAG."
 For datasets under 100,000 documents, it is often more accurate and faster to put the entire dataset in the context window than to use an external vector database. This is called **"In-Context RAG."**
 
 ---
 
-## Extended Thinking & Budget Tokens (2026)
+## Extended Thinking & Budget Tokens
 
-In 2026, two frontier models offer **controllable internal reasoning** before generating a response:
+Several frontier models now offer **controllable internal reasoning** before generating a response:
 
-### Claude 3.7 Sonnet — Extended Thinking
+### Claude (Sonnet 4.6, Opus 4.7): Extended Thinking
 
 ```python
 response = client.messages.create(
@@ -100,10 +100,10 @@ def smart_generate(query: str) -> str:
 
 ---
 
-## Lost-in-the-Middle (2026 Update)
+## Lost-in-the-Middle
 
 In 2023, models lost accuracy for information in the middle of the prompt.
-**The 2026 Status**: Frontier models (Claude 3.7 Sonnet, Gemini 2.0 Flash) perform significantly better, but the **Attention Gradient** still exists.
+**Status**: Frontier models (Claude Sonnet 4.6, Claude Opus 4.7, Gemini 3.1 Pro, GPT-5.5) perform significantly better, but the **Attention Gradient** still exists.
 - **Best Practice**: Place critical instructions and gold-standard examples at the **very beginning** and **very end** of your prompt. Middle = raw data/knowledge chunks.
 - **Use chunk ordering**: Rerank retrieved documents so most relevant are first and last.
 
@@ -124,7 +124,7 @@ Every token costs money and increases TTFT (Time to First Token).
 
 ## Prompt Caching Economics
 
-In late 2025, almost all major providers (OpenAI, DeepSeek, Anthropic) support **Prefix Caching**.
+Almost all major providers (OpenAI, DeepSeek, Anthropic, Google) support **Prefix Caching**.
 
 - **The Crossover**: If you reuse a 100k token context (e.g., a codebase) for more than 2 requests, the caching discount effectively makes it cheaper than RAG.
 - **Cache Hits**: $0.05 / 1M tokens.
@@ -144,7 +144,7 @@ For extremely long contexts (10M+), we use **Reasoning-Aware Deletion (RAD-L)**.
 
 ## Interview Questions
 
-### Q: When would you choose Long Context over RAG in 2025?
+### Q: When would you choose Long Context over RAG?
 
 **Strong answer:**
 I choose Long Context when high-fidelity retrieval and cross-document reasoning are critical. RAG suffers from "Retrieval Gap"—if your vector search misses the relevant chunk, the model never sees it. Long Context (up to 2M tokens) provides 100% recall. Specifically, I'd use it for codebase analysis, legal document review, and multi-file financial auditing. I'd stick to RAG for dynamic web-scale data or billion-document datasets that exceed any context window.

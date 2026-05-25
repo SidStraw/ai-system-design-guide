@@ -1,12 +1,12 @@
 # Prompt Engineering Fundamentals
 
-Prompt engineering is the design of inputs to steer LLM behavior. In 2025, it has evolved from "trial and error" to a disciplined architectural practice.
+Prompt engineering is the design of inputs to steer LLM behavior. It has evolved from "trial and error" to a disciplined architectural practice, with frameworks like DSPy treating it as a compilation problem rather than a writing exercise.
 
 ## Table of Contents
 
 - [The Core Philosophy (Intent + Constraint)](#core-philosophy)
 - [The Instruction Hierarchy](#instruction-hierarchy)
-- [Role Prompting (Dec 2025 Standard)](#role-prompting)
+- [Role Prompting](#role-prompting)
 - [Instruction Clarity and Delimiters](#clarity)
 - [Zero-Shot vs. Few-Shot Efficiency](#zero-vs-few)
 - [Interview Questions](#interview-questions)
@@ -21,7 +21,7 @@ Effective prompting is about maximizing **Intent Disclosure** while minimizing *
 1. **Intent**: Precisely what the model should do.
 2. **Constraint**: Exactly what the model should *avoid* (Safety, Tone, Format).
 
-**2025 Principle**: "Prompting is Programming in Natural Language." Treat your prompts like code (Version control, Unit tests).
+**Principle**: "Prompting is Programming in Natural Language." Treat your prompts like code (Version control, Unit tests).
 
 ---
 
@@ -29,16 +29,16 @@ Effective prompting is about maximizing **Intent Disclosure** while minimizing *
 
 Production systems use a tiered message structure:
 
-| Role | Responsibility | 2025 Nuance |
-|------|----------------|-------------|
+| Role | Responsibility | Nuance |
+|------|----------------|--------|
 | **System** | High-level rules, persona, safety. | Stickiest for frontier models (H-rank). |
-| **Developer** | Technical overrides (e.g., formatting). | Newest role for "un-opinionated" models. |
+| **Developer** | Technical overrides (e.g., formatting). | Newer role for "un-opinionated" models. |
 | **User** | The specific, dynamic query. | Susceptible to injection; must be isolated. |
 | **Assistant**| History of previous turns. | Source of "recency bias." |
 
 ---
 
-## Role Prompting (Dec 2025 Standard)
+## Role Prompting
 
 Assigning a persona is no longer just "You are a teacher." It is a **Capabilities Anchor**.
 
@@ -51,7 +51,7 @@ Assigning a persona is no longer just "You are a teacher." It is a **Capabilitie
 
 ## Instruction Clarity and Delimiters
 
-Models in 2025 process massive contexts. Delimiters help the model distinguish between instructions and data.
+Current frontier models process massive contexts. Delimiters help the model distinguish between instructions and data.
 
 ```markdown
 # Instructions
@@ -78,7 +78,7 @@ $USER_INPUT_HERE
 | **Accuracy**| Variable | High (Format stability) |
 | **Use Case**| Simple chat, Summarization | Specific formatting, Subtle logic |
 
-**2025 Strategy**: If the model is a "Frontier Reasoning" model (o1, DeepSeek-R1), use **Zero-Shot + Clear Chain-of-Thought**. If it's a small model (8B), use **Few-Shot** to ground it.
+**Strategy**: If the model is a "Frontier Reasoning" model (Claude Opus 4.7, GPT-5.5 with extended thinking, DeepSeek-R2), use **Zero-Shot + Clear Chain-of-Thought**. If it's a small model (8B), use **Few-Shot** to ground it.
 
 ---
 
@@ -92,7 +92,7 @@ System prompts are typically prioritized by the model's architectural training (
 ### Q: What is the "Step-by-Step" prompt optimization?
 
 **Strong answer:**
-In 2022, "Think step by step" was a magic phrase to trigger Chain-of-Thought (CoT). In 2025, we use **Programmatic CoT**. Instead of a vague phrase, we provide explicit reasoning milestones: "1. Identify the core problem. 2. List the constraints. 3. Propose 3 solutions. 4. Select the best one and justify." This provides a "deterministic path" for the model's internal attention, leading to much more reliable outputs for production agents.
+In 2022, "Think step by step" was a magic phrase to trigger Chain-of-Thought (CoT). The modern approach is **Programmatic CoT**. Instead of a vague phrase, we provide explicit reasoning milestones: "1. Identify the core problem. 2. List the constraints. 3. Propose 3 solutions. 4. Select the best one and justify." This provides a "deterministic path" for the model's internal attention, leading to much more reliable outputs for production agents.
 
 ---
 

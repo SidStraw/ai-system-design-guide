@@ -2,7 +2,7 @@
 
 A topic-organized bank of 110+ AI system design interview questions with model answers, follow-ups, and signals strong candidates show. Updated through May 2026.
 
-This chapter provides a comprehensive collection of interview questions organized by topic. Each question includes the depth of answer expected and key points that strong candidates cover. Pair this with the [Answer Frameworks](02-answer-frameworks.md) (the meta-skill that turns memorized answers into fluent ones) and the [May 2026 Job Market Trends](06-job-market-trends-2026.md) (the hiring context that shapes what gets asked right now).
+This chapter provides a comprehensive collection of interview questions organized by topic. Each question includes the depth of answer expected and key points that strong candidates cover. Pair this with the [Answer Frameworks](02-answer-frameworks.md) (the meta-skill that turns memorized answers into fluent ones), the [FAQ](07-faq.md) (short answers to the most-asked AI engineering questions), and the [Job Market Trends](06-job-market-trends-2026.md) (the hiring context that shapes what gets asked right now).
 
 ## Coverage at a Glance
 
@@ -38,9 +38,7 @@ mindmap
       Drift
       Incidents
     System Design Scenarios
-    Advanced Dec 2025
-    Advanced Mar 2026
-    Advanced May 2026
+    Advanced sets (frontier topics)
 ```
 
 ## Table of Contents
@@ -3120,10 +3118,10 @@ response = client.messages.create(
 - I need 200K context (o3 is also 200K, but Claude's reliability at long context is more tested in production)
 - I'm building with MCP tools - Claude's ecosystem is more mature
 
-**Cost reality at March 2026 prices:**
-- o3: $10/$40 per 1M input/output
-- Claude 3.7 Sonnet: $3/$15 per 1M
-- For volume workloads, Claude 3.7 is significantly cheaper at comparable quality for most software engineering tasks."
+**Cost reality (always verify on the provider pricing page):**
+- Frontier reasoning tier (GPT-5.5 reasoning, Claude Opus 4.7): $10-$15 / $40-$75 per 1M input/output
+- Production mid-tier (Claude Sonnet 4.6): $3 / $15 per 1M
+- For volume workloads, the mid-tier is significantly cheaper at comparable quality for most software engineering tasks."
 
 ---
 
@@ -4386,7 +4384,7 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 **Tier 3 - Edge / specialty / experimental:**
 - **Tenstorrent Galaxy Blackhole (GA April 2026):** $110K starts for 32-chip server, 23 PFLOPS BlockFP8, RISC-V open-source. Worth piloting if you want to hedge against the NVIDIA-everything trap.
-- **Groq LPU (post-NVIDIA acqui-hire Dec 2025):** Custom inference silicon. Status of the standalone Groq cloud is uncertain post-acquisition - verify before committing.
+- **Groq LPU (post-NVIDIA acquisition):** Custom inference silicon. Status of the standalone Groq cloud is uncertain post-acquisition - verify before committing.
 - **SambaNova:** Intel reportedly signed term sheet to acquire. Roadmap uncertain.
 
 **My recommended strategy for a 6-month horizon:**
@@ -4416,7 +4414,7 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 **Pinecone namespaces (logical isolation within a shared index):**
 - **Fails first under audit:** Cross-namespace leakage is impossible in theory but hard to *prove* to an auditor without external evidence. There's no per-tenant ACL on the storage layer - just an application-layer namespace parameter.
-- **Resilient under noisy neighbor:** Pinecone's dedicated read nodes (public preview as of late 2025) let you isolate high-QPS tenants without forking indexes.
+- **Resilient under noisy neighbor:** Pinecone's dedicated read nodes (GA since late 2025) let you isolate high-QPS tenants without forking indexes.
 - **My take:** Acceptable for low-regulation B2B. Not acceptable for HIPAA / FedRAMP without compensating controls.
 
 **Weaviate per-tenant shards (physical isolation within a class):**

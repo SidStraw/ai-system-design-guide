@@ -1,12 +1,12 @@
-# Chunking Strategies (Dec 2025)
+# Chunking Strategies
 
-Chunking is the process of splitting a document into discrete segments for retrieval. In late 2025, we have moved beyond "blind fixed-size splits" to **Structure-Aware & Semantic Segments**.
+Chunking is the process of splitting a document into discrete segments for retrieval. Production pipelines have moved beyond blind fixed-size splits to **structure-aware and semantic segments**, with newer techniques like late chunking and contextual prepending now in the mainstream toolkit.
 
 ## Table of Contents
 
 - [The Retrieval-Context Tension](#tension)
 - [Recursive Structure Splitting](#recursive)
-- [Semantic Chunking (The 2025 Nuance)](#semantic)
+- [Semantic Chunking](#semantic)
 - [Hierarchical (Parent-Child) Chunking](#hierarchical)
 - [Content-Specific Strategies (Code, PDF, Tables)](#content-specific)
 - [Interview Questions](#interview-questions)
@@ -23,7 +23,7 @@ Chunking is the process of splitting a document into discrete segments for retri
 | **Storage** | High (More vectors) | Low (Fewer vectors) |
 | **Latency** | Low (Fast search) | High (Heavy retrieval) |
 
-**2025 Rule**: Smaller is better for *finding*, but larger is better for *thinking*. Use **Hierarchical Chunking** to get both.
+**Rule**: Smaller is better for *finding*, but larger is better for *thinking*. Use **Hierarchical Chunking** to get both.
 
 ---
 
@@ -32,11 +32,11 @@ Chunking is the process of splitting a document into discrete segments for retri
 Instead of splitting at every 500 characters, we split at logical boundaries:
 `[Double Newline] > [Single Newline] > [Period] > [Space]`.
 
-**2025 Best Practice**: Use **Markdown-Aware Splitting**. If a document has `#` headers, ensure the header is prepended to *every* child chunk to preserve context (Contextual Chunking).
+**Best practice**: Use **Markdown-Aware Splitting**. If a document has `#` headers, ensure the header is prepended to *every* child chunk to preserve context (Contextual Chunking).
 
 ---
 
-## Semantic Chunking (The 2025 Nuance)
+## Semantic Chunking
 
 Semantic chunking uses an embedding model to detect "topic shifts."
 
@@ -44,13 +44,13 @@ Semantic chunking uses an embedding model to detect "topic shifts."
 2. Group sentences as long as their embedding similarity stays above a threshold (e.g., 0.82).
 3. If similarity drops, start a new chunk.
 
-**Nuance**: In 2025, we use **Cross-Encoder Segmenters**. A tiny model scans the text and predicts a "Separator token" at every semantic break. This is 10x more accurate than cosine-similarity thresholding.
+**Nuance**: Production pipelines increasingly use **Cross-Encoder Segmenters**. A tiny model scans the text and predicts a "Separator token" at every semantic break. This is 10x more accurate than cosine-similarity thresholding.
 
 ---
 
 ## Hierarchical (Parent-Child) Chunking
 
-This is the industry standard for production RAG in 2025.
+This is the industry standard for production RAG.
 
 - **Process**: 
   1. Create "Parent" chunks of 1,500 tokens.
@@ -82,7 +82,7 @@ This is the industry standard for production RAG in 2025.
 ### Q: Why is fixed-size chunking with overlap problematic for production systems?
 
 **Strong answer:**
-Fixed-size chunking is "content-blind." It frequently splits sentences mid-thought, breaks mathematical equations, and separates headers from their descriptive text. While "Overlap" (e.g., 10%) mitigates this by duplicating 10% of text across chunks, it doesn't solve the core issue: the model's attention is forced to reconstruct meaning from fragmented strings. In 2025, we prefer **Semantic or Logical Chunking** because it ensures each vector represents a "Complete Semantic Unit," leading to significantly higher retrieval precision.
+Fixed-size chunking is "content-blind." It frequently splits sentences mid-thought, breaks mathematical equations, and separates headers from their descriptive text. While "Overlap" (e.g., 10%) mitigates this by duplicating 10% of text across chunks, it doesn't solve the core issue: the model's attention is forced to reconstruct meaning from fragmented strings. Modern pipelines prefer **Semantic or Logical Chunking** because it ensures each vector represents a "Complete Semantic Unit," leading to significantly higher retrieval precision.
 
 ### Q: What is "Contextual Retrieval" (the Anthropic pattern)?
 

@@ -44,7 +44,7 @@ flowchart TB
     end
 
     subgraph Generate["Answer Generation"]
-        RERANK --> LLM[Claude Sonnet 4.5]
+        RERANK --> LLM[Claude Sonnet 4.6]
         LLM --> CITE[Add Citations]
         CITE --> GAP{Knowledge Gap?}
         GAP -->|Yes| ADMIT[Admit: 'No info found']

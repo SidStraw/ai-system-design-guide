@@ -1,6 +1,6 @@
-# Error Handling and Recovery (Dec 2025)
+# Error Handling and Recovery
 
-Agents fail in non-deterministic ways. In late 2025, error handling has moved from "Try-Catch blocks" to **Agentic Self-Correction** and **Stateful Rollbacks**.
+Agents fail in non-deterministic ways. Error handling has moved from "Try-Catch blocks" to **Agentic Self-Correction** and **Stateful Rollbacks**, with frameworks like LangGraph and Microsoft Agent Framework providing native checkpoint/resume primitives.
 
 ## Table of Contents
 
@@ -25,10 +25,10 @@ Agents fail in non-deterministic ways. In late 2025, error handling has moved fr
 
 ## Self-Correction Loops
 
-In 2025, errors are treated as **Tokens of Information**.
+Errors are now treated as **Tokens of Information**.
 
 - **Pattern**: When a tool fails, the error message is NOT just logged; it is fed back to the model as a prompt: *"Action failed with error: X. Reflect on why this happened and provide an alternative strategy."*
-- **Reasoning Models (o1/R1)**: These models excel at this because they "internalize" the error during their hidden Chain-of-Thought, leading to a much higher one-shot recovery rate.
+- **Reasoning Models** (Claude Opus 4.7 extended thinking, GPT-5.5 reasoning, DeepSeek-R2): These models excel at this because they "internalize" the error during their hidden Chain-of-Thought, leading to a much higher one-shot recovery rate.
 
 ---
 
@@ -45,7 +45,7 @@ For long-running agents, an error in Step 9 shouldn't crash the whole project.
 
 Infinite loops are the #1 cost-sink in agentic systems.
 
-**The 2025 Solution**: **Counter-Based Intervention**.
+**Solution**: **Counter-Based Intervention**.
 1. If the same `(Tool, Args)` tuple is seen 3 times in one session, the orchestrator interrupts the model.
 2. It injects a mandatory **"Pivot Instruction"**: *"You have tried searching for 'X' three times. This path is dead. You MUST try a different tool or admit you are stuck."*
 
@@ -53,7 +53,7 @@ Infinite loops are the #1 cost-sink in agentic systems.
 
 ## Graceful Degradation
 
-If the high-reasoning agent (o1) keeps failing, we fall back to:
+If the high-reasoning agent (Claude Opus 4.7, GPT-5.5 reasoning) keeps failing, we fall back to:
 - **Simplified Agent**: A smaller model with fewer, more reliable tools.
 - **RAG-only Mode**: Disable actions and just provide a conceptual answer based on the knowledge base.
 - **Human Escalation**: (See the next chapter).

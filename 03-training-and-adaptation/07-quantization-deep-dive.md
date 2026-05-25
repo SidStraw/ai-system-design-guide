@@ -1,12 +1,12 @@
 # Quantization Deep Dive
 
-Quantization is the process of reducing the precision of model weights (e.g., from 16-bit to 4-bit) to save memory and increase inference speed. In 2025, this is the primary tool for deploying large models on consumer hardware.
+Quantization is the process of reducing the precision of model weights (e.g., from 16-bit to 4-bit) to save memory and increase inference speed. This is the primary tool for deploying large models on consumer and single-GPU hardware.
 
 ## Table of Contents
 
 - [The Precision-Performance Tradeoff](#precision-performance)
 - [Quantization Methods (NF4, GPTQ, AWQ)](#methods)
-- [GGUF vs. EXL2 (Late 2025 Standard)](#formats)
+- [GGUF vs. EXL2](#formats)
 - [KV Cache Quantization (The VRAM Saver)](#kv-cache)
 - [Quantization-Aware Fine-Tuning](#qaft)
 - [Interview Questions](#interview-questions)
@@ -27,7 +27,7 @@ Traditional models use **BF16** (16-bit). Quantization seeks to reduce this to *
 
 ---
 
-## Quantization Methods (Dec 2025)
+## Quantization Methods
 
 ### 1. NF4 (NormalFloat4)
 The gold standard for fine-tuning (QLoRA). It assumes weights follow a normal distribution and maps them to a set of 16 values.
@@ -36,7 +36,7 @@ The gold standard for fine-tuning (QLoRA). It assumes weights follow a normal di
 Instead of quantizing all weights equally, AWQ identifies the **1% of "salient" weights** that are most important for quality and keeps them in higher precision.
 - **Pro**: Better accuracy than GPTQ.
 
-### 3. FP8 (The 2025 Multi-Node Standard)
+### 3. FP8 (Multi-Node Standard)
 Hardware-native quantization supported by Nvidia's Transformer Engine.
 - **Why it wins**: It provides the speed of Int8 but with the dynamic range of Float16, making it stable for both training and inference.
 
@@ -51,7 +51,7 @@ Hardware-native quantization supported by Nvidia's Transformer Engine.
 
 ### EXL2 (ExLlamaV2)
 - **Deployment**: GPU-only (Nvidia).
-- **Pros**: The **fastest 4-bit format in 2025**. Significant performance boost over AutoGPTQ/AWQ.
+- **Pros**: The **fastest 4-bit format on Nvidia GPUs**. Significant performance boost over AutoGPTQ/AWQ.
 - **Cons**: Inflexible (Nvidia only).
 
 ---
@@ -63,7 +63,7 @@ In long-context RAG (1M+ tokens), the **KV Cache** often consumes more VRAM than
 - **BF16 KV Cache**: 2M tokens ≈ 32GB VRAM (on 8B model).
 - **FP8/Int4 KV Cache**: 2M tokens ≈ 8GB - 16GB VRAM.
 
-**2025 Nuance**: Modern serving frameworks (vLLM, SGLang) now support **Streaming Quantization** where the KV cache is compressed on-the-fly, allowing 4x higher concurrency on the same GPU.
+**Nuance**: Modern serving frameworks (vLLM, SGLang, TensorRT-LLM) now support **Streaming Quantization** where the KV cache is compressed on-the-fly, allowing 4x higher concurrency on the same GPU.
 
 ---
 
@@ -71,7 +71,7 @@ In long-context RAG (1M+ tokens), the **KV Cache** often consumes more VRAM than
 
 Instead of quantizing a model *after* it's trained (Post-training Quantization), QAT simulates quantization *during* the training process.
 - **Result**: The model learns to compensate for the lost precision.
-- **Status in 2025**: Mandatory for models smaller than 3B parameters to remain useful.
+- **Status**: Mandatory for models smaller than 3B parameters to remain useful at 4-bit.
 
 ---
 

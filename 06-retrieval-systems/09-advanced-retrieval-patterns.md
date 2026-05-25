@@ -1,6 +1,6 @@
-# Advanced Retrieval Patterns (Dec 2025)
+# Advanced Retrieval Patterns
 
-Beyond the basics, production RAG systems use specialized patterns to handle complex query-document gaps. In late 2025, these patterns are the "Secret Sauce" of high-precision search.
+Beyond the basics, production RAG systems use specialized patterns to handle complex query-document gaps. These patterns are the "secret sauce" of high-precision search and are increasingly bundled into managed RAG offerings.
 
 ## Table of Contents
 
@@ -8,7 +8,7 @@ Beyond the basics, production RAG systems use specialized patterns to handle com
 - [Hypothetical Document Embeddings (HyDE)](#hyde)
 - [Contextual Retrieval (The Anthropic Pattern)](#contextual)
 - [Iterative Document Enrichment](#enrichment)
-- [In-Context Reranking (The 2025 Standard)](#reranking)
+- [In-Context Reranking](#reranking)
 - [Interview Questions](#interview-questions)
 - [References](#references)
 
@@ -19,8 +19,8 @@ Beyond the basics, production RAG systems use specialized patterns to handle com
 Complex user queries are often "Compound Queries."
 - **User**: "Compare our Q3 vs Q4 revenue and explain the drop."
 - **Decomposition**:
-  1. "Q3 Revenue 2025"
-  2. "Q4 Revenue 2025"
+  1. "Q3 Revenue"
+  2. "Q4 Revenue"
   3. "Reasons for Q4 revenue variance"
 - **Implementation**: Use an LLM to generate these 3 sub-queries, search the DB for ALL of them, and aggregate the context.
 
@@ -52,13 +52,13 @@ Queries are short; documents are long. This "Asymmetry" causes retrieval failure
 Instead of just storing the raw document, we store "Enriched" meta-data.
 - **Summary**: Store a 1-paragraph summary of the document.
 - **Q&A Generation**: Generate 5 questions this document answers and embed those *with* the document.
-- **Status**: By late 2025, most high-end RAG systems embed **"Questions"** rather than **"Answers"** to match the user's query intent.
+- **Status**: Most high-end RAG systems now embed **"Questions"** rather than **"Answers"** to match the user's query intent.
 
 ---
 
-## In-Context Reranking (The 2025 Standard)
+## In-Context Reranking
 
-With 2M context windows, we use **Rank-by-Context**.
+With 1M-2M context windows now standard (Claude Sonnet 4.6, Gemini 3.1 Pro), **Rank-by-Context** is a viable pattern.
 1. Retrieve Top 100 docs.
 2. Put all 100 in the context window.
 3. Ask the model: "Read these 100 docs and identify the 5 most relevant. Then, use those 5 to answer."
@@ -71,7 +71,7 @@ With 2M context windows, we use **Rank-by-Context**.
 ### Q: Why is HyDE (Hypothetical Document Embedding) risky for some applications?
 
 **Strong answer:**
-HyDE relies on "Hallucinating" a baseline answer to find real data. If the user's query describes something non-existent or logically impossible, the LLM will still generate a hypothetical answer. This can pull in "Incorrect but Semantically Similar" data from the database, reinforcing the model's initial hallucination. In 2025, we mitigate this by using a **Hybrid approach**: retrieve once with the real query (Keyword) and once with the HyDE query, and use **RRF** to combine them.
+HyDE relies on "Hallucinating" a baseline answer to find real data. If the user's query describes something non-existent or logically impossible, the LLM will still generate a hypothetical answer. This can pull in "Incorrect but Semantically Similar" data from the database, reinforcing the model's initial hallucination. The standard mitigation is a **Hybrid approach**: retrieve once with the real query (Keyword) and once with the HyDE query, then use **RRF** to combine them.
 
 ### Q: What is the "Asymmetric Retrieval" problem?
 

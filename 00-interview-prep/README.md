@@ -31,9 +31,7 @@ mindmap
       Answer Frameworks
       Whiteboard exercises
     Staff or Principal
-      Advanced Dec 2025 set
-      Advanced Mar 2026 set
-      Advanced May 2026 set
+      Advanced sets across recent drops
       Behavioral STAR-L
     Applied Scientist
       Model Selection questions
@@ -55,6 +53,7 @@ mindmap
 | [04-whiteboard-exercises.md](04-whiteboard-exercises.md) | System design exercises with full worked solutions. The closest simulation of a real loop. |
 | [05-behavioral-for-ai-roles.md](05-behavioral-for-ai-roles.md) | Behavioral interview prep for AI-specific scenarios: model deprecations, production hallucinations, eval culture. |
 | [06-job-market-trends-2026.md](06-job-market-trends-2026.md) | Role taxonomy, comp ranges, interview process patterns, and emerging titles (FDE, AI Eval Engineer, AI Reliability Engineer, MCP Engineer). |
+| [07-faq.md](07-faq.md) | Short, direct answers to the most-asked questions about AI engineering, RAG, agents, models, eval, inference, memory, and security. Useful for quick reference and for newcomers to the field. |
 
 ## Companion Resources
 

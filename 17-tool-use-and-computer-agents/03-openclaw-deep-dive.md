@@ -1,4 +1,4 @@
-# OpenClaw Deep Dive: The Open-Source Personal AI Agent (April 2026)
+# OpenClaw Deep Dive: The Open-Source Personal AI Agent
 
 OpenClaw is an **open-source, self-hosted personal AI agent** that executes tasks through LLMs using messaging platforms as its primary interface. You talk to it via WhatsApp, Telegram, Slack, Discord, or Signal, and it talks back -- running shell commands, controlling your browser, managing calendars, processing emails, and orchestrating multi-step workflows.
 
@@ -374,7 +374,7 @@ OpenClaw reads its configuration from `~/.openclaw/openclaw.json` (JSON5 format 
 | Anthropic (Claude) | Complex reasoning, coding tasks, long-context | Higher cost, best quality |
 | OpenAI (GPT-4o) | General-purpose, fast responses | Good balance of speed and quality |
 | Google (Gemini) | Budget-conscious testing, generous free tier | Lower reasoning quality |
-| DeepSeek | Cost-effective for high volume | Variable availability |
+| DeepSeek | Cheapest frontier-class option (V4 Flash $0.14/$0.28 per 1M, V4 Pro $0.435/$0.87 after permanent May 22, 2026 discount); 1M context; best for high-volume cache-friendly workloads | Variable availability; open weights also self-hostable |
 | Local (Ollama) | Privacy-critical, offline use | Requires powerful hardware, lower quality |
 
 ### Model Routing Within OpenClaw

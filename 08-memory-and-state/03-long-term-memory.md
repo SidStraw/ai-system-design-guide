@@ -1,6 +1,6 @@
-# Long-Term Memory (Dec 2025)
+# Long-Term Memory
 
-Long-term memory (L2 & L3) provides persistence across sessions. In late 2025, we have moved from simple "History RAG" to **Multi-Representation Stores** that combine Vector, Graph, and Relational data.
+Long-term memory (L2 & L3) provides persistence across sessions. Production stacks have moved from simple "History RAG" to **Multi-Representation Stores** that combine Vector, Graph, and Relational data. Dedicated memory services (Zep, Mem0, Letta, Cognee) now wrap these stores with conversation summarization, entity extraction, and temporal awareness out of the box.
 
 ## Table of Contents
 
@@ -36,7 +36,7 @@ Semantic memory stores **Discovered Facts** about entities.
 
 ## Hybrid Vector-Graph Storage
 
-In 2025, Staff-level engineers use **GraphRAG-style Memory**.
+Staff-level engineers use **GraphRAG-style Memory**.
 - **Vector Search** finds "Related" nodes.
 - **Graph Traversal** finds "Connected" nodes.
 - **The Win**: If I search for "Project Alpha," vector search finds the name, but graph traversal finds the 10 developers, the deadline, and the linked code repos.
@@ -65,7 +65,7 @@ Memory is a liability if it grows unchecked.
 ### Q: How do you choose between a Vector DB and a Knowledge Graph for long-term memory?
 
 **Strong answer:**
-I use **Vector DBs** for **Episodic Context** (unstructured logs, past conversations) because I need a "Fuzzy" match on meaning. I use **Knowledge Graphs** for **Structural Semantic Knowledge** (relationships, attributes, hierarchies) because I need "Deterministic" traversal. In 2025, a production system uses a **Hybrid** approach: the vector index points to graph IDs, allowing the system to find the right "Starting Node" and then traverse for high-precision context.
+I use **Vector DBs** for **Episodic Context** (unstructured logs, past conversations) because I need a "Fuzzy" match on meaning. I use **Knowledge Graphs** for **Structural Semantic Knowledge** (relationships, attributes, hierarchies) because I need "Deterministic" traversal. A production system uses a **Hybrid** approach: the vector index points to graph IDs, allowing the system to find the right "Starting Node" and then traverse for high-precision context.
 
 ### Q: What is "Catastrophic Forgetting" in the context of learned agentic memory?
 

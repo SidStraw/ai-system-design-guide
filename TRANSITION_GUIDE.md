@@ -11,7 +11,7 @@ You currently work as a software engineer, QA, PM, EM, or data engineer, and you
 
 ---
 
-## The AI Role Landscape (March 2026)
+## The AI Role Landscape
 
 Before picking a path, understand what the target roles actually are:
 
@@ -451,7 +451,7 @@ Data Eng        2–4 mo       $165–210K    RAG Data, Fine-tuning Data
 EM              6–12 mo      $200–280K    AI Engineering Manager
 ```
 
-*Salaries are US market estimates based on Levels.fyi and LinkedIn data, March 2026. Ranges vary significantly by company, location, and experience level.*
+*Salaries are US market estimates based on Levels.fyi and LinkedIn data, May 2026. Ranges vary significantly by company, location, and experience level.*
 
 ---
 

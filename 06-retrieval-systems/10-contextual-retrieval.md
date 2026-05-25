@@ -1,6 +1,6 @@
-# Contextual Retrieval (Apr 2026)
+# Contextual Retrieval
 
-Contextual Retrieval is an ingestion-time technique that solves the #1 cause of RAG failure: **chunks that lose meaning when separated from their source document**. Pioneered by Anthropic in late 2024, it has become a production standard for high-precision retrieval by 2026.
+Contextual Retrieval is an ingestion-time technique that solves the #1 cause of RAG failure: **chunks that lose meaning when separated from their source document**. Pioneered by Anthropic in late 2024, it is now a production standard for high-precision retrieval. Anthropic's own measurements show a 49% reduction in retrieval failures with hybrid search alone, and 67% reduction when combined with reranking.
 
 ## Table of Contents
 
@@ -40,7 +40,7 @@ Chunk 18: "The Enterprise plan includes SSO and audit
 
 **The problem with Chunk 17**: A user searching "How much does Acme Standard plan cost?" will likely miss this chunk because it contains no mention of "Acme," "Standard," or "plan." The embedding of "It costs $200/month" is semantically distant from the query.
 
-**2026 Insight**: Anthropic's research showed that traditional chunking causes a **5.7% retrieval failure rate** on the top-20 retrieved chunks. That means roughly 1 in 18 queries fails to retrieve the relevant information, even when it exists in the knowledge base.
+**Insight**: Anthropic's research showed that traditional chunking causes a **5.7% retrieval failure rate** on the top-20 retrieved chunks. That means roughly 1 in 18 queries fails to retrieve the relevant information, even when it exists in the knowledge base.
 
 ---
 
@@ -156,7 +156,7 @@ Dense embeddings excel at semantic similarity but fail on:
 | Contextual Embeddings + Contextual BM25 | 2.9% | **49%** |
 | Contextual Embeddings + Contextual BM25 + Reranking | 1.9% | **67%** |
 
-**2026 Takeaway**: The combination of contextual embeddings + contextual BM25 is the highest-leverage single change you can make to a RAG pipeline. Adding a reranker on top gets you to 67% fewer failures.
+**Takeaway**: The combination of contextual embeddings + contextual BM25 is the highest-leverage single change you can make to a RAG pipeline. Adding a reranker on top gets you to 67% fewer failures.
 
 ---
 
@@ -377,7 +377,7 @@ For a knowledge base of 10,000 chunks (avg 400 tokens each):
 | Claude Sonnet (balanced) | ~$0.002 | ~$20 | Very Good |
 | Claude Opus (highest quality) | ~$0.01 | ~$100 | Excellent |
 
-**2026 Best Practice**: Use Haiku or a similarly fast, cheap model for contextualization. The context strings are short and factual -- you do not need a frontier model. Combine with prompt caching for 90% cost reduction.
+**Best practice**: Use Haiku (or another fast, cheap model) for contextualization. The context strings are short and factual, so you do not need a frontier model. Combine with prompt caching for ~90% cost reduction on the document body that gets passed in repeatedly.
 
 ### When to Use Contextual Retrieval
 

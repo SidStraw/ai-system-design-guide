@@ -1,4 +1,4 @@
-# OpenCoder: AI Coding Agents Landscape (March 2026)
+# OpenCoder: AI Coding Agents Landscape
 
 The AI coding agent landscape has exploded. This guide covers open-weight coding models, agentic IDEs, open-source agents, and how to choose the right tool for your engineering workflow.
 

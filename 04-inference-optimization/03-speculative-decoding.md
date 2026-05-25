@@ -1,12 +1,12 @@
 # Speculative Decoding
 
-Speculative decoding is a 2024-2025 breakthrough that allows large Models (LLMs) to generate multiple tokens per forward pass, effectively breaking the memory-bandwidth bottleneck for sequential decoding.
+Speculative decoding is a now-standard technique that allows large Models (LLMs) to generate multiple tokens per forward pass, effectively breaking the memory-bandwidth bottleneck for sequential decoding.
 
 ## Table of Contents
 
 - [The Core Concept](#the-core-concept)
 - [Draft-Verify Paradigm](#draft-verify)
-- [Medusa & Multi-Token Heads (Dec 2025)](#medusa)
+- [Medusa & Multi-Token Heads](#medusa)
 - [Lookahead Decoding](#lookahead-decoding)
 - [Hardware-Aware Speculation](#hardware-aware)
 - [Interview Questions](#interview-questions)
@@ -37,9 +37,9 @@ LLM decoding is memory-bound: loading 140GB of weights (70B model) to produce a 
 
 ---
 
-## Medusa & Multi-Token Heads (Dec 2025)
+## Medusa & Multi-Token Heads
 
-In late 2025, the industry is moving away from separate draft models (which add VRAM overhead) toward **Medusa Heads**.
+The industry has moved away from separate draft models (which add VRAM overhead) toward **Medusa Heads**.
 
 - **What it is**: Extra "heads" (small linear layers) attached to the last layer of the target model.
 - **How it works**: Instead of predicting just token $t+1$, Head 1 predicts $t+1$, Head 2 predicts $t+2$, and so on.
@@ -49,7 +49,7 @@ In late 2025, the industry is moving away from separate draft models (which add 
 
 ## Lookahead Decoding
 
-A 2025 alternative that uses the model's own past hidden states to find recurring patterns (n-grams) to "look ahead" and predict future tokens.
+An alternative that uses the model's own past hidden states to find recurring patterns (n-grams) to "look ahead" and predict future tokens.
 - **Best For**: Structured data, code, and highly repetitive technical writing.
 
 ---

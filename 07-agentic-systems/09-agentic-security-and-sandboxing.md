@@ -1,6 +1,6 @@
-# Agentic Security and Sandboxing (Dec 2025)
+# Agentic Security and Sandboxing
 
-Agents represent a massive security shift: they don't just "leak information," they **"take actions."** In late 2025, agentic security focuses on **Action Isolation** and **The Proxy Pattern**.
+Agents represent a massive security shift: they don't just "leak information," they **"take actions."** Agentic security focuses on **Action Isolation** and **The Proxy Pattern**, and OWASP's LLM Top 10 v2.0 now explicitly carves out agent-specific risks like excessive agency and tool exfiltration.
 
 > [!NOTE]
 > For Prompt Injection fundamentals, see [05-prompting-and-context/08-prompt-injection-defense.md](../05-prompting-and-context/08-prompt-injection-defense.md). This chapter focuses on the *consequences* of injection in agentic environments.
@@ -28,7 +28,7 @@ When a model is given a tool, a "Prompt Injection" can lead to:
 
 ## Action Sandboxing (E2B/Docker)
 
-In late 2025, executing tool code (especially Python) on a production host is considered a critical failure.
+Executing tool code (especially Python) on a production host is now considered a critical failure.
 
 - **Micro-VMs**: Use providers like **E2B** or **Docker-Local** to spawn a transient, network-isolated environment for *every single* code execution.
 - **The Lifecycle**: 
@@ -60,7 +60,7 @@ We use a **Firewall Model** that sits between the Agent and the Tools.
 
 ## Audit Logging for Accountability
 
-In 2025, compliance (SOC2/HIPAA) requires **Deterministic Traceability**.
+Compliance (SOC2/HIPAA) requires **Deterministic Traceability**.
 - We log the **Input -> Thought -> Call -> Result -> Result Interpretation**.
 - **The Win**: If an agent deletes a file, we can trace exactly *why* it thought that was a good idea (which prompt triggered the logic).
 

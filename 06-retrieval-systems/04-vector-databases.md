@@ -1,13 +1,13 @@
-# Vector Databases (Dec 2025)
+# Vector Databases
 
-Vector databases are purpose-built systems for storing, indexing, and searching high-dimensional embeddings. In late 2025, the market has split into **Managed Serverless** and **Specialized High-Performance** engines. We no longer ask "Does it support vector search?" (Postgres, Redis, and Mongo all do). We ask **"Does it scale to 100M+ vectors with sub-100ms P99 and full metadata filtering?"**
+Vector databases are purpose-built systems for storing, indexing, and searching high-dimensional embeddings. The market has split into **Managed Serverless** and **Specialized High-Performance** engines. We no longer ask "Does it support vector search?" (Postgres, Redis, and Mongo all do). We ask **"Does it scale to 100M+ vectors with sub-100ms P99 and full metadata filtering?"**
 
 ## Table of Contents
 
 - [What Is a Vector Database](#what-is-a-vector-database)
 - [Vector Search Fundamentals](#vector-search-fundamentals)
 - [Indexing Algorithms](#indexing-algorithms)
-- [The 2025 Competitive Landscape](#the-2025-competitive-landscape)
+- [Competitive Landscape](#competitive-landscape)
 - [Detailed Database Comparison](#detailed-database-comparison)
 - [Metadata Filtering](#metadata-filtering)
 - [Query Patterns](#query-patterns)
@@ -200,17 +200,17 @@ No approximation, exact search.
 
 ---
 
-## The 2025 Competitive Landscape
+## Competitive Landscape
 
 ### Vector-Native (Dedicated)
 
 | Database | Type | Best For | Pricing Model |
 |----------|------|----------|---------------|
-| **Pinecone** | Managed cloud (serverless standard) | Easy start, scale | Per vector-hour |
-| **Qdrant** | Open source / Cloud (Rust, high-perf) | Self-hosted control, excellent filtering | Per GB (cloud) or free |
-| **Weaviate** | Open source / Cloud | Multimodal, graph-like relationships, ML integration | Per dimension-hour |
-| **Milvus** | Open source / Cloud | On-prem enterprise (K8s heavy-lifter) | Free (self-host) or Zilliz Cloud |
-| **Chroma** | Open source | Prototyping, local dev | Free |
+| **Pinecone** | Managed cloud (serverless standard) | Easy start, scale, managed SLAs | Per vector-hour |
+| **Qdrant** | Open source / Cloud (Rust, high-perf) | Self-hosted control, fastest open-source on common workloads (~12ms p99 at 10M vectors) | Per GB (cloud) or free |
+| **Weaviate** | Open source / Cloud | Native hybrid (BM25 + dense + metadata) in a single query, multimodal | Per dimension-hour |
+| **Milvus** | Open source / Cloud (Zilliz) | Distributed scale (50M+ vectors), heterogeneous node types, tiered storage | Free (self-host) or Zilliz Cloud |
+| **Chroma** | Open source | Prototyping, local dev, embedded use | Free |
 
 ### General-Purpose (Plugin/Extension)
 
@@ -267,9 +267,9 @@ results = client.search(
 
 **Performance impact:** Filtering happens during search, not after. Pre-filtered indices are faster but less flexible.
 
-**Why metadata filtering is often the bottleneck:** In naive vector search, we find the "Top K" nearest neighbors and THEN filter by metadata. If the filter is very restrictive, we might find 0 results after filtering. In 2025, specialized databases use **Pre-Filtering with HNSW** -- they traverse the graph but only consider nodes that satisfy the boolean metadata constraint. This requires specialized bitmasks or hardware acceleration (SIMD) to keep latencies low.
+**Why metadata filtering is often the bottleneck:** In naive vector search, we find the "Top K" nearest neighbors and THEN filter by metadata. If the filter is very restrictive, we might find 0 results after filtering. Specialized databases now use **Pre-Filtering with HNSW**, traversing the graph but only considering nodes that satisfy the boolean metadata constraint. This requires specialized bitmasks or hardware acceleration (SIMD) to keep latencies low.
 
-**Disk-Native Metadata (2025):** Modern DBs like **Qdrant** offload metadata to disk-mapped segments, allowing for complex filters (e.g., full-text + geo + vector) without saturating RAM.
+**Disk-Native Metadata:** Modern DBs like **Qdrant** offload metadata to disk-mapped segments, allowing for complex filters (e.g., full-text + geo + vector) without saturating RAM.
 
 ---
 
@@ -489,7 +489,7 @@ def alert_rules():
 | **Cost (Small)** | $0 - $100/mo | $50/mo (Minimum instance) |
 | **Cost (Scale)** | High per token/vector | Low unit cost |
 
-### Managed Service Pricing (December 2025, verify current)
+### Managed Service Pricing (indicative, always verify on provider pages)
 
 | Provider | Model | Example: 10M vectors, 1536 dims |
 |----------|-------|--------------------------------|
@@ -536,7 +536,7 @@ def estimate_self_hosted_cost(
 | Compliance | Depends | Full control |
 | Vendor lock-in | Yes | No (if open source) |
 
-**2025 Verdict**: Start with Serverless. Only self-host if you have >500M vectors or strict **On-Prem/GPU-Local** requirements.
+**Verdict**: Start with Serverless. Only self-host if you have >500M vectors or strict **On-Prem/GPU-Local** requirements.
 
 ---
 
@@ -644,7 +644,7 @@ I would use a Disk-based index when the memory cost of the index exceeds the bud
 ### Q: Why is metadata filtering often the bottleneck in vector databases?
 
 **Strong answer:**
-In naive vector search, we find the "Top K" nearest neighbors and THEN filter them by metadata (e.g., "only documents from 2024"). If the filter is very restrictive, we might find 0 results after filtering. In 2025, specialized databases use **Pre-Filtering with HNSW**. They traverse the graph but only consider nodes that satisfy the boolean metadata constraint. This is computationally expensive because it breaks the "short-circuit" logic of HNSW, requiring specialized bitmasks or hardware acceleration (SIMD) to keep latencies low.
+In naive vector search, we find the "Top K" nearest neighbors and THEN filter them by metadata (e.g., "only documents from 2024"). If the filter is very restrictive, we might find 0 results after filtering. Specialized databases now use **Pre-Filtering with HNSW**, traversing the graph but only considering nodes that satisfy the boolean metadata constraint. This is computationally expensive because it breaks the "short-circuit" logic of HNSW, requiring specialized bitmasks or hardware acceleration (SIMD) to keep latencies low.
 
 ### Q: How do you handle multi-tenancy in a vector database?
 

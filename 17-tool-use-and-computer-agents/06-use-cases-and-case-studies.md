@@ -1,4 +1,4 @@
-# Use Cases and Case Studies for Tool-Using Agents (April 2026)
+# Use Cases and Case Studies for Tool-Using Agents
 
 Tool-using AI agents have moved from demo to production. The global AI agents market reached $7.8 billion in 2025 and is projected to exceed $10.9 billion in 2026 (45% CAGR). Gartner projects that 40% of enterprise applications will embed task-specific AI agents by end of 2026, up from fewer than 5% in 2025. But 40% of those deployments will be canceled by 2027 due to rising costs, unclear value, or poor risk controls. This chapter covers the categories that are working, the ones that are not, and three detailed case studies you can reference in system design interviews.
 

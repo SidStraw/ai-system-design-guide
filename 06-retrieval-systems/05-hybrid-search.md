@@ -1,6 +1,6 @@
-# Hybrid Search (Dec 2025)
+# Hybrid Search
 
-Hybrid search combines dense (semantic) and sparse (keyword) retrieval to get the benefits of both. In late 2025, hybrid search is the baseline for all production RAG systems.
+Hybrid search combines dense (semantic) and sparse (keyword) retrieval to get the benefits of both. It is the baseline for production RAG: Elasticsearch's `rrf` retriever, OpenSearch hybrid search, Weaviate, Qdrant, and Azure AI Search all ship native hybrid pipelines out of the box.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ Neither dense nor sparse retrieval is universally better. Each excels at differe
 | Paraphrased | "How to make AI faster" vs "LLM optimization" | Dense |
 | Mixed | "What is the cost of GPT-4o API?" | Hybrid |
 
-**2025 Nuance**: "Dense-only" retrieval fails on technical documentation where specific version numbers and function names carry 90% of the information value.
+**Nuance**: Dense-only retrieval fails on technical documentation where specific version numbers and function names carry 90% of the information value.
 
 ### The Gap Problem
 
@@ -295,7 +295,7 @@ def z_score_normalize(results: list[Result]) -> list[Result]:
 
 ## Learned Sparse Embeddings (SPLADE)
 
-In late 2025, we have moved beyond BM25 (simple word frequency) to **Learned Sparse Embeddings**.
+Production stacks have moved beyond BM25 (simple word frequency) to **Learned Sparse Embeddings** for the sparse arm of hybrid search.
 
 **Technique**: Models like **SPLADE v3** predict "importance weights" for every word in the dictionary.
 
@@ -435,7 +435,7 @@ def find_optimal_alpha(
     return best_alpha
 ```
 
-**2025 Best Practice / Typical findings:**
+**Best practice / typical findings:**
 - Technical documentation and code: alpha 0.3-0.4 (keyword heavy)
 - General text: alpha 0.5 (balanced)
 - Chat and creative exploration: alpha 0.7-0.9 (semantic heavy)

@@ -27,7 +27,7 @@ Start Here
     │   └── No ──┐                                       │
     │            │                                       ▼
     │            │                              ┌─────────────────┐
-    │            │                              │ GPT-5.2 / Claude│
+    │            │                              │ GPT-5.5 / Claude│
     │            │                              │ 4.5 Opus / o3   │
     │            │                              └─────────────────┘
     │            │
@@ -36,8 +36,8 @@ Start Here
     │   └── No ──┐                                       │
     │            │                                       ▼
     │            │                              ┌─────────────────┐
-    │            │                              │ Claude 4.5 Opus │
-    │            │                              │ Claude Sonnet 4.5│
+    │            │                              │ Claude Opus 4.7 │
+    │            │                              │ Claude Sonnet 4.6│
     │            │                              └─────────────────┘
     │            │
     ├── Need to process massive context (>1M)?
@@ -61,8 +61,8 @@ Start Here
     └── Default: Production Choice
                  ▼
         ┌─────────────────┐
-        │ Claude Sonnet 4.5│
-        │ GPT-5.2-mini    │
+        │ Claude Sonnet 4.6│
+        │ GPT-5.5-mini    │
         └─────────────────┘
 ```
 
@@ -84,9 +84,9 @@ Start Here
 
 | Model | Strengths | Cons | Context | Best For |
 |-------|-----------|------|---------|----------|
-| **GPT-5.2** | Agentic planning, native omni | High cost | 512K | Multi-agent systems |
-| **Claude 4.5 Opus** | SoTA Software Engineering | Expensive | 400K | Complex codebases |
-| **Claude Sonnet 4.5** | Hybrid Reasoning depth | High peak latency | 200K | General production |
+| **GPT-5.5** | Agentic planning, native omni | High cost | 512K | Multi-agent systems |
+| **Claude Opus 4.7** | SoTA Software Engineering | Expensive | 400K | Complex codebases |
+| **Claude Sonnet 4.6** | Hybrid Reasoning depth | High peak latency | 200K | General production |
 | **Gemini 3.0 Pro** | 2.5M context, multimodal | Latency spikes | 2.5M | Large data ingestion |
 | **o3** | Extreme logic/reasoning | High cost/latency | 128K | Math, complex debug |
 
@@ -114,11 +114,11 @@ Start Here
 
 | Use Case | Recommended Models | Rationale |
 |----------|-------------------|-----------|
-| **Autonomous Dev** | Claude 4.5 Opus, Claude Sonnet 4.5 | "Claude Code" agentic mastery & verified coding |
+| **Autonomous Dev** | Claude Opus 4.7, Claude Sonnet 4.6 | "Claude Code" agentic mastery & verified coding |
 | **Enterprise RAG** | Gemini 3.0 Pro, Gemini 3 Flash | 2.5M context removes retrieval complexity |
-| **customer Support** | Gemini 3 Flash, GPT-5.2-mini | Near-zero latency with strong reasoning |
+| **customer Support** | Gemini 3 Flash, GPT-5.5-mini | Near-zero latency with strong reasoning |
 | **Reasoning / Debug** | o3, DeepSeek-R1 | Best at "Thinking" mode for code/logic |
-| **Video/Multimodal** | Gemini 3.0 Pro, GPT-5.2 | Native interleaved multimodal processing |
+| **Video/Multimodal** | Gemini 3.0 Pro, GPT-5.5 | Native interleaved multimodal processing |
 | **Private Agent** | Llama 4 70B, Nemotron 3 | Strongest open-weight agentic planning |
 
 ### By Constraint
@@ -128,7 +128,7 @@ Start Here
 | **Max latency < 100ms** | Gemini 3 Flash, o4-mini, or self-hosted Nano models |
 | **Context > 1M tokens** | Gemini 3.0 Pro (native 2.5M) |
 | **Zero-data Leakage** | Llama 4 70B on internal VPC |
-| **Complex Tool Use** | Claude 4.5 Opus or GPT-5.2 (best planning accuracy) |
+| **Complex Tool Use** | Claude Opus 4.7 or GPT-5.5 (best planning accuracy) |
 
 ---
 
@@ -138,9 +138,9 @@ Start Here
 
 | Model | Input / 1M | Output / 1M | Notes |
 |-------|------------|-------------|-------|
-| **GPT-5.2** | $5.00 | $20.00 | Agentic premium |
-| **Claude 4.5 Opus** | $15.00 | $75.00 | Specialized engineering |
-| **Claude Sonnet 4.5** | $3.00 | $15.00 | Balanced choice |
+| **GPT-5.5** | $5.00 | $20.00 | Agentic premium |
+| **Claude Opus 4.7** | $15.00 | $75.00 | Specialized engineering |
+| **Claude Sonnet 4.6** | $3.00 | $15.00 | Balanced choice |
 | **Gemini 3.0 Pro** | $1.25 | $5.00 | Best value frontier |
 | **Gemini 3 Flash** | $0.05 | $0.20 | RAG-at-scale winner |
 | **o4-mini** | $0.10 | $0.40 | Logic-on-a-budget |
@@ -149,7 +149,7 @@ Start Here
 
 Assume 1M queries/month, 1K input tokens + 500 output tokens per query:
 
-| Volume | GPT-5.2 | Claude Sonnet | Gemini 3 Pro | Gemini 3 Flash |
+| Volume | GPT-5.5 | Claude Sonnet | Gemini 3 Pro | Gemini 3 Flash |
 |--------|---------|---------------|--------------|----------------|
 | 10K queries/mo | $150 | $105 | $37.50 | $1.50 |
 | 1M queries/mo | $15,000 | $10,500 | $3,750 | $150 |

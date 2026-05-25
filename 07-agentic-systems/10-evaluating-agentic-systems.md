@@ -1,6 +1,6 @@
-# Evaluating Agentic Systems (Dec 2025)
+# Evaluating Agentic Systems
 
-Evaluating agents is fundamentally different from evaluating RAG. While RAG is about "Accuracy," Agents are about **"Reliability," "Efficiency," and "Safety."** In late 2025, we use **Trajectory Benchmarks** and **LLM-as-Judge** for multi-step reasoning.
+Evaluating agents is fundamentally different from evaluating RAG. While RAG is about "Accuracy," Agents are about **"Reliability," "Efficiency," and "Safety."** Production agent eval relies on **Trajectory Benchmarks** and **LLM-as-Judge** for multi-step reasoning, with tools like Langfuse, LangWatch, Braintrust, and Arize Phoenix offering native trace-level scoring.
 
 > [!NOTE]
 > For standard RAG evaluation (Retrieval vs. Generation metrics), see [06-retrieval-systems/09-advanced-retrieval-patterns.md](../06-retrieval-systems/09-advanced-retrieval-patterns.md) and Section 14. This chapter focuses specifically on the *Execution Path* of an agent.
@@ -29,7 +29,7 @@ Evaluating agents is fundamentally different from evaluating RAG. While RAG is a
 
 ## Trajectory Benchmarks
 
-In 2025, we evaluate the **"Path to the Result."**
+Modern eval scores the **"Path to the Result."**
 1. **Optimal Path**: The shortest sequence of tools to solve the task.
 2. **Agent Path**: The actual steps taken.
 3. **The Score**: `Efficiency = (Optimal Steps / Agent Steps)`. A score of `0.2` means the agent meandered or looped excessively.
@@ -58,7 +58,7 @@ Total tokens + infrastructure cost (Sandboxes, API calls) per completed goal.
 
 ## LLM-as-Judge for Step Quality
 
-We use a stronger model (e.g., o1-pro) to review the **Reasoning Log** of a smaller agent.
+We use a stronger model (Claude Opus 4.7, GPT-5.5 reasoning) to review the **Reasoning Log** of a smaller agent.
 - **Thought Quality**: Did the agent's logic for using Tool X follow from Observation Y?
 - **Redundancy Check**: Did the agent repeat a search it just performed?
 - **Feedback Loop**: This "Judge" output is then used for **DPO (Direct Preference Optimization)** to align the agent's future behavior.
@@ -67,7 +67,7 @@ We use a stronger model (e.g., o1-pro) to review the **Reasoning Log** of a smal
 
 ## Production Evaluation
 
-In late 2025, we use **Shadow Execution**.
+Production teams use **Shadow Execution**.
 1. **V1 Agent** responds to the user.
 2. **V2 (Experimental) Agent** runs the same query in a "Hidden Sandbox."
 3. **The Comparison**: We compare the two trajectories. If V2 consistently solves tasks in fewer steps without safety violations, we promote it to production.
@@ -84,7 +84,7 @@ We use **Mock Environments** or **Snapshotted States**. For high-fidelity testin
 ### Q: Why is "Meandering" (taking too many steps) a critical failure in Staff-level Agent design?
 
 **Strong answer:**
-Meandering leads to three failures: 1) **Cost**: Every step is an LLM call; 2) **Latency**: Every step adds 2-5 seconds; 3) **Entropy**: The longer the trajectory, the higher the chance of the agent encountering a weird edge case that triggers a hallucination. In 2025, we implement **Step Budgets**. If an agent doesn't solve a task in 10 steps, we terminate it and escalate to a human to prevent a "Token Leak."
+Meandering leads to three failures: 1) **Cost**: Every step is an LLM call; 2) **Latency**: Every step adds 2-5 seconds; 3) **Entropy**: The longer the trajectory, the higher the chance of the agent encountering a weird edge case that triggers a hallucination. The standard fix is **Step Budgets**: if an agent doesn't solve a task in 10 steps, we terminate it and escalate to a human to prevent a "Token Leak."
 
 ---
 

@@ -1,6 +1,6 @@
 # Cost Optimization Playbook
 
-In late 2025, AI costs are no longer "magic." They are measurable, predictable, and highly optimizable. This chapter covers the strategies to reduce inference costs by 10x without sacrificing quality.
+AI costs are no longer "magic." They are measurable, predictable, and highly optimizable. With API pricing down 30-60% over the past year, the cost lever is now mostly about *routing* and *caching*, not just picking a cheaper provider. This chapter covers the strategies to reduce inference costs by 10x without sacrificing quality.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ In late 2025, AI costs are no longer "magic." They are measurable, predictable, 
 
 ## The Unit Economics of AI
 
-In 2025, we measure success by **Tokens per Dollar ($)**.
+We measure success by **Tokens per Dollar ($)**.
 
 | Component | Cost Driver | Optimization |
 |-----------|-------------|--------------|
@@ -31,11 +31,11 @@ In 2025, we measure success by **Tokens per Dollar ($)**.
 
 The most effective cost-saving strategy is to use the **cheapest model capable of the task.**
 
-**The 2025 Cascade Pattern:**
+**The cascade pattern:**
 1. **Classifier**: A tiny model (0.5B) determines query complexity ($0.00).
 2. **Tier 1 (SLM)**: 90% of queries (greetings, simple Q&A) go to an 8B model ($).
-3. **Tier 2 (Frontier)**: 9% of queries (complex reasoning) go to a 405B/GPT-5.2 model ($$$).
-4. **Tier 3 (Reasoning)**: 1% of queries (expert-level) go to o1-style models ($$$$$).
+3. **Tier 2 (Frontier)**: 9% of queries (complex reasoning) go to a 405B/Claude Sonnet 4.6 / GPT-5.5 / Gemini 3.1 Pro tier model ($$$).
+4. **Tier 3 (Reasoning)**: 1% of queries (expert-level) go to thinking models like Claude Opus 4.7 or GPT-5.5 with extended thinking ($$$$$).
 
 **Net result**: 80% cost reduction vs. sending all traffic to Tier 2.
 
@@ -43,19 +43,23 @@ The most effective cost-saving strategy is to use the **cheapest model capable o
 
 ## Small Language Models (SLMs) for Production
 
-In late 2025, 3B-8B models (Llama 4 8B, Gemini 3 Flash) are as capable as 2023's GPT-4.
+3B-8B models (Llama 4 8B, Gemini 3.1 Flash, Claude Haiku 4.5) now match or beat the original GPT-4 from 2023 on most benchmarks.
 - **Use Case**: Entity extraction, sentiment analysis, simple RAG.
 - **Cost**: 100x cheaper to run than frontier models.
 - **Latency**: < 100ms response times.
 
+### The DeepSeek V4 Floor
+
+DeepSeek V4 Flash (released April 24, 2026) reset the floor for cheap frontier-class inference at **$0.14 / $0.28 per 1M tokens** with a 1M context window and cache-hit input at $0.0028/M. DeepSeek V4 Pro is roughly 10x cheaper than Claude Opus 4.7 ($0.435 / $0.87 vs $5 / $25 per 1M) after the 75% discount was made permanent on May 22, 2026. For cache-heavy, high-volume workloads where the prefix is reused often (RAG with shared knowledge bases, batch classification, codebase agents), V4 Flash or V4 Pro is now the dominant cost-optimization lever before you even start cascading. Verify on the [DeepSeek pricing page](https://api-docs.deepseek.com/quick_start/pricing) before committing.
+
 ---
 
-## Spot Instance Strategies (Dec 2025)
+## Spot Instance Strategies
 
 For non-real-time workloads (batch processing, data extraction), use **GPU Spot Instances** (AWS Spot, Azure Spot, Lambda Labs).
 
 - **Risk**: GPU can be reclaimed with 30-sec notice.
-- **The 2025 Mitigation**: **Live KV-Cache Migration**. Serving frameworks can now stream the KV cache of ongoing requests to another node as soon as the "Reclamation Signal" is received, ensuring no work is lost.
+- **Mitigation**: **Live KV-Cache Migration**. Serving frameworks can stream the KV cache of ongoing requests to another node as soon as the "Reclamation Signal" is received, ensuring no work is lost.
 
 ---
 
@@ -77,7 +81,7 @@ I focus on the **ROI of Efficiency.** First, I implement "Model Cascading" to en
 ### Q: When is a self-hosted individual GPU cluster cheaper than an API?
 
 **Strong answer:**
-The "Crossover Point" usually happens at **constant high throughput.** If your application has a baseline of 5-10 requests per second, 24/7, the fixed cost of an H100 reservation becomes cheaper than the variable token cost of an API. However, if your traffic is "spiky" or heavily weighted toward business hours, API providers are usually cheaper because they allow you to "pay for the silence" during off-peak hours. In 2025, for most enterprises, the break-even is around 500 million tokens per month for a 70B-tier model.
+The "Crossover Point" usually happens at **constant high throughput.** If your application has a baseline of 5-10 requests per second, 24/7, the fixed cost of an H100 reservation becomes cheaper than the variable token cost of an API. However, if your traffic is "spiky" or heavily weighted toward business hours, API providers are usually cheaper because they allow you to "pay for the silence" during off-peak hours. For most enterprises, the break-even is around 500 million tokens per month for a 70B-tier model.
 
 ---
 

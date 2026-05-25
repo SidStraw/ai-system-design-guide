@@ -1,6 +1,6 @@
-# OCR and Layout Analysis (Dec 2025)
+# OCR and Layout Analysis
 
-In late 2025, traditional OCR (Tesseract, specialized engines) has been largely superseded by **Native Multimodal LLMs** (Gemini 3, GPT-4o, Claude Sonnet 4.5). We no longer "read characters"; we "understand layouts."
+Traditional OCR (Tesseract, specialized engines) has been largely superseded by **Native Multimodal LLMs** (Gemini 3.1 Pro, GPT-5.5, Claude Sonnet 4.6, Claude Opus 4.7). We no longer "read characters"; we "understand layouts."
 
 ## Table of Contents
 
@@ -16,8 +16,8 @@ In late 2025, traditional OCR (Tesseract, specialized engines) has been largely 
 
 ## The Shift: Traditional OCR vs. Vision-LLMs
 
-| Feature | Traditional OCR (Tesseract/AWS Textract) | Vision-LLMs (Gemini/GPT-4o) |
-|---------|-------------------------------------------|-----------------------------|
+| Feature | Traditional OCR (Tesseract/AWS Textract) | Vision-LLMs (Gemini 3.1 Pro, GPT-5.5, Claude Opus 4.7) |
+|---------|-------------------------------------------|--------------------------------------------------------|
 | **Primary Mechanism** | Character recognition | Visual token understanding |
 | **Logic** | Point-and-line analysis | Semantic context |
 | **Reading Order** | Simple top-to-bottom | Multi-column, complex layout aware |
@@ -28,7 +28,7 @@ In late 2025, traditional OCR (Tesseract, specialized engines) has been largely 
 
 ## Vision-LLM Layout Extraction
 
-The 2025 standard workflow is **Screenshot-to-Markdown**.
+The standard workflow is **Screenshot-to-Markdown**.
 1. **Rasterize**: Convert PDF pages to images.
 2. **Visual Prompting**: Ask the vision model to "Transcribe the following page into GitHub-flavored Markdown, preserving tables and headers."
 3. **Structured Recovery**: Use the model's spatial awareness to rebuild the logical hierarchy.
@@ -45,7 +45,7 @@ The 2025 standard workflow is **Screenshot-to-Markdown**.
 
 ## Handling Low-Quality Scans
 
-Late 2025 models are robust to:
+Modern multimodal models are robust to:
 - **Skew/Rotation**: Automatically corrected in the visual attention layer.
 - **Bleed-through**: The model uses semantic context to "ignore" text from the back of the page.
 - **Handwritten Annotations**: Can be extracted into a separate `annotations` JSON field.
@@ -56,15 +56,15 @@ Late 2025 models are robust to:
 
 | Model Tier | Use Case | Latency | Cost (1K pages) |
 |------------|----------|---------|-----------------|
-| **Gemini 3 Flash** | High-volume batch | 1-2s / page | $1-3 |
-| **GPT-4o (Native)** | High-precision / Legal | 3-5s / page | $10-20 |
-| **Local (Llama 3.2 Vision)** | PII-sensitive / On-prem | <1s / page | Infrastructure only |
+| **Gemini 3.1 Flash** | High-volume batch | 1-2s / page | $1-3 |
+| **GPT-5.5 / Claude Sonnet 4.6** | High-precision / Legal | 3-5s / page | $8-18 |
+| **Local (Llama 4 Vision)** | PII-sensitive / On-prem | <1s / page | Infrastructure only |
 
 ---
 
 ## Interview Questions
 
-### Q: Why would you still use AWS Textract or Azure AI Search (OCR) in 2025?
+### Q: Why would you still use AWS Textract or Azure AI Search (OCR) when vision LLMs exist?
 
 **Strong answer:**
 **Strict Spatial Metadata and Compliance**. If my application needs exact pixel-level bounding boxes for every single word (e.g., for a legal redaction tool), a specialized OCR engine is often more precise and cheaper. Furthermore, OCR engines are **Deterministic**: they do not \"Hallucinate\" words that do not exist. For high-stakes document processing where 100% character accuracy is required over \"Layout understanding,\" traditional engines still hold a spot in the hybrid pipeline.

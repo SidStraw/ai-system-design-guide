@@ -1,6 +1,6 @@
-# Multi-Agent Orchestration (April 2026)
+# Multi-Agent Orchestration
 
-Complex systems are rarely one agent. They are teams of specialized agents. By early 2026, orchestration has matured from "Blind Managers" to **Hierarchical Supervisors**, **Dynamic Swarms**, and **Cross-Vendor Agent Networks** enabled by interoperability protocols like A2A. Gartner projects that 40% of enterprise applications will feature task-specific AI agents by end of 2026, up from under 5% in 2025.
+Complex systems are rarely one agent. They are teams of specialized agents. Orchestration has matured from "Blind Managers" to **Hierarchical Supervisors**, **Dynamic Swarms**, and **Cross-Vendor Agent Networks** enabled by interoperability protocols like A2A. Gartner projects that 40% of enterprise applications will feature task-specific AI agents by end of 2026, up from under 5% in early 2025.
 
 ## Table of Contents
 
@@ -30,8 +30,8 @@ A single agent with 50 tools experiences **Cognitive Load**.
 
 The most common enterprise pattern as of 2026.
 
-- **The Supervisor**: A high-reasoning model (o3, Claude Sonnet 4) that decomposes the user prompt and delegates to workers.
-- **Workers**: Fast, cost-efficient models (Gemini Flash / GPT-4o-mini) that perform the work.
+- **The Supervisor**: A high-reasoning model (Claude Opus 4.7, GPT-5.5 reasoning, Gemini 3.1 Pro Deep Think) that decomposes the user prompt and delegates to workers.
+- **Workers**: Fast, cost-efficient models (Claude Haiku 4.5, Gemini 3.1 Flash, GPT-5.5-mini) that perform the work.
 - **Reviewer**: A separate agent that validates the consolidated output against the supervisor's original plan.
 
 **Architecture**: LangGraph remains the dominant framework for implementing these state-aware hierarchical loops. The Claude Agent SDK, Google ADK, and Microsoft Agent Framework all support this pattern natively as of 2026.
@@ -71,7 +71,7 @@ The architectural momentum in 2026 has shifted decisively toward **graph-based o
 
 A notable 2026 development is **Paperclip** (44,900 GitHub stars within three weeks of its March 2026 launch). It uses a hierarchical model where a CEO agent receives a top-level goal, decomposes it, and delegates to manager agents who spawn and coordinate worker agents. This pattern demonstrates how deeply hierarchical multi-agent trees can handle complex real-world tasks.
 
-> *Verified April 2026.*
+> *Verified May 2026.*
 
 ---
 
@@ -86,13 +86,13 @@ The **Agent-to-Agent (A2A) protocol** (see [Tool Use and MCP](03-tool-use-and-mc
 
 **Production example**: A procurement system where the orchestrator (LangGraph) delegates compliance checking to a specialized agent (Google ADK), inventory lookup to an MCP-connected tool, and contract generation to a CrewAI crew — all communicating via A2A and MCP respectively.
 
-> *Verified April 2026. Source: a2a-protocol.org*
+> *Verified May 2026. Source: a2a-protocol.org*
 
 ---
 
 ## The 2026 Framework Landscape for Multi-Agent
 
-Every major AI lab now ships an agent framework. The multi-agent orchestration landscape as of April 2026:
+Every major AI lab now ships an agent framework. The multi-agent orchestration landscape as of May 2026:
 
 | Framework | Provider | Multi-Agent Model | Status |
 |-----------|----------|-------------------|--------|
@@ -106,7 +106,7 @@ Every major AI lab now ships an agent framework. The multi-agent orchestration l
 
 **Key trend**: No single framework excels at all four multi-agent patterns (supervisor, swarm, pipeline, debate). Teams increasingly combine frameworks — e.g., LangGraph for complex orchestration with CrewAI for business-user-facing automations.
 
-> *Verified April 2026.*
+> *Verified May 2026.*
 
 ---
 
@@ -117,7 +117,7 @@ The biggest challenge in multi-agent systems is the **Shared Blackboard**.
 1. **Local State**: Context only visible to a specific agent.
 2. **Global State**: Shared memory (e.g., the final draft) visible to all.
 3. **Write Conflicts**: When two agents try to modify the same Global State.
-   - **2025 Best Practice**: Use **Transactional Handoffs**. An agent can only write to the global state when it "Owns" the lock.
+   - **Best practice**: Use **Transactional Handoffs**. An agent can only write to the global state when it "Owns" the lock.
 
 ---
 
@@ -136,7 +136,7 @@ For high-accuracy tasks (e.g., Legal or Medical), we use **Agentic Debate**.
 ### Q: What are the main failure modes of a "Supervisor" multi-agent architecture?
 
 **Strong answer:**
-The primary failure mode is **Decomposition Failure**. If the Supervisor agent breaks a task into sub-tasks that are logically inconsistent or have hidden dependencies, the workers will produce correct answers to the *wrong questions*. In 2025, we solve this with **Iterative Planning**—the Supervisor must get "Confirmation of sub-task feasibility" from the workers before they begin execution. Another failure is **Context Dilution**, where the global state becomes so bloated with worker logs that the Supervisor loses the "Big Picture."
+The primary failure mode is **Decomposition Failure**. If the Supervisor agent breaks a task into sub-tasks that are logically inconsistent or have hidden dependencies, the workers will produce correct answers to the *wrong questions*. The standard fix is **Iterative Planning**: the Supervisor must get "Confirmation of sub-task feasibility" from the workers before they begin execution. Another failure is **Context Dilution**, where the global state becomes so bloated with worker logs that the Supervisor loses the "Big Picture."
 
 ### Q: How do you choose between a "Sequence of Chains" and a "Multi-Agent Graph"?
 

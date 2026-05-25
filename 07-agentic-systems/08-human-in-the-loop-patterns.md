@@ -1,6 +1,6 @@
-# Human-in-the-Loop Patterns (Dec 2025)
+# Human-in-the-Loop Patterns
 
-No agent is 100% reliable. **Human-in-the-Loop (HITL)** is the bridge that ensures safety and accuracy in high-stakes environments. In late 2025, we have moved beyond "Approval Buttons" to **Co-Reasoning** and **Interrupt-Based Steering**.
+No agent is 100% reliable. **Human-in-the-Loop (HITL)** is the bridge that ensures safety and accuracy in high-stakes environments. Production stacks have moved beyond "Approval Buttons" to **Co-Reasoning** and **Interrupt-Based Steering**, exposed natively in frameworks like LangGraph (interrupt+resume) and Microsoft Agent Framework.
 
 ## Table of Contents
 
@@ -27,7 +27,7 @@ No agent is 100% reliable. **Human-in-the-Loop (HITL)** is the bridge that ensur
 
 ## Interrupts and Breakpoints
 
-In 2025 architectures (like LangGraph), we use **Deterministic Breakpoints**.
+Modern architectures (LangGraph, Microsoft Agent Framework) use **Deterministic Breakpoints**.
 
 - **The Pattern**: The system is hardcoded to "Pause" before a specific sensitive tool is called (e.g., `execute_purchase` or `delete_user`).
 - **The Decision**: The environment waits for a user to send an `approve` or `reject` signal.
@@ -38,7 +38,7 @@ In 2025 architectures (like LangGraph), we use **Deterministic Breakpoints**.
 ## Time-Travel Debugging (State Editing)
 
 Standard agents are "One-way." If they make a mistake in Step 3, the session is usually ruined.
-- **2025 Innovation**: **State Injection**. A human reviewer can "Go back" to the state at Step 3, edit the agent's observation or thought, and then "Resume" execution.
+- **Innovation**: **State Injection**. A human reviewer can "Go back" to the state at Step 3, edit the agent's observation or thought, and then "Resume" execution.
 - **Impact**: It allows humans to "Steer" the agent off a bad path without starting from zero.
 
 ---

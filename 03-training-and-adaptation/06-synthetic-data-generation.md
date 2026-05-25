@@ -1,6 +1,6 @@
 # Synthetic Data Generation
 
-In late 2025, the industry has hit the "Data Wall"—the exhaustion of high-quality human text on the web. Synthetic data is now the primary engine for model improvement.
+The industry has hit the "Data Wall", the exhaustion of high-quality human text on the web. Synthetic data is now the primary engine for model improvement, sitting at the core of every modern frontier-model recipe.
 
 ## Table of Contents
 
@@ -16,8 +16,8 @@ In late 2025, the industry has hit the "Data Wall"—the exhaustion of high-qual
 
 ## After the "Data Wall": The Synthetic Shift
 
-Frontier models (Llama 4, GPT-5.2) are trained on 100T+ tokens. There simply isn't enough human text to sustain this scaling. 
-**The 2025 Reality:** More than **50% of the training mixture** for frontier fine-tuning (and 10% of pretraining) is now synthetic.
+Frontier models (Llama 4, GPT-5.5, Claude Opus 4.7, Gemini 3.1 Pro) are trained on 100T+ tokens. There simply isn't enough human text to sustain this scaling.
+**The reality:** More than **50% of the training mixture** for frontier fine-tuning (and 10% of pretraining) is now synthetic.
 
 | Source | Human Data | Synthetic Data |
 |--------|------------|----------------|
@@ -28,7 +28,7 @@ Frontier models (Llama 4, GPT-5.2) are trained on 100T+ tokens. There simply isn
 
 ---
 
-## Evol-Instruct Pattern (2025 Evolution)
+## Evol-Instruct Pattern
 
 Evol-Instruct is a recursive process where an LLM takes a simple instruction and evolves it into a more complex one.
 
@@ -47,7 +47,7 @@ Evol-Instruct is a recursive process where an LLM takes a simple instruction and
 
 ## Constitutional AI & AI Feedback (RLAIF)
 
-Developed by Anthropic and adopted widely in 2025, RLAIF uses a "Constitution" (a set of rules) to guide a model in evaluating and improving its own data.
+Developed by Anthropic and widely adopted across the industry, RLAIF uses a "Constitution" (a set of rules) to guide a model in evaluating and improving its own data.
 
 **The Loop:**
 1. **Propose**: Model A generates a response.

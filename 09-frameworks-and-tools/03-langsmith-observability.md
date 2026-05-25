@@ -1,6 +1,6 @@
-# LangSmith Observability (Dec 2025)
+# LangSmith Observability
 
-In 2023, LLM observability was "logging strings." In late 2025, it is **Full Trajectory Debugging** and **Automated Evaluation Pipelines**. LangSmith is the industry standard for this "LLMOps" layer.
+In 2023, LLM observability was "logging strings." Now it is **Full Trajectory Debugging** and **Automated Evaluation Pipelines**. LangSmith is the LangChain-native option in a crowded "LLMOps" layer that also includes Langfuse (acquired by ClickHouse in January 2026), LangWatch, Braintrust, and Arize Phoenix.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ In 2023, LLM observability was "logging strings." In late 2025, it is **Full Tra
 ## Tracing and Trajectories
 
 LangSmith automatically captures every node in a **LangGraph** or **Chain**.
-- **Metadata Tagging**: In 2025, we tag every trace with `user_id`, `model_tier`, and `is_canary`.
+- **Metadata Tagging**: Tag every trace with `user_id`, `model_tier`, and `is_canary`.
 - **The Debugger**: You can \"Play back\" a trace in the LangSmith UI, modifying the prompt and seeing how the response changes. This works without re-running the entire application.
 
 ---
@@ -34,19 +34,19 @@ LangSmith automatically captures every node in a **LangGraph** or **Chain**.
 
 Building an LLM app without a **Dataset** is "vibe-based development."
 - **Gold Standard Datasets**: A collection of `(Input, Expected_Output)` pairs.
-- **2025 Workflow**: Whenever a user provides negative feedback, that interaction is automatically pumped into a "Correction Dataset" for future testing.
+- **Standard workflow**: Whenever a user provides negative feedback, that interaction is automatically pumped into a "Correction Dataset" for future testing.
 
 ---
 
 ## Automated Evaluators
 
 You cannot manually check 1,000 log entries every morning.
-- **LLM-as-Judge**: Using a superior model (o1/R1) to score the production model on categories like **Tone**, **Accuracy**, and **Safe Action execution**.
+- **LLM-as-Judge**: Using a superior model (Claude Opus 4.7, GPT-5.5 reasoning, DeepSeek-R2) to score the production model on categories like **Tone**, **Accuracy**, and **Safe Action execution**.
 - **Custom Evaluators**: Python functions that check for regex patterns, JSON schema validity, or Toxicity scores.
 
 ---
 
-## A/B Testing in 2025
+## A/B Testing
 
 LangSmith allows for **Experiment Branching**.
 - Run 2% of traffic on a new "System Prompt" version.

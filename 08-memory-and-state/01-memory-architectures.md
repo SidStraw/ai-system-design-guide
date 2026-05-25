@@ -1,6 +1,6 @@
-# Memory Architectures (Dec 2025)
+# Memory Architectures
 
-In late 2025, LLM memory has evolved from "history buffers" to a **Three-Tiered Cognitive Architecture**. This hierarchy mimics human cognitive systems (L1-L3) to balance speed, cost, and recall capacity.
+LLM memory has evolved from "history buffers" to a **Three-Tiered Cognitive Architecture**. This hierarchy mimics human cognitive systems (L1-L3) to balance speed, cost, and recall capacity. Production agent stacks now lean on dedicated memory layers (Mem0, Zep, Letta, Cognee) on top of vector stores rather than rolling their own.
 
 ## Table of Contents
 
@@ -27,7 +27,7 @@ In late 2025, LLM memory has evolved from "history buffers" to a **Three-Tiered 
 ## Tier 1: Working Memory (L1)
 
 L1 is the **active focus** of the model. 
-- **Context Window**: 128K - 2.5M tokens in late 2025 models.
+- **Context Window**: 128K - 2M tokens on current frontier models (Claude Opus 4.7, Claude Sonnet 4.6, GPT-5.5, Gemini 3.1 Pro).
 - **KV Cache**: The GPU "RAM" that stores pre-computed keys and values.
 - **Management Strategy**: **Sliding Windows** and **Prefix Caching** (vLLM/PagedAttention).
 - **Redundancy Note**: We only keep the most recent turns and critical system instructions in L1.

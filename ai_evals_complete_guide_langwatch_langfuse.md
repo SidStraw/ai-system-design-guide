@@ -3394,7 +3394,7 @@ Return your evaluation as JSON:
 
 | Model Tier | When to Use | Typical Accuracy |
 |------------|------------|-----------------|
-| GPT-4o / Claude Sonnet 4.5 | High-stakes evals, complex reasoning | 85–95% |
+| GPT-4o / Claude Sonnet 4.6 | High-stakes evals, complex reasoning | 85–95% |
 | GPT-4o-mini / Claude Haiku | Cost-sensitive, high-volume evals | 75–90% |
 | Open-source (Llama, Mistral) | Self-hosted, privacy-sensitive | 70–85% |
 

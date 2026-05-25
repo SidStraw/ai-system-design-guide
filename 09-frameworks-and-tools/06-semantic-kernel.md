@@ -1,6 +1,6 @@
-# Semantic Kernel (Dec 2025)
+# Semantic Kernel
 
-**Semantic Kernel (SK)** is Microsoft's engine for enterprise-grade AI orchestration. In late 2025, it is the primary bridge for organizations committed to the **Azure/Microsoft ecosystem** and **C#/.NET** architectures.
+**Semantic Kernel (SK)** is Microsoft's engine for enterprise-grade AI orchestration. It remains the primary bridge for organizations committed to the **Azure/Microsoft ecosystem** and **C#/.NET** architectures, though much of its forward momentum now ships inside the **Microsoft Agent Framework** (the consolidated successor to AutoGen + SK, RC 1.0 February 2026, GA Q2 2026).
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ While LangChain is favored by startups, Semantic Kernel is favored by **Banks an
 
 1. **Kernel Functions**: The basic unit of logic (Native code or LLM prompts).
 2. **Plugins**: A collection of functions (e.g., a "GitHub Plugin" or an "SQL Plugin").
-3. **Planners (2025 Tech)**: SK's planners have evolved from simple ReAct to **Hierarchical Planners** that can coordinate long-running business processes across multiple days.
+3. **Planners**: SK's planners have evolved from simple ReAct to **Hierarchical Planners** that can coordinate long-running business processes across multiple days.
 
 ---
 
@@ -40,7 +40,7 @@ Semantic Kernel uses **Connectors** to abstract away the underlying infrastructu
 
 ## Multi-Language Support
 
-In 2025, SK is the **only** major framework that treats C# and Python as equals.
+SK is one of the few major frameworks that treats C# and Python as equals.
 - **The Pattern**: Develop and prototype in Python; deploy the core orchestration in C# for performance and type-safety.
 - **Logic Sharing**: Shared prompt templates (.yaml) that work across both languages.
 
@@ -56,7 +56,7 @@ In 2025, SK is the **only** major framework that treats C# and Python as equals.
 ### Q: What is the "Function Calling" abstraction in Semantic Kernel?
 
 **Strong answer:**
-SK uses a **Plugin-based model**. Every function (native C# or LLM-based) is registered with the Kernel. When the LLM decides it needs a tool, the Kernel looks up the function in the Plugin registry, validates the parameters, and executes it. In 2025, this supports **Automatic Intent Detection**: the Kernel can proactively suggest which Plugin a user might need before they even ask, based on the current context window.
+SK uses a **Plugin-based model**. Every function (native C# or LLM-based) is registered with the Kernel. When the LLM decides it needs a tool, the Kernel looks up the function in the Plugin registry, validates the parameters, and executes it. SK now supports **Automatic Intent Detection**: the Kernel can proactively suggest which Plugin a user might need before they even ask, based on the current context window.
 
 ---
 

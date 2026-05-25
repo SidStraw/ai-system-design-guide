@@ -1,12 +1,12 @@
-# DSPy: Programming Language Models (Dec 2025)
+# DSPy: Programming Language Models
 
-In late 2025, **DSPy** has become the industry standard for high-reliability AI systems. It represents a paradigm shift from "Prompt Engineering" (trial and error) to **Prompt Compilation** (automated optimization).
+**DSPy** has become the industry reference for high-reliability AI systems. It represents a paradigm shift from "Prompt Engineering" (trial and error) to **Prompt Compilation** (automated optimization), and benchmarks consistently show a 10-40% quality lift over hand-tuned prompts.
 
 ## Table of Contents
 
 - [The Programming Paradigm](#paradigm)
 - [Signatures: Describing the Task](#signatures)
-- [Optimizers and MIPROv2 (2025 Tech)](#optimizers)
+- [Optimizers and MIPROv2](#optimizers)
 - [Assertions and Constraints](#assertions)
 - [Managing Model Drift](#model-drift)
 - [Interview Questions](#interview-questions)
@@ -33,13 +33,13 @@ class ResearchAssistant(dspy.Signature):
     question = dspy.InputField()
     answer = dspy.OutputField(desc="A technical summary with citations")
 ```
-**Winning Nuance**: Signatures are **Model-Agnostic**. You can compile them for GPT-4o, Claude Sonnet 4.5, or Llama 3.3 without changing a single line of code.
+**Winning Nuance**: Signatures are **Model-Agnostic**. You can compile them for Claude Opus 4.7, Claude Sonnet 4.6, GPT-5.5, Gemini 3.1 Pro, or Llama 4 8B without changing a single line of code.
 
 ---
 
 ## Optimizers and MIPROv2
 
-In late 2025, **MIPROv2 (Multi-stage Instruction PRoposal Optimizer)** is the flagship optimizer.
+**MIPROv2 (Multi-stage Instruction PRoposal Optimizer)** is the flagship DSPy optimizer.
 1. **Instruction Proposal**: An "Assistant Model" proposes 10-20 different ways to write the system prompt for the task.
 2. **Bayesian Optimization**: DSPy runs the proposed prompts against a small training set and scores them using a metric.
 3. **Selection**: It picks the prompt that maximizes your metric (e.g., Factuality score).

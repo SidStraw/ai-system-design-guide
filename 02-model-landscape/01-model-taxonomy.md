@@ -2,9 +2,9 @@
 
 This chapter provides a comprehensive guide to the model landscape as of **May 2026**, covering model families, capabilities, and selection criteria for production systems.
 
-> **Last verified: May 17, 2026.** The model landscape evolves rapidly. Always cross-check with provider pricing pages and release notes.
+> **Last verified: May 25, 2026.** The model landscape evolves rapidly. Always cross-check with provider pricing pages and release notes.
 >
-> **May 2026 - what's new since the April refresh:** OpenAI GPT-5.5 (April 23) and GPT-5.5 Instant (May 5, default in ChatGPT); Claude Opus 4.7 (April 16, GA on Bedrock/Vertex/Foundry); Claude Mythos Preview (restricted; Project Glasswing partners only); Google Gemma 4 (April 2, Apache 2.0) and Gemini 3.2 Flash (quiet rollout May 5); DeepSeek V4 Pro and V4 Flash preview (April 24); Moonshot Kimi K2.6 (April 20, 1T MoE / 32B active); Alibaba Qwen 3.6 Plus / 3.6-35B-A3B / 3.6 Max-Preview; Mistral Medium 3.5 (April 29, unified chat/reasoning/coding/vision); Meta Muse Spark (April 8, first closed-weight Meta model); Llama 4 Behemoth release paused through fall 2026 amid capability concerns. SWE-bench Verified leader: Claude Mythos Preview 93.9%; ARC-AGI-2 leader: GPT-5.5 at 85.0%.
+> **May 2026 - what's new since the April refresh:** OpenAI GPT-5.5 (April 23) and GPT-5.5 Instant (May 5, default in ChatGPT); Claude Opus 4.7 (April 16, GA on Bedrock/Vertex/Foundry); Claude Mythos Preview (restricted; Project Glasswing partners only); Google Gemma 4 (April 2, Apache 2.0) and Gemini 3.2 Flash (quiet rollout May 5); DeepSeek V4 Pro and V4 Flash (April 24; 75% V4 Pro discount made **permanent** May 22, new list price $0.435/$0.87 per 1M from June 1); Moonshot Kimi K2.6 (April 20, 1T MoE / 32B active); Alibaba Qwen 3.6 Plus / 3.6-35B-A3B / 3.6 Max-Preview; Mistral Medium 3.5 (April 29, unified chat/reasoning/coding/vision); Meta Muse Spark (April 8, first closed-weight Meta model); Llama 4 Behemoth release paused through fall 2026 amid capability concerns. SWE-bench Verified leader: Claude Mythos Preview 93.9%; ARC-AGI-2 leader: GPT-5.5 at 85.0%.
 
 ## Table of Contents
 
@@ -314,14 +314,14 @@ While frontier models lead on benchmarks, many enterprise systems rely on **batt
 
 | Model | Parameters | Context | Status | Notes |
 |-------|------------|---------|--------|-------|
-| **DeepSeek V4 Pro (preview)** | 1.6T total / 49B active (MoE) | 1M | May 2026 NEW | Previewed April 24, 2026. Uses ~27% compute / 10% memory of V3.2 at 1M tokens. SWE-bench Verified 80.6%. NIST CAISI evaluation (May 2026) places it ~8 months behind US frontier (Elo ~800). Open weights on Hugging Face. |
-| **DeepSeek V4 Flash (preview)** | 284B total / 13B active (MoE) | 1M | May 2026 NEW | Smaller-active variant for high-throughput workloads. |
-| DeepSeek-V3.2 | 671B (MoE) | 128K | Frontier | General-purpose; 98% cache-hit discount, off-peak 50% off ($0.28/$0.42 per 1M base). |
+| **DeepSeek V4 Pro** | 1.6T total / 49B active (MoE) | 1M | GA | Previewed April 24, 2026. Uses ~27% compute / 10% memory of V3.2 at 1M tokens. SWE-bench Verified 80.6%. NIST CAISI evaluation (May 2026) places it ~8 months behind US frontier (Elo ~800). Open weights on Hugging Face. **API: $0.435 / $0.87 per 1M input/output (75% discount made permanent May 22, 2026, effective June 1).** Cache-hit input $0.003625/M. |
+| **DeepSeek V4 Flash** | 284B total / 13B active (MoE) | 1M | GA | Smaller-active variant for high-throughput workloads. **API: $0.14 / $0.28 per 1M (cache-hit $0.0028/M).** Cheapest frontier-class 1M-context API as of May 2026. |
+| DeepSeek-V3.2 | 671B (MoE) | 128K | Frontier | General-purpose; 98% cache-hit discount ($0.28/$0.42 per 1M base). Largely superseded by V4 Flash for new builds. |
 | DeepSeek-V3 | 671B (MoE, 37B active) | 128K | Frontier | GPT-4o level at a fraction of training cost; open weights. |
 | DeepSeek-R1 | 671B (MoE) | 128K | Reasoning | Matches o1 on math/code; first open-source reasoning model. |
 | DeepSeek-R1-Distill | 7B–70B | - | Reasoning | Distilled to smaller models; cost-efficient reasoning. |
 
-**Key May 2026 context**: DeepSeek V4 Pro (April 24 preview) is the headline open-weight catch-up - closes the gap with frontier models on multiple benchmarks at dramatically lower self-hosted cost. The 98% cache-hit discount + 50% off-peak pricing make V3.2/V4 the dominant choice for high-volume RAG/classification workloads where prompts are cache-friendly. DeepSeek R2 (reasoning successor to R1) remains delayed per reports about Huawei Ascend training challenges.
+**Key May 2026 context**: DeepSeek V4 Pro (released April 24, with the 75% promotional discount made permanent on May 22) closed the gap with US frontier models on multiple benchmarks at a fraction of the cost. At $0.435 / $0.87 per 1M, V4 Pro is roughly 10x cheaper than Claude Opus 4.7 ($5 / $25) and 5-10x cheaper than GPT-5.5 ($5 / $30) for comparable tasks. V4 Flash drops the floor further to $0.14 / $0.28 per 1M with the same 1M context window. The 98% cache-hit discount on both makes V4 the dominant choice for high-volume RAG and classification workloads where prompts are cache-friendly. DeepSeek R2 (reasoning successor to R1) remains delayed per reports about Huawei Ascend training challenges.
 
 ### Moonshot Kimi Family - May 2026 NEW
 

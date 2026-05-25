@@ -1,4 +1,4 @@
-# GraphRAG (Dec 2025)
+# GraphRAG
 
 GraphRAG is the combination of **Knowledge Graphs (KG)** and **Retrieval-Augmented Generation**. While vector RAG is good at "finding a specific chunk," GraphRAG is designed for **Global Reasoning** across an entire dataset.
 
@@ -132,7 +132,7 @@ Vector RAG operates on "points" in space. This fails for questions like:
 
 ## GraphRAG Architecture
 
-A late 2025 GraphRAG pipeline consists of three phases:
+A modern GraphRAG pipeline consists of three phases:
 
 1. **Extraction (VLB)**: An LLM scans the text and extracts **Entities** (People, Projects, Dates) and **Relationships** (e.g., "Person A *works on* Project B").
 2. **Graph Construction**: The entities are stored as nodes and relationships as edges in a Graph Database (Neo4j, Memgraph).
@@ -155,7 +155,7 @@ A late 2025 GraphRAG pipeline consists of three phases:
 
 ## Entity-Relationship Retrieval
 
-In 2025, we use **Hybrid Graph-Vector Search**.
+Production stacks use **Hybrid Graph-Vector Search**.
 - **Dense Pass**: Find the most similar nodes via embeddings.
 - **Graph Pass**: Traverse the edges of those nodes to find relevant "supporting" info that might not be semantically similar to the query but is logically connected.
 
@@ -179,7 +179,7 @@ In 2025, we use **Hybrid Graph-Vector Search**.
 ### Q: Why is the "Extraction" phase the bottleneck for GraphRAG?
 
 **Strong answer:**
-Knowledge Graph extraction is extremely token-intensive. To build a high-quality graph, you must process every document with a "Frontier" model to ensure you don't miss subtle entity connections. For a 10,000-page dataset, this can cost thousands of dollars in LLM API calls. In late 2025, we mitigate this by using **SLM-based Extraction** (Small Language Models) for the initial pass and only using giant models for "conflict resolution" between overlapping entities.
+Knowledge Graph extraction is extremely token-intensive. To build a high-quality graph, you must process every document with a "Frontier" model to ensure you don't miss subtle entity connections. For a 10,000-page dataset, this can cost thousands of dollars in LLM API calls. The standard mitigation is **SLM-based Extraction** (Small Language Models) for the initial pass, with giant models reserved for "conflict resolution" between overlapping entities. Microsoft's LazyGraphRAG further delays community-summarization cost by deferring it until query time.
 
 ### Q: How does GraphRAG solve the "Context Window" limit for aggregate questions?
 

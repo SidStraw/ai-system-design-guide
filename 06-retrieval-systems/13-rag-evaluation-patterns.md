@@ -1,6 +1,6 @@
-# RAG Evaluation Patterns (Apr 2026)
+# RAG Evaluation Patterns
 
-Evaluation is the hardest unsolved problem in RAG. You can build a retrieval pipeline in a day; knowing whether it actually works takes weeks. In 2026, the industry has converged on a layered evaluation strategy: the RAG Triad for correctness, component-level metrics for debugging, and automated regression testing for production safety.
+Evaluation is the hardest unsolved problem in RAG. You can build a retrieval pipeline in a day; knowing whether it actually works takes weeks. The industry has converged on a layered evaluation strategy: the RAG Triad for correctness, component-level metrics for debugging, and automated regression testing for production safety. Langfuse, LangWatch, Braintrust, and Arize Phoenix all ship native RAG eval recipes; pick by deployment model (self-hosted vs SaaS) and whether you need eval-gated CI/CD blocking.
 
 ## Table of Contents
 
@@ -182,7 +182,7 @@ Step 3: Score Calculation
 | Answer Correctness | **Yes** | Match against reference answer |
 | Answer Similarity | **Yes** | Semantic overlap with reference |
 
-**2026 Insight**: Start with reference-free metrics (faithfulness, context relevance, answer relevance) for rapid iteration. Add ground-truth metrics once you have a golden test set for regression testing.
+**Insight**: Start with reference-free metrics (faithfulness, context relevance, answer relevance) for rapid iteration. Add ground-truth metrics once you have a golden test set for regression testing.
 
 ---
 
@@ -257,7 +257,7 @@ Isolate the generator by fixing the retrieval context and varying only the gener
 
 ## LLM-as-Judge for RAG
 
-Using an LLM to evaluate another LLM's output is the dominant evaluation paradigm in 2026. It scales where human evaluation cannot, but has known biases.
+Using an LLM to evaluate another LLM's output is the dominant evaluation paradigm. It scales where human evaluation cannot, but has known biases.
 
 ### How It Works
 
@@ -448,13 +448,13 @@ LLM-as-judge evaluation is powerful but expensive. Understanding the cost struct
 | **Production Sample** | Real-time | 5% of traffic | Claude Haiku | ~$300/month |
 | **Deep Audit** | Weekly | Full golden set + analysis | GPT-4o | ~$36/month |
 
-**2026 Insight**: Use Claude Haiku or GPT-4o-mini for high-volume production sampling. Reserve GPT-4o or Claude Opus for CI regression tests and deep audits where accuracy matters more than cost.
+**Insight**: Use Claude Haiku 4.5 or GPT-5.5-mini for high-volume production sampling. Reserve Claude Opus 4.7 or GPT-5.5 for CI regression tests and deep audits where accuracy matters more than cost.
 
 ---
 
 ## Tools Comparison
 
-### Framework Overview (Apr 2026)
+### Framework Overview
 
 | Tool | Best For | Open Source | Key Strength | Key Weakness |
 |------|----------|------------|--------------|--------------|

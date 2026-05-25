@@ -1,6 +1,6 @@
-# Reranking Strategies (Dec 2025)
+# Reranking Strategies
 
-Reranking is the second stage of retrieval that re-scores a small set of candidates (Top 50-100) using a high-precision model. In late 2025, reranking is the bridge between "efficient search" and "perfect grounding." First-stage retrieval optimizes for recall; reranking optimizes for precision.
+Reranking is the second stage of retrieval that re-scores a small set of candidates (Top 50-100) using a high-precision model. It is the bridge between "efficient search" and "perfect grounding": first-stage retrieval optimizes for recall, reranking optimizes for precision. Three rerankers dominate production today (BGE-Reranker-v2-m3, Cohere Rerank 3, Voyage rerank-2), with the choice driven by cost model, latency tail, language coverage, and whether you need self-hostable weights.
 
 ## Table of Contents
 
@@ -10,7 +10,7 @@ Reranking is the second stage of retrieval that re-scores a small set of candida
 - [Implementation Patterns](#implementation-patterns)
 - [When to Rerank](#when-to-rerank)
 - [LLM-Based Reranking](#llm-based-reranking)
-- [SLM Distillation (The 2025 Performance Win)](#slm-distillation-the-2025-performance-win)
+- [SLM Distillation](#slm-distillation)
 - [Production Considerations](#production-considerations)
 - [Interview Questions](#interview-questions)
 - [References](#references)
@@ -465,7 +465,7 @@ def sliding_window_rerank(
 
 ---
 
-## SLM Distillation (The 2025 Performance Win)
+## SLM Distillation
 
 To solve the latency problem of LLM-based reranking, we now use **Distilled Small Language Models (SLMs)**.
 
@@ -613,7 +613,7 @@ LLM reranking makes sense when:
 ### Q: How do you handle reranking for extremely long queries (e.g., a whole paragraph)?
 
 **Strong answer:**
-Long queries present a "Token Budget" problem for cross-encoders, which often have 512 or 1024 token limits. In 2025, we use **Sliding Window Reranking** or **Query Summarization**. Alternatively, we use specialized models like **Jina-Reranker-v2**, which can handle 8k+ tokens. We can also perform a "First-Pass Rerank" using a very fast, short-context model and then a "Second-Pass Rerank" for the top 5 candidates using a high-context LLM.
+Long queries present a "Token Budget" problem for cross-encoders, which often have 512 or 1024 token limits. The common fixes are **Sliding Window Reranking** or **Query Summarization**. Alternatively, use specialized models like **Jina-Reranker-v2** that handle 8k+ tokens. A "First-Pass Rerank" with a fast short-context model followed by a "Second-Pass Rerank" on the top 5 candidates using a high-context LLM is also common.
 
 ---
 

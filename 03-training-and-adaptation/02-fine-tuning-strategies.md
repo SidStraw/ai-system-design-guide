@@ -1,6 +1,6 @@
 # Fine-Tuning Strategies
 
-Fine-tuning adapts a pretrained model to specific tasks, domains, or styles. In 2025, fine-tuning is less about "teaching facts" and more about "teaching format and behavior."
+Fine-tuning adapts a pretrained model to specific tasks, domains, or styles. Today, fine-tuning is less about "teaching facts" and more about "teaching format and behavior."
 
 ## Table of Contents
 
@@ -33,8 +33,8 @@ Before fine-tuning, ask: **Can this be solved with Prompt Engineering or RAG?**
 
 The first step after pretraining. The model is trained on `(Prompt, Response)` pairs.
 
-### The 2025 Quality Hierarchy
-In 2025, **1,000 "Perfect" examples beat 1,000,000 noisy examples.**
+### The Quality Hierarchy
+**1,000 "Perfect" examples beat 1,000,000 noisy examples.**
 - **Golden Sets:** Hand-curated by domain experts (PhD level for technical tasks).
 - **Negative Constraint Training:** Including examples of what the model **should not** do (e.g., "Don't apologize," "Don't mention you are an AI").
 
@@ -57,24 +57,24 @@ Also known as "Second-stage Pretraining."
 | Speed | Base | 2x-3x Faster |
 | Risk | High (Catastrophic Forgetting) | Low |
 | Deployment | One model per task | One base model + multiple adapters |
-| **2025 Verdict**| Reserved for foundation training | **The Production Standard** |
+| **Verdict**| Reserved for foundation training | **The Production Standard** |
 
 ---
 
-## Hyperparameter Tuning (Dec 2025 Nuances)
+## Hyperparameter Tuning
 
 ### 1. Learning Rate (LR)
 - **SFT**: `1e-5` to `5e-5` is standard.
 - **Too high**: Model "collapses" and starts repeating or speaking gibberish.
 
 ### 2. Rank (r) for LoRA
-- In 2025, we use higher ranks (`r=64` to `r=256`) for complex reasoning tasks.
-- Lower ranks (`r=8`) are only for simple style/tone changes.
+- Higher ranks (`r=64` to `r=256`) for complex reasoning tasks.
+- Lower ranks (`r=8`) for simple style/tone changes.
 
 ### 3. Packaged Training (Packing)
 To maximize throughput, we "pack" multiple short examples into a single 4k or 8k sequence, separated by EOS tokens.
 - **Challenge**: Self-attention might leak across examples.
-- **2025 Solution**: **FlashAttention with block-masking** to prevent cross-example attention.
+- **Solution**: **FlashAttention with block-masking** to prevent cross-example attention.
 
 ---
 

@@ -1,6 +1,6 @@
 # Structured Generation
 
-Structured Generation is the process of forcing an LLM to produce output in a machine-readable format (JSON, YAML, CSV) with 100% reliability. In 2025, this has evolved from "prompt-based requests" to "engine-level constraints."
+Structured Generation is the process of forcing an LLM to produce output in a machine-readable format (JSON, YAML, CSV) with 100% reliability. The discipline has moved from "prompt-based requests" to "engine-level constraints."
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ Structured Generation is the process of forcing an LLM to produce output in a ma
 ## The JSON Mode Revolution
 
 Historically, getting JSON was a struggle of "only return JSON, no other text."
-**The 2025 Standard**: Use native `response_format: { type: "json_schema" }` (OpenAI/Gemini) or similar.
+**Standard approach**: Use native `response_format: { type: "json_schema" }` (OpenAI/Gemini) or tool-output schemas (Anthropic).
 
 - **Benefit**: 100% syntactical validity. The model literally cannot output a string that is not a valid JSON.
 - **Behind the scenes**: The serving engine masks the vocabulary at each step, ensuring only valid JSON characters (e.g., `{`, `"`, `:`, `[`) can be picked next.
@@ -36,7 +36,7 @@ Function calling is structured generation where the LLM "picks" a function and p
 }
 ```
 
-**2025 Nuance**: We now use **Parallel Function Calling**. A model can decide to call 5 different tools simultaneously (e.g., check account balance, check credit score, check loan rates) and aggregate the results.
+**Nuance**: **Parallel Function Calling** is now standard. A model can decide to call 5 different tools simultaneously (e.g., check account balance, check credit score, check loan rates) and aggregate the results.
 
 ---
 
@@ -45,7 +45,7 @@ Function calling is structured generation where the LLM "picks" a function and p
 For self-hosted models (Llama-cpp, vLLM via Outlines), we use **Context-Free Grammars (CFG)** or **Regex**.
 
 ```python
-# Outlines Pattern (2025)
+# Outlines Pattern
 model = outlines.models.transformers("meta-llama/Llama-4-8B")
 generator = outlines.generate.regex(model, r"(\d{3})-\d{3}-\d{4}")
 # Result: The model can ONLY output telephone numbers.
@@ -66,7 +66,7 @@ For complex data extraction (e.g., 50 fields from a medical record), don't do it
 
 Even with "JSON mode," the **Logic** inside the JSON might be wrong (e.g., a field is missing or a date is in the wrong format).
 
-**The 2025 Recovery Pattern**:
+**Recovery pattern**:
 1. Validate output against **Pydantic/Zod**.
 2. If it fails, send the **Traceback** back to the model:
    "Error: Field 'age' must be an integer, got 'twenty'. Fix and re-generate."
@@ -84,7 +84,7 @@ Prompt-based requests rely on the model's *willingness* to follow instructions; 
 ### Q: What is the risk of asking an LLM for too many structured fields at once?
 
 **Strong answer:**
-There is a trade-off between **Schema Complexity** and **Information Integrity**. As the schema grows (e.g., 20+ hierarchical fields), the model's attention is consumed by maintaining the JSON structure (brackets, keys, quotes) rather than verifying the accuracy of the data. This often leads to "Omission Hallucinations" where the model skips fields or fills them with placeholder data. In 2025, we mitigate this by using a "Chain-of-Density" extraction or splitting the extraction into multiple parallel sub-tasks.
+There is a trade-off between **Schema Complexity** and **Information Integrity**. As the schema grows (e.g., 20+ hierarchical fields), the model's attention is consumed by maintaining the JSON structure (brackets, keys, quotes) rather than verifying the accuracy of the data. This often leads to "Omission Hallucinations" where the model skips fields or fills them with placeholder data. The mitigation is to use a "Chain-of-Density" extraction or split the extraction into multiple parallel sub-tasks.
 
 ---
 

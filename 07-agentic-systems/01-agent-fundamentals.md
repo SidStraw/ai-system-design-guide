@@ -1,6 +1,6 @@
-# Agent Fundamentals (Dec 2025)
+# Agent Fundamentals
 
-Agents are LLM-powered systems that move beyond "chat" into "autonomous problem solving." In late 2025, the definition of an agent has shifted from simple ReAct loops to **Closed-Loop Reasoning Systems** that utilize built-in "System 2" thinking.
+Agents are LLM-powered systems that move beyond "chat" into "autonomous problem solving." The definition has shifted from simple ReAct loops to **Closed-Loop Reasoning Systems** that use built-in "System 2" thinking (Claude Opus 4.7 extended thinking, GPT-5.5 reasoning, DeepSeek-R2, Gemini 3.1 Pro Deep Think).
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ Agents are LLM-powered systems that move beyond "chat" into "autonomous problem 
 Modern agency is often described as:
 `Agent = Reasoning Model + Tool Use + Persistent Memory + Environment Feedback`
 
-**2025 Nuance**: In 2023, agents were "wrappers." In 2025, agents are increasingly **Integrated**. Frontier models (like OpenAI o1 or DeepSeek R1) have the "Thinking" process baked into the pre-training, making the agent loop more stable and less prone to "stalling."
+**Nuance**: In 2023, agents were "wrappers" around chat models. Today, agents are increasingly **Integrated**. Frontier models (Claude Opus 4.7, GPT-5.5 with reasoning, DeepSeek-R2) have the "Thinking" process baked into pre-training, making the agent loop more stable and less prone to "stalling."
 
 ---
 
@@ -27,10 +27,10 @@ Modern agency is often described as:
 
 Architecting an agent requires choosing the right "Thinking Mode":
 
-| Mode | Cognitive Type | Analogy | 2025 Stack |
-|------|----------------|---------|------------|
-| **System 1** | Fast, intuitive, reactive | Reflexes | GPT-4o / Sonnet 3.5 |
-| **System 2** | Slow, logical, planning | Deliberation | o1 / R1 / Reasoning Loops |
+| Mode | Cognitive Type | Analogy | Current stack |
+|------|----------------|---------|---------------|
+| **System 1** | Fast, intuitive, reactive | Reflexes | Claude Haiku 4.5 / Sonnet 4.6 / GPT-5.5-mini / Gemini 3.1 Flash |
+| **System 2** | Slow, logical, planning | Deliberation | Claude Opus 4.7 / GPT-5.5 reasoning / DeepSeek-R2 / Gemini 3.1 Pro Deep Think |
 
 **The Design Pattern**: Use System 1 models for "Fast UI" and "Routing." Use System 2 models for "Decision Gates" and "Complex Planning."
 
@@ -56,7 +56,7 @@ The CPU of the agent. It determines the "Path to Success."
 ### 2. Tools (The Limbs)
 Interfaces (APIs, Browsers, DBs) that allow the agent to affect the world.
 > [!Note]
-> In late 2025, standard Tool-Use is being replaced by the **Model Context Protocol (MCP)** for standardized tool interoperability.
+> The **Model Context Protocol (MCP)** is now the industry standard for tool interoperability, with adoption from Anthropic, OpenAI, Google, Microsoft, and AWS. Governance moved to the Linux Foundation's Agentic AI Foundation in December 2025.
 
 ### 3. Memory (The Experience)
 - **Short-term**: Context window (KV Cache).
@@ -76,7 +76,7 @@ Interfaces (APIs, Browsers, DBs) that allow the agent to affect the world.
 
 ## Interview Questions
 
-### Q: Why is a "Reasoning Model" (like o1) better for agency than a standard LLM?
+### Q: Why is a "Reasoning Model" (like Claude Opus 4.7 or GPT-5.5 with extended thinking) better for agency than a standard LLM?
 
 **Strong answer:**
 Standard LLMs (System 1) predict the *very next token* based on pattern matching. When they encounter an error in a tool call, they often hallucinate a fix instead of admitting the failure. Reasoning Models use **Chain-of-Thought (CoT)** during inference. They "think" through multiple hidden turns before outputting a response. For an agent, this means higher **Path Reliability**—the model is significantly less likely to enter an infinite loop or try the same failing action twice because it has already simulated the failure internally.
@@ -84,7 +84,7 @@ Standard LLMs (System 1) predict the *very next token* based on pattern matching
 ### Q: How do you prevent "Agentic Drift" in long-running tasks?
 
 **Strong answer:**
-Agentic Drift occurs when the sub-steps take the agent so far from the original goal that it loses context. In 2025, we solve this with **Goal Anchoring**. We include the "Original Objective" as a pinned system message and use a **Secondary Observer Model** (a smaller, cheaper model) to score every agent action against the original objective. If the score drops below a threshold, the agent is forced to "re-plan" from the root.
+Agentic Drift occurs when the sub-steps take the agent so far from the original goal that it loses context. The standard solution is **Goal Anchoring**: include the "Original Objective" as a pinned system message and use a **Secondary Observer Model** (a smaller, cheaper model) to score every agent action against the original objective. If the score drops below a threshold, the agent is forced to "re-plan" from the root.
 
 ---
 

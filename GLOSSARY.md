@@ -82,7 +82,7 @@ Quick reference for key terms used throughout this guide.
 
 **Grounding** — Connecting LLM responses to factual sources to reduce hallucination.
 
-**Grok 3** — xAI's frontier reasoning model (released Feb 2026). Competitive with o3 and Claude 3.7 Sonnet on reasoning benchmarks. Available via xAI API and inside X.
+**Grok 4.3** - xAI's frontier reasoning model. Competitive with GPT-5.5, Claude Opus 4.7, and Gemini 3.1 Pro on reasoning benchmarks. Available via xAI API and inside X.
 
 ---
 
@@ -132,7 +132,7 @@ Quick reference for key terms used throughout this guide.
 
 ## M
 
-**MCP (Model Context Protocol)** — Anthropic's open protocol for standardized tool/resource integration with LLMs. Version 2.0 (2025) adds Streamable HTTP transport and OAuth 2.1 auth.
+**MCP (Model Context Protocol)** - Open protocol for standardized tool/resource integration with LLMs. Launched by Anthropic November 2024; governance moved to the Linux Foundation's Agentic AI Foundation December 2025; adopted by Anthropic, OpenAI, Google, Microsoft, AWS. Version 2.0 (ratified March 2026) adds Streamable HTTP transport and OAuth 2.1 auth.
 
 **Mixture of Agents (MoA)** — Ensemble pattern where multiple agents contribute to a synthesized response.
 

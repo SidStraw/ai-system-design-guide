@@ -1,6 +1,6 @@
 # LoRA, QLoRA, and PEFT
 
-Parameter-Efficient Fine-Tuning (PEFT) has become the industry standard for adapting LLMs in 2025. This chapter covers the mechanics and advanced variants of LoRA and other PEFT methods.
+Parameter-Efficient Fine-Tuning (PEFT) is the industry standard for adapting LLMs. This chapter covers the mechanics and advanced variants of LoRA and other PEFT methods.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ Parameter-Efficient Fine-Tuning (PEFT) has become the industry standard for adap
 
 ## The PEFT Revolution
 
-In 2025, full fine-tuning of frontier models (GPT-4+, Llama 4 405B) is economically unfeasible for most enterprises. PEFT allows:
+Full fine-tuning of frontier models (GPT-5.5, Claude Opus 4.7, Llama 4 405B) is economically unfeasible for most enterprises. PEFT allows:
 1. **Memory Efficiency**: Train 70B models on a single A100.
 2. **Speed**: 2x faster training by updating <1% of weights.
 3. **Modularity**: Swap "skills" (adapters) onto a shared base model without reloading weights.
@@ -36,9 +36,9 @@ h = Wx + (BA)x * (alpha/r)
 - **r**: Rank (e.g., 8, 16, 64)
 - **alpha**: Scaling factor (typically 2 * rank)
 
-### 2025 Principal Nuance: Target Modules
+### Principal Nuance: Target Modules
 Historically, we only targeted query/value projections (`q_proj`, `v_proj`).
-**The 2025 Standard**: Target **all** linear layers (`q, k, v, o, gate, up, down`) for maximum stability and performance, even at lower ranks.
+**Modern standard**: Target **all** linear layers (`q, k, v, o, gate, up, down`) for maximum stability and performance, even at lower ranks.
 
 ---
 
@@ -54,7 +54,7 @@ QLoRA pushes efficiency further by quantizing the base model to 4-bit (NF4) whil
 
 ---
 
-## Advanced Variants (Dec 2025)
+## Advanced Variants
 
 ### 1. DoRA (Weight-Decomposed Low-Rank Adaptation)
 DoRA decomposes the weight update into **Magnitude** and **Direction**.
@@ -74,7 +74,7 @@ Uses a scaling factor of `alpha / sqrt(r)`.
 
 ## Multi-LoRA Serving (Adapters)
 
-In 2025, production systems serve one base model (e.g., Llama 4 70B) and dynamically swap adapters in the same batch.
+Production systems now serve one base model (e.g., Llama 4 70B) and dynamically swap adapters in the same batch.
 
 ```python
 # vLLM/LMCache Multi-LoRA Pattern:
@@ -96,7 +96,7 @@ The `alpha` parameter is a scaling factor for the LoRA update. When we initializ
 ### Q: What is DoRA, and why would you use it over standard LoRA?
 
 **Strong answer:**
-DoRA (Weight-Decomposed Low-Rank Adaptation) is a 2024 technique that separates the pretrained weight updates into magnitude and direction components, similar to Weight Normalization. While standard LoRA updates magnitude and direction simultaneously, DoRA allows them to be learned independently. Empirically, DoRA shows much better convergence and higher accuracy, often matching full-parameter fine-tuning even at low ranks, making it the preferred choice for high-stakes domain adaptation in 2025.
+DoRA (Weight-Decomposed Low-Rank Adaptation) is a 2024 technique that separates the pretrained weight updates into magnitude and direction components, similar to Weight Normalization. While standard LoRA updates magnitude and direction simultaneously, DoRA allows them to be learned independently. Empirically, DoRA shows much better convergence and higher accuracy, often matching full-parameter fine-tuning even at low ranks, making it the preferred choice for high-stakes domain adaptation.
 
 ---
 

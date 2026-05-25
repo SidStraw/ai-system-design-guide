@@ -1,6 +1,6 @@
-# Planning and Decomposition (Dec 2025)
+# Planning and Decomposition
 
-Planning is the "System 2" component that allows agents to solve multi-stage problems without "wandering." In late 2025, we have moved from simple "Chain-of-Thought" to **Recursive Decomposition** and **Tree Search**.
+Planning is the "System 2" component that allows agents to solve multi-stage problems without "wandering." Production agents have moved from simple "Chain-of-Thought" to **Recursive Decomposition** and **Tree Search**, with reasoning-native models (Claude Opus 4.7, GPT-5.5 extended thinking, DeepSeek-R2) doing the heavy planning internally.
 
 ## Table of Contents
 
@@ -34,14 +34,14 @@ The agent writes a 10-step plan and follows it strictly.
 
 ### Dynamic (Adaptive)
 The agent writes a plan, but **Re-evaluates** after every tool call.
-- **2025 Best Practice**: Use **Checkpointed Planning**. The agent is forced to "Commit" its progress to a state store after every major sub-goal to allow for recovery and "Backtracking" if the plan fails.
+- **Best practice**: Use **Checkpointed Planning**. The agent is forced to "Commit" its progress to a state store after every major sub-goal to allow for recovery and "Backtracking" if the plan fails.
 
 ---
 
 ## CoT and o1 Reasoning
 
-In 2025, the model's internal "Thinking" window (Inference scaling) is used as a **Hidden Planner**.
-- Instead of using a separate "Planner LLM," we use a reasoning model (o1/R1) to generate a "Mental Draft."
+The model's internal "Thinking" window (Inference scaling) acts as a **Hidden Planner**.
+- Instead of using a separate "Planner LLM," we use a reasoning model (Claude Opus 4.7, GPT-5.5 extended thinking, DeepSeek-R2) to generate a "Mental Draft."
 - This draft is translated into a **Task DAG (Directed Acyclic Graph)** that the orchestrator executes.
 
 ---

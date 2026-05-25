@@ -1,6 +1,6 @@
 # Inference Fundamentals
 
-Inference is the process of generating predictions from a trained model. In late 2025, inference optimization has shifted from "simple speedups" to "architectural efficiency" to handle reasoning-heavy workloads.
+Inference is the process of generating predictions from a trained model. Inference optimization has shifted from "simple speedups" to "architectural efficiency" to handle reasoning-heavy workloads on Hopper (H100) and Blackwell (B200) class hardware.
 
 ## Table of Contents
 
@@ -40,12 +40,12 @@ Understanding where your system is bottlenecked is critical for choosing the rig
 | **Prefill** | Compute (FLOPs) | Parallel processing saturates the GPU's arithmetic units. | FlashAttention, FP8/FP16 precision. |
 | **Decode** | Memory Bandwidth | Weights must be loaded from VRAM for *every single token*. | Quantization (4-bit), GQA, Batching. |
 
-**The 2025 Insight: Memory Wall**
-As models grow larger, memory bandwidth (HBM3) has not scaled as fast as compute (TFLOPS). This makes the Decode phase the primary target for production optimization.
+**The Memory Wall insight**
+As models grow larger, memory bandwidth (HBM3/HBM3e) has not scaled as fast as compute (TFLOPS). This makes the Decode phase the primary target for production optimization.
 
 ---
 
-## Performance Metrics (Dec 2025)
+## Performance Metrics
 
 | Metric | Full Form | Goal | Importance |
 |--------|-----------|------|------------|
@@ -58,7 +58,7 @@ As models grow larger, memory bandwidth (HBM3) has not scaled as fast as compute
 
 ## Hardware-Enabled Optimizations (FP8)
 
-In late 2025, **FP8 (8-bit Floating Point)** is the native precision for inference on H100 and B200 GPUs.
+**FP8 (8-bit Floating Point)** is the native precision for inference on H100 and B200 GPUs.
 
 - **Benefit**: 2x faster than FP16/BF16 with negligible (<0.1%) accuracy loss.
 - **How it works**: Uses a smaller mantissa and larger exponent than Int8, allowing it to represent the dynamic range of LLM activations more accurately without complex calibration.
