@@ -522,4 +522,4 @@ Generation 過程中，KV cache 需要儲存所有位置的 K 與 V。以 Llama 
 
 ---
 
-*上一章：[Attention Mechanisms](03-attention-mechanisms.md) | 下一章：[Embeddings and Vector Spaces](05-embeddings-and-vector-spaces.md)*
+*上一章：[注意力機制](03-attention-mechanisms.md) | 下一章：[Embeddings 與向量空間](05-embeddings-and-vector-spaces.md)*

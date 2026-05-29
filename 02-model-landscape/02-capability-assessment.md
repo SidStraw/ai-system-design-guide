@@ -1,37 +1,42 @@
-# Capability Assessment
+<a id="capability-assessment"></a>
+# 能力評估
 
-This chapter covers how to evaluate and compare model capabilities for your specific use case. Generic benchmarks rarely tell the full story; this guide helps you conduct meaningful assessments.
+本章說明如何針對你的特定使用情境評估與比較模型能力。通用 benchmarks 很少能完整說明問題；本指南會幫助你進行更有意義的評估。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Why Benchmarks Are Not Enough](#why-benchmarks-are-not-enough)
-- [Evaluation Dimensions](#evaluation-dimensions)
-- [Building Custom Evaluations](#building-custom-evaluations)
-- [Common Evaluation Pitfalls](#common-evaluation-pitfalls)
-- [Practical Assessment Process](#practical-assessment-process)
-- [Internal Elo-based Evaluation](#internal-elo-based-evaluation)
-- [Reasoning Calibration & Efficiency](#reasoning-calibration)
-- [A/B Testing Models](#ab-testing-models)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [為什麼 benchmarks 還不夠](#why-benchmarks-are-not-enough)
+- [評估維度](#evaluation-dimensions)
+- [建立自訂評估](#building-custom-evaluations)
+- [常見評估陷阱](#common-evaluation-pitfalls)
+- [實務評估流程](#practical-assessment-process)
+- [內部 Elo 制評估](#internal-elo-based-evaluation)
+- [推理校準與效率](#reasoning-calibration)
+- [模型 A/B 測試](#ab-testing-models)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Why Benchmarks Are Not Enough
+<a id="why-benchmarks-are-not-enough"></a>
+## 為什麼 benchmarks 還不夠
 
-### The Benchmark Problem
+<a id="the-benchmark-problem"></a>
+### Benchmark 的問題
 
-Public benchmarks (MMLU, HumanEval, GSM8K) have limitations:
+公開 benchmarks（MMLU、HumanEval、GSM8K）有其限制：
 
-| Issue | Impact |
+| 問題 | 影響 |
 |-------|--------|
-| Training data contamination | Models may have seen test questions |
-| Task mismatch | Benchmarks may not reflect your use case |
-| Aggregate scores hide variance | Model A may beat B overall but lose on your domain |
-| Gaming | Models optimized for benchmarks over real tasks |
-| Outdated | Benchmarks lag behind model capabilities |
+| 訓練資料污染 | 模型可能早已看過測試題 |
+| 任務不匹配 | Benchmarks 可能無法反映你的使用情境 |
+| 彙總分數掩蓋差異 | 模型 A 整體勝過 B，但在你的領域可能反而輸掉 |
+| 為 benchmark 最佳化 | 模型可能針對 benchmark 而非真實任務做最佳化 |
+| 過時 | Benchmarks 往往落後模型能力演進 |
 
-### What Benchmarks Tell You
+<a id="what-benchmarks-tell-you"></a>
+### Benchmarks 能告訴你的事
 
 ```
 Benchmark results tell you: "Model X scored 88% on MMLU"
@@ -40,25 +45,28 @@ What you need to know: "Will Model X correctly answer my
 customers' questions about our product documentation?"
 ```
 
-**Rule of thumb:** Use benchmarks for initial filtering, then conduct your own evaluation.
+**經驗法則：** 先用 benchmarks 做初步篩選，再進行自己的評估。
 
 ---
 
-## Evaluation Dimensions
+<a id="evaluation-dimensions"></a>
+## 評估維度
 
-### Dimension 1: Task Performance (Dec 2025)
+<a id="dimension-1-task-performance-dec-2025"></a>
+### 維度 1：任務表現（2025 年 12 月）
 
-| Task Type | Evaluation Approach | Key Metric |
+| 任務類型 | 評估方法 | 關鍵指標 |
 |-----------|---------------------|------------|
-| **Autonomous Coding** | CWE/SWE-bench (Verified) | % issues resolved autonomously |
-| **Long-Horizon Planning** | Agentic Loop testing | Success rate on 10+ step plans |
-| **Reasoning Depth** | Thinking mode analysis | Logic consistency across CoT steps |
-| **Long Context RAG** | Needle-in-a-Haystack (2M+) | Recall efficiency at scale |
-| **Native Multimodal** | Interleaved Vision/Voice/Text | Sync accuracy across modalities |
+| **Autonomous Coding** | CWE／SWE-bench（Verified） | 自主解決 issue 的比例 |
+| **Long-Horizon Planning** | Agentic Loop 測試 | 10+ 步計畫的成功率 |
+| **Reasoning Depth** | Thinking mode 分析 | CoT 各步驟間的邏輯一致性 |
+| **Long Context RAG** | Needle-in-a-Haystack（2M+） | 大規模下的 recall 效率 |
+| **Native Multimodal** | 交錯的 Vision／Voice／Text | 各模態之間的同步準確率 |
 
-### Dimension 2: Agentic Mastery
+<a id="dimension-2-agentic-mastery"></a>
+### 維度 2：Agentic 掌控力
 
-How well does the model use tools and follow multi-step instructions?
+模型使用工具與遵循多步指令的能力有多好？
 
 ```python
 def evaluate_agentic_flow(agent, task_environment):
@@ -80,36 +88,39 @@ def evaluate_agentic_flow(agent, task_environment):
     return aggregate(results)
 ```
 
-### Dimension 3: Reasoning Reliability
+<a id="dimension-3-reasoning-reliability"></a>
+### 維度 3：推理可靠性
 
-Does the "Thinking" mode improve output accuracy vs standard generation?
+「Thinking」模式相較標準生成，是否真的提升了輸出正確率？
 
-| Mode | Accuracy (Math) | Accuracy (Code) | Avg Latency | Tokens / Output |
+| 模式 | Accuracy（Math） | Accuracy（Code） | 平均延遲 | Tokens / Output |
 |------|-----------------|-----------------|-------------|-----------------|
 | **Standard** | 72% | 68% | 1.2s | 400 |
 | **Thinking** | 94% | 89% | 12.5s | 2400 |
-| **Hybrid** | Variable | Variable | User-defined | Configurable |
+| **Hybrid** | 可變 | 可變 | 使用者定義 | 可設定 |
 
-### Reasoning Calibration
+<a id="reasoning-calibration"></a>
+### 推理校準
 
-**The "Over-Thinking" Problem:**
-Models often spend 2000+ "thinking" tokens on a question that could be answered with 10 tokens (e.g., "What is 2+2?").
+**「過度思考」問題：**
+模型經常在一個只需要 10 tokens 回答的問題上，花費 2000+ 個「thinking」tokens（例如：「2+2 等於多少？」）。
 
-**Principal-level Nuance:**
-Evaluate models based on **Logic Efficiency**: `Accuracy / (Inference Tokens)`.
-Production systems in 2025 use **Model Arbitration**: A small model (Gemini 3 Flash) detects if a query needs "Thinking" mode. This avoids the 10x latency/cost penalty for simple queries.
+**Principal 級細節：**
+請依照 **Logic Efficiency** 來評估模型：`Accuracy / (Inference Tokens)`。
+2025 年的正式環境系統開始使用 **Model Arbitration**：先由小模型（Gemini 3 Flash）判斷查詢是否需要「Thinking」模式。這能避免簡單查詢承受 10 倍的延遲／成本懲罰。
 
 ---
 
-## Internal Elo-based Evaluation
+<a id="internal-elo-based-evaluation"></a>
+## 內部 Elo 制評估
 
-**Moving beyond static rubrics.**
-Rubrics (1-5 scales) are prone to "judge fatigue" and "score drifting." Late 2025 systems use **Pairwise Elo** for internal golden sets.
+**不再只依賴靜態 rubric。**
+Rubrics（1-5 分量表）容易出現「評審疲勞」與「分數漂移」。到了 2025 年底，許多系統改用 **Pairwise Elo** 來維護內部 golden set 排行。
 
-**The Workflow:**
-1. **Blind Side-by-Side:** Model A and Model B generate answers for the same query.
-2. **The Judge:** An "Ultra" model (GPT-5.2 or Human) selects the winner.
-3. **Elo Update:** Update the internal leaderboard.
+**工作流程：**
+1. **Blind Side-by-Side：** 模型 A 與模型 B 對同一查詢生成答案。
+2. **Judge：** 由「Ultra」模型（GPT-5.2 或人類）選出勝者。
+3. **Elo Update：** 更新內部排行榜。
 
 ```python
 def update_elo(winner_elo, loser_elo, k=32):
@@ -119,23 +130,26 @@ def update_elo(winner_elo, loser_elo, k=32):
     return new_winner_elo, new_loser_elo
 ```
 
-**Why it wins:** It provides a **relative** ranking that is much more robust to changes in judge personality or model versioning.
+**為何它有效：** 它提供的是 **相對** 排名，對評審風格變化或模型版本更替的韌性遠高於絕對分數。
 
-### Dimension 4: Context Recall (Dec 2025)
+<a id="dimension-4-context-recall-dec-2025"></a>
+### 維度 4：Context Recall（2025 年 12 月）
 
-With 2M+ context windows, simple "needle-in-a-haystack" is no longer enough. We now measure **Contextual Reasoning** across the window.
+在 2M+ 的 context windows 出現後，單純的「needle-in-a-haystack」已經不夠。我們現在量測的是整個視窗中的 **Contextual Reasoning**。
 
-| Metric | Measurement | Target |
+| 指標 | 量測方式 | 目標 |
 |--------|-------------|--------|
-| **Window Recall** | Factual recall at 90% window depth | > 98% |
-| **Cross-Doc Reasoning** | Logic linking Doc A (pos 10k) to Doc B (pos 1M) | > 90% |
-| **Contextual Noise Resistance** | Accuracy when 90% of window is irrelevant "filler" | > 95% |
+| **Window Recall** | 在 90% 視窗深度下的事實 recall | > 98% |
+| **Cross-Doc Reasoning** | 將 Doc A（位置 10k）與 Doc B（位置 1M）串接推理 | > 90% |
+| **Contextual Noise Resistance** | 當視窗中 90% 都是不相關「填充」內容時的正確率 | > 95% |
 
 ---
 
-## Building Custom Evaluations
+<a id="building-custom-evaluations"></a>
+## 建立自訂評估
 
-### Step 1: Define Evaluation Criteria
+<a id="step-1-define-evaluation-criteria"></a>
+### 步驟 1：定義評估標準
 
 ```python
 evaluation_criteria = {
@@ -169,7 +183,8 @@ evaluation_criteria = {
 }
 ```
 
-### Step 2: Create Test Set
+<a id="step-2-create-test-set"></a>
+### 步驟 2：建立測試集
 
 ```python
 test_set = [
@@ -193,14 +208,15 @@ test_set = [
 ]
 ```
 
-**Test set guidelines:**
-- Cover all major use cases
-- Include easy, medium, hard examples
-- Balance across categories
-- Include edge cases
-- Have clear ground truth answers
+**測試集指引：**
+- 覆蓋所有主要使用情境
+- 納入 easy、medium、hard 範例
+- 在不同分類之間取得平衡
+- 包含 edge cases
+- 具備清楚的 ground truth 答案
 
-### Step 3: Implement Evaluation
+<a id="step-3-implement-evaluation"></a>
+### 步驟 3：實作評估
 
 ```python
 class ModelEvaluator:
@@ -246,7 +262,8 @@ class ModelEvaluator:
         # return cosine_sim(embed(response), embed(case["ground_truth"]))
 ```
 
-### Step 4: LLM-as-Judge
+<a id="step-4-llm-as-judge"></a>
+### 步驟 4：LLM-as-Judge
 
 ```python
 def llm_judge(case: dict, response: str) -> dict:
@@ -272,17 +289,20 @@ Output JSON:
 
 ---
 
-## Common Evaluation Pitfalls
+<a id="common-evaluation-pitfalls"></a>
+## 常見評估陷阱
 
-### Pitfall 1: Small Test Set
+<a id="pitfall-1-small-test-set"></a>
+### 陷阱 1：測試集太小
 
-**Problem:** 20 test cases is not enough for reliable comparison.
+**問題：** 20 個測試案例不足以做可靠比較。
 
-**Solution:** Aim for 100+ cases, stratified by difficulty and category.
+**解法：** 目標至少 100+ 個案例，並依難度與類別分層取樣。
 
-### Pitfall 2: Ambiguous Ground Truth
+<a id="pitfall-2-ambiguous-ground-truth"></a>
+### 陷阱 2：Ground Truth 含糊不清
 
-**Problem:** "Reasonable" answers get marked wrong.
+**問題：** 「合理」答案被誤判為錯。
 
 ```
 Query: "What is the capital of Australia?"
@@ -291,25 +311,28 @@ Model answer: "The capital of Australia is Canberra."
 Exact match: FAIL (but clearly correct)
 ```
 
-**Solution:** Use semantic matching or LLM judge, not exact match.
+**解法：** 使用 semantic matching 或 LLM judge，而不是 exact match。
 
-### Pitfall 3: Evaluation Set Leakage
+<a id="pitfall-3-evaluation-set-leakage"></a>
+### 陷阱 3：評估集外洩
 
-**Problem:** Using same cases for development and evaluation.
+**問題：** 開發與評估使用同一批案例。
 
-**Solution:** Keep a held-out test set that you never use for prompt tuning.
+**解法：** 保留一份 held-out test set，絕不拿來做 prompt tuning。
 
-### Pitfall 4: Ignoring Variance
+<a id="pitfall-4-ignoring-variance"></a>
+### 陷阱 4：忽略變異性
 
-**Problem:** Running each test once ignores model randomness.
+**問題：** 每個測試只跑一次，忽略模型隨機性。
 
-**Solution:** Run multiple times with temperature > 0, report confidence intervals.
+**解法：** 在 temperature > 0 下重複執行多次，並回報信賴區間。
 
-### Pitfall 5: Cost Blindness
+<a id="pitfall-5-cost-blindness"></a>
+### 陷阱 5：忽視成本
 
-**Problem:** Best model is 10x more expensive.
+**問題：** 最佳模型可能貴上 10 倍。
 
-**Solution:** Always report quality-adjusted cost.
+**解法：** 一律回報經品質校正後的成本。
 
 ```python
 def quality_adjusted_cost(model_results):
@@ -325,9 +348,11 @@ def quality_adjusted_cost(model_results):
 
 ---
 
-## Practical Assessment Process
+<a id="practical-assessment-process"></a>
+## 實務評估流程
 
-### Week 1: Setup and Initial Filtering
+<a id="week-1-setup-and-initial-filtering"></a>
+### 第 1 週：建置與初步篩選
 
 ```
 Day 1-2: Define evaluation criteria and create test set
@@ -335,7 +360,8 @@ Day 3-4: Benchmark 4-6 candidate models
 Day 5: Analyze results, filter to top 2-3
 ```
 
-### Week 2: Deep Evaluation
+<a id="week-2-deep-evaluation"></a>
+### 第 2 週：深度評估
 
 ```
 Day 1-2: Expand test set for top candidates
@@ -344,7 +370,8 @@ Day 4: Measure latency and throughput
 Day 5: Calculate total cost of ownership
 ```
 
-### Week 3: Production Validation
+<a id="week-3-production-validation"></a>
+### 第 3 週：正式環境驗證
 
 ```
 Day 1-2: Shadow mode deployment
@@ -352,7 +379,8 @@ Day 3-4: A/B test if traffic allows
 Day 5: Final decision and documentation
 ```
 
-### Decision Template
+<a id="decision-template"></a>
+### 決策範本
 
 ```markdown
 ## Model Evaluation Report
@@ -381,16 +409,19 @@ Model C (Llama 3.1 70B) for high-volume, cost-sensitive paths
 
 ---
 
-## A/B Testing Models
+<a id="ab-testing-models"></a>
+## 模型 A/B 測試
 
-### When to A/B Test
+<a id="when-to-a-b-test"></a>
+### 什麼時候該做 A/B 測試
 
-- High traffic (1000+ queries/day)
-- Clear success metrics
-- Acceptable risk of quality variation
-- Need production validation
+- 高流量（每天 1000+ 次查詢）
+- 成功指標明確
+- 可接受一定程度的品質波動風險
+- 需要正式環境驗證
 
-### A/B Test Design
+<a id="a-b-test-design"></a>
+### A/B 測試設計
 
 ```python
 class ModelABTest:
@@ -428,36 +459,39 @@ class ModelABTest:
         }
 ```
 
-### Metrics to Track
+<a id="metrics-to-track"></a>
+### 應追蹤的指標
 
-| Metric Type | Examples |
+| 指標類型 | 範例 |
 |-------------|----------|
-| Quality | User ratings, expert review, LLM judge |
-| Engagement | Click-through, time on page, follow-up queries |
-| Business | Conversion, support escalation, resolution rate |
-| Operational | Latency, errors, cost |
+| 品質 | 使用者評分、專家審查、LLM judge |
+| 互動 | 點擊率、停留時間、後續查詢 |
+| 商業 | 轉換率、客服升級率、解決率 |
+| 營運 | 延遲、錯誤、成本 |
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: How would you evaluate models for a customer support chatbot?
+<a id="q-how-would-you-evaluate-models-for-a-customer-support-chatbot"></a>
+### Q：你會如何評估客服 chatbot 使用的模型？
 
-**Strong answer:**
-I would structure evaluation in layers:
+**強答範例：**
+我會分層進行評估：
 
-**1. Offline evaluation (80% of effort):**
-- Create test set from real support tickets (200+ cases)
-- Cover all categories: billing, technical, returns, general
-- Include easy, medium, hard difficulty
-- Measure: accuracy, helpfulness, safety
+**1. 離線評估（占 80% 心力）：**
+- 從真實客服工單建立測試集（200+ 案例）
+- 涵蓋所有類別：billing、technical、returns、general
+- 納入 easy、medium、hard 難度
+- 衡量：accuracy、helpfulness、safety
 
-**2. Evaluation method:**
-- Use LLM-as-judge for subjective metrics
-- Human review for sample (20%)
-- Track instruction following (format, length)
+**2. 評估方法：**
+- 主觀指標使用 LLM-as-judge
+- 抽樣 20% 由人工審查
+- 追蹤 instruction following（格式、長度）
 
-**3. Metrics:**
+**3. 指標：**
 ```python
 metrics = {
     "resolution_accuracy": "Does answer solve the problem?",
@@ -467,35 +501,37 @@ metrics = {
 }
 ```
 
-**4. Production validation:**
-- Shadow mode: run new model, compare outputs
-- A/B test: 10% traffic to new model
-- Monitor: CSAT, escalation rate, resolution time
+**4. 正式環境驗證：**
+- Shadow mode：執行新模型並比較輸出
+- A/B test：將 10% 流量導向新模型
+- 監控：CSAT、升級率、解決時間
 
-### Q: What is wrong with using MMLU to compare models for your use case?
+<a id="q-what-is-wrong-with-using-mmlu-to-compare-models-for-your-use-case"></a>
+### Q：為什麼用 MMLU 來比較你的使用情境中的模型並不理想？
 
-**Strong answer:**
-MMLU has several problems for specific use cases:
+**強答範例：**
+MMLU 對特定使用情境有幾個問題：
 
-**1. Domain mismatch:** MMLU tests academic knowledge. My customer support bot needs product knowledge.
+**1. 領域不匹配：** MMLU 測的是學術知識；我的客服 bot 需要的是產品知識。
 
-**2. Format mismatch:** MMLU is multiple choice. My use case is free-form generation.
+**2. 格式不匹配：** MMLU 是選擇題；我的使用情境需要自由生成。
 
-**3. Contamination:** Models may have trained on MMLU questions.
+**3. 污染：** 模型可能已經在訓練中看過 MMLU 題目。
 
-**4. Aggregation hides variance:** Model A might beat B on MMLU but lose on the specific categories I care about.
+**4. 彙總分數掩蓋差異：** 模型 A 在 MMLU 勝過 B，但在我重視的類別可能表現更差。
 
-**5. No context testing:** MMLU does not test RAG or long-context abilities.
+**5. 沒有測試 context：** MMLU 不會測 RAG 或長上下文能力。
 
-**Better approach:** 
-- Use MMLU for initial filtering (saves time)
-- Build custom evaluation for final decision
-- Test on actual use case data
-- Include operational metrics (latency, cost)
+**更好的做法：** 
+- 用 MMLU 做初步篩選（節省時間）
+- 用自訂評估做最終決策
+- 用真實使用情境資料測試
+- 納入營運指標（延遲、成本）
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - Zheng et al. "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena" (2023)
 - LMSYS Chatbot Arena: https://chat.lmsys.org/
@@ -505,4 +541,4 @@ MMLU has several problems for specific use cases:
 
 ---
 
-*Previous: [Model Taxonomy](01-model-taxonomy.md) | Next: [Pricing and Costs](03-pricing-and-costs.md)*
+*上一篇：[Model Taxonomy](01-model-taxonomy.md) | 下一篇：[Pricing and Costs](03-pricing-and-costs.md)*

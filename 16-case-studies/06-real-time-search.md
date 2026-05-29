@@ -1,24 +1,28 @@
-# Case Study: Real-Time AI Search Engine
+<a name="case-study-real-time-ai-search-engine"></a>
+# 案例研究：即時 AI 搜尋引擎
 
-## The Problem
+<a name="the-problem"></a>
+## 問題
 
-A fintech startup needs to build a **real-time market intelligence platform** that lets analysts ask natural language questions about live market data, news, and company filings.
+一家金融科技新創公司需要建立一個**即時市場情報平台**，讓分析師能夠就即時市場資料、新聞及公司申報文件提問自然語言問題。
 
-**Constraints given in the interview:**
-- Data freshness: queries must reflect information from the last 5 minutes
-- Scale: 10,000 concurrent users, 50,000 queries/hour
-- Accuracy: financial data cannot be hallucinated
-- Latency: p95 response time under 3 seconds
-
----
-
-## The Interview Question
-
-> "Design a system that lets users ask 'What is the sentiment around Tesla in the last hour?' and get an accurate, sourced answer in under 3 seconds."
+**面試中給定的限制條件：**
+- 資料新鮮度：查詢結果必須反映過去 5 分鐘的資訊
+- 規模：10,000 名並發用戶，每小時 50,000 次查詢
+- 準確性：不得虛構金融資料
+- 延遲：p95 響應時間低於 3 秒
 
 ---
 
-## Solution Architecture
+<a name="the-interview-question"></a>
+## 面試問題
+
+> 「設計一個系統，讓用戶能詢問『過去一小時 Tesla 的市場情緒如何？』，並在 3 秒內得到準確且有來源依據的答案。」
+
+---
+
+<a name="solution-architecture"></a>
+## 解決方案架構
 
 ```mermaid
 flowchart TB
@@ -51,29 +55,34 @@ flowchart TB
 
 ---
 
-## Key Design Decisions
+<a name="key-design-decisions"></a>
+## 關鍵設計決策
 
-### 1. Why Kafka for Ingestion?
+<a name="1-why-kafka-for-ingestion"></a>
+### 1. 為何使用 Kafka 進行資料攝取？
 
-The interviewer wants to know you understand **streaming vs batch**.
+面試官想確認你理解**串流與批次處理**的差異。
 
-**Answer:** Kafka provides exactly-once delivery and allows multiple consumers. We have one consumer writing to the vector DB and another to Elasticsearch. If the vector indexing falls behind, the full-text index still serves queries. This is the **dual-write pattern** for resilience.
+**回答：** Kafka 提供 exactly-once 傳遞，並允許多個消費者。我們有一個消費者寫入向量資料庫，另一個寫入 Elasticsearch。若向量索引出現落後，全文索引仍可繼續服務查詢。這是提升韌性的**雙寫模式**。
 
-### 2. Why Hybrid Search (Vector + Full-Text)?
+<a name="2-why-hybrid-search-vector--full-text"></a>
+### 2. 為何使用混合搜尋（向量 + 全文）？
 
-**Answer:** Financial queries mix semantic ("sentiment around Tesla") with keyword ("TSLA 10-K filing"). Pure vector search would miss exact ticker matches. We use **Reciprocal Rank Fusion (RRF)** to combine results.
+**回答：** 金融查詢混合了語義搜尋（「Tesla 的情緒」）與關鍵字搜尋（「TSLA 10-K 申報」）。純向量搜尋會遺漏精確的股票代號比對。我們使用**倒數排名融合（RRF，Reciprocal Rank Fusion）**來合併結果。
 
-### 3. Why GPT-4o-mini Instead of GPT-4o?
+<a name="3-why-gpt-4o-mini-instead-of-gpt-4o"></a>
+### 3. 為何使用 GPT-4o-mini 而非 GPT-4o？
 
-**Answer:** For a 3-second p95 latency target at 50K queries/hour, we need fast generation. GPT-4o-mini gives us 100+ tokens/second vs 40 tokens/second for GPT-4o. The reranker handles accuracy; the LLM only synthesizes already-verified content.
+**回答：** 為了在每小時 50K 次查詢下達成 3 秒 p95 延遲目標，我們需要快速生成。GPT-4o-mini 每秒可輸出 100+ token，而 GPT-4o 僅有 40 token/秒。重新排序器負責保證準確性；LLM 只需綜合已驗證的內容。
 
 ---
 
-## Handling the Freshness Requirement
+<a name="handling-the-freshness-requirement"></a>
+## 處理資料新鮮度需求
 
-The hardest part of this problem is ensuring the index reflects data from the last 5 minutes.
+此問題最困難的部分，在於確保索引反映過去 5 分鐘的資料。
 
-**Solution: TTL-Based Indexing**
+**解決方案：基於 TTL 的索引**
 
 ```python
 # Each document gets a timestamp field
@@ -95,38 +104,41 @@ def search_recent(query: str, minutes: int = 60):
 
 ---
 
-## Cost Analysis
+<a name="cost-analysis"></a>
+## 成本分析
 
-| Component | Monthly Cost (at 50K queries/hour) |
-|-----------|-----------------------------------|
-| Kafka (MSK) | $2,500 |
-| Qdrant (managed) | $1,800 |
+| 元件 | 每月費用（每小時 50K 查詢）|
+|-----|--------------------------|
+| Kafka（MSK）| $2,500 |
+| Qdrant（托管）| $1,800 |
 | Elasticsearch | $2,000 |
-| GPT-4o-mini (generation) | $3,500 |
-| Cross-encoder reranking | $800 |
-| **Total** | **$10,600/month** |
+| GPT-4o-mini（生成）| $3,500 |
+| 交叉編碼器重新排序 | $800 |
+| **總計** | **$10,600/月** |
 
 ---
 
-## Interview Follow-Up Questions
+<a name="interview-follow-up-questions"></a>
+## 面試追問
 
-**Q: How do you prevent hallucinated financial data?**
+**Q：如何防止虛構金融資料？**
 
-A: Three layers: (1) The LLM only summarizes retrieved content, never generates facts. (2) Every claim must cite a source document. (3) A post-generation validator checks that any number in the response exists verbatim in a source.
+A：三層防護：（1）LLM 只總結已擷取的內容，絕不自行生成事實。（2）每個主張都必須引用來源文件。（3）生成後驗證器檢查回答中的任何數字是否在來源中逐字出現。
 
-**Q: What if Kafka falls behind during a news spike?**
+**Q：如果 Kafka 在新聞爆發期間落後怎麼辦？**
 
-A: We implement backpressure with consumer lag monitoring. If lag exceeds 2 minutes, we shed load on the ingestion side using sampling. Real-time queries hit a "recent" index with only the last hour of data; batch jobs backfill the full index.
-
----
-
-## Key Takeaways for Interviews
-
-1. **Real-time AI search requires streaming infrastructure**, not batch ETL
-2. **Hybrid search (semantic + keyword) outperforms pure vector** for structured domains
-3. **Latency budgets drive model selection**: use fast models for synthesis, save expensive models for reasoning
-4. **Freshness is a filter, not a feature**: implement at the index level, not the prompt level
+A：我們透過消費者延遲監控實施反壓機制。若延遲超過 2 分鐘，則在攝取端使用取樣進行負載削減。即時查詢命中只包含最近一小時資料的「近期」索引；批次作業回填完整索引。
 
 ---
 
-*Related chapters: [Hybrid Search](../06-retrieval-systems/05-hybrid-search.md), [Serving Infrastructure](../04-inference-optimization/06-serving-infrastructure.md)*
+<a name="key-takeaways-for-interviews"></a>
+## 面試重點心得
+
+1. **即時 AI 搜尋需要串流基礎設施**，而非批次 ETL
+2. **混合搜尋（語義 + 關鍵字）優於純向量搜尋**，適用於結構化領域
+3. **延遲預算驅動模型選擇**：使用快速模型進行綜合，保留昂貴模型用於推理
+4. **新鮮度是過濾器，而非功能**：在索引層實作，而非在提示層實作
+
+---
+
+*相關章節：[混合搜尋](../06-retrieval-systems/05-hybrid-search.md)、[服務基礎設施](../04-inference-optimization/06-serving-infrastructure.md)*

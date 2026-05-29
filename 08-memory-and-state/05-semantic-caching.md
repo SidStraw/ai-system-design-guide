@@ -25,18 +25,18 @@
 | **鍵** | 雜湊後的查詢字串 | 查詢 embedding 向量 |
 | **匹配**| 100% 字串完全相同 | Cosine Similarity > Threshold |
 | **效率**| 低（輕微拼字錯誤就會破壞快取） | 高（能理解意圖） |
-| **風險** | 零 | Semantic Drift（回傳錯誤答案） |
+| **風險** | 零 | 語意漂移（Semantic Drift，回傳錯誤答案） |
 
 ---
 
 <a id="the-semantic-matching-pipeline"></a>
 ## 語意匹配流程
 
-1. **Embed**：傳入的查詢會被轉換為向量（例如使用 `text-embedding-3-small`）。
-2. **Search**：在快取中搜尋最近鄰。
-3. **Threshold Check**：若 `distance < 0.05`（非常相似），則回傳快取結果。
-4. **LLM Verification**：對於高風險查詢，小型的「Verifier Model」（例如 GPT-5.5-mini、Claude Haiku 4.5）會檢查快取回應是否真的回答了新查詢。
-5. **Update**：如果沒有命中，呼叫 LLM 並將新結果儲存到向量快取中。
+1. **產生 embedding（Embed）**：傳入的查詢會被轉換為向量（例如使用 `text-embedding-3-small`）。
+2. **搜尋（Search）**：在快取中搜尋最近鄰。
+3. **門檻檢查（Threshold Check）**：若 `distance < 0.05`（非常相似），則回傳快取結果。
+4. **LLM 驗證（LLM Verification）**：對於高風險查詢，小型的「驗證模型（Verifier Model）」（例如 GPT-5.5-mini、Claude Haiku 4.5）會檢查快取回應是否真的回答了新查詢。
+5. **更新（Update）**：如果沒有命中，呼叫 LLM 並將新結果儲存到向量快取中。
 
 ---
 
@@ -45,7 +45,7 @@
 
 標準堆疊：
 - **RedisVL**：直接在 Redis 實例內提供低延遲向量搜尋。
-- **Hybrid Caching**：同時使用 Redis 儲存中繼資料（keys）與向量 payloads。
+- **混合式快取（Hybrid Caching）**：同時使用 Redis 儲存中繼資料（keys）與向量 payloads。
 - **TTL**：語意快取應具有 TTL（Time-To-Live）。常見模式是 **Dynamic TTL**：熱門答案保留更久，而「過時」資訊會被定期淘汰。
 
 ---
@@ -63,7 +63,7 @@
 ## 面試問題
 
 <a id="q-what-is-semantic-drift-in-caching-and-how-do-you-prevent-it"></a>
-### 問：在快取中，「Semantic Drift」是什麼？你要如何防止它？
+### 問：在快取中，「語意漂移（Semantic Drift）」是什麼？你要如何防止它？
 
 **優秀回答：**
 當相似度門檻設得太寬鬆時（例如 0.8 而不是 0.95），就會發生 Semantic Drift。像是 *「我該如何修理我的車？」* 這類查詢，可能會匹配到 *「我該如何清洗我的車？」* 的快取回應。為了避免這種情況，我們會使用 **多階段驗證**：1) 向量相似度檢查，2) **Entity-Match 檢查**（確保兩個查詢都涉及「Car」以及相同的「Verb」），以及 3) **收緊 Threshold**：對於技術或醫療查詢，我們要求 $>0.98$ 的相似度才會回傳快取結果。

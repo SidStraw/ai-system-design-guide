@@ -1,23 +1,27 @@
-# Model Selection Guide
+<a id="model-selection-guide"></a>
+# 模型選型指南
 
-A practical framework for choosing the right LLM for your use case, considering capability, cost, latency, and operational factors.
+本章提供一個實務框架，協助你根據能力、成本、延遲與營運因素，為自己的使用情境挑選合適的 LLM。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Selection Framework](#selection-framework)
-- [Capability Comparison](#capability-comparison)
-- [Use Case Mapping](#use-case-mapping)
-- [Cost Analysis](#cost-analysis)
-- [Operational Considerations](#operational-considerations)
-- [Multi-Model Strategies](#multi-model-strategies)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [選型框架](#selection-framework)
+- [能力比較](#capability-comparison)
+- [使用情境對應](#use-case-mapping)
+- [成本分析](#cost-analysis)
+- [營運考量](#operational-considerations)
+- [多模型策略](#multi-model-strategies)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Selection Framework
+<a id="selection-framework"></a>
+## 選型框架
 
-### Decision Tree (Dec 2025)
+<a id="decision-tree-dec-2025"></a>
+### 決策樹（2025 年 12 月）
 
 ```
 Start Here
@@ -66,110 +70,124 @@ Start Here
         └─────────────────┘
 ```
 
-### Key Selection Factors
+<a id="key-selection-factors"></a>
+### 關鍵選型因素
 
-| Factor | Weight | Considerations |
+| 因素 | 權重 | 考量 |
 |--------|--------|----------------|
-| **Agentic Reliability** | High | Tool-calling accuracy, multi-step planning |
-| **Context Recall** | High | Needle-in-a-haystack performance at 1M+ |
-| **Rate Limit Ceiling** | High | **(Principal Nuance)**: Can the provider handle your P99 throughput without 429 errors? |
-| **Ecosystem Maturity** | High | Production track record, SDK support, and Enterprise SLA |
-| **Cost / Output Token** | Medium | Agentic loops consume 5x-10x more tokens |
+| **Agentic Reliability** | 高 | Tool-calling 準確率、多步規劃能力 |
+| **Context Recall** | 高 | 1M+ context 下 needle-in-a-haystack 表現 |
+| **Rate Limit Ceiling** | 高 | **（Principal 細節）**：供應商能否承受你的 P99 吞吐而不發生 429？ |
+| **Ecosystem Maturity** | 高 | 正式環境歷史、SDK 支援與 Enterprise SLA |
+| **Cost / Output Token** | 中 | Agentic loops 會消耗 5x-10x 更多 tokens |
 
 ---
 
-## Capability Comparison
+<a id="capability-comparison"></a>
+## 能力比較
 
-### Frontier Model Comparison (December 2025)
+<a id="frontier-model-comparison-december-2025"></a>
+### 前沿模型比較（2025 年 12 月）
 
-| Model | Strengths | Cons | Context | Best For |
+| 模型 | 優勢 | 缺點 | Context | 最適合 |
 |-------|-----------|------|---------|----------|
-| **GPT-5.5** | Agentic planning, native omni | High cost | 512K | Multi-agent systems |
-| **Claude Opus 4.7** | SoTA Software Engineering | Expensive | 400K | Complex codebases |
-| **Claude Sonnet 4.6** | Hybrid Reasoning depth | High peak latency | 200K | General production |
-| **Gemini 3.0 Pro** | 2.5M context, multimodal | Latency spikes | 2.5M | Large data ingestion |
-| **o3** | Extreme logic/reasoning | High cost/latency | 128K | Math, complex debug |
+| **GPT-5.5** | Agentic 規劃、原生 omni | 成本高 | 512K | 多 agent 系統 |
+| **Claude Opus 4.7** | 最先進 Software Engineering | 昂貴 | 400K | 複雜 codebases |
+| **Claude Sonnet 4.6** | Hybrid reasoning 深度 | 尖峰延遲較高 | 200K | 通用正式環境 |
+| **Gemini 3.0 Pro** | 2.5M context、多模態 | 有延遲尖峰 | 2.5M | 大型資料攝取 |
+| **o3** | 極致邏輯／推理 | 成本／延遲高 | 128K | 數學、複雜除錯 |
 
-### Budget Model Comparison
+<a id="budget-model-comparison"></a>
+### 預算型模型比較
 
-| Model | Cost (per 1M input/output) | Quality | Context | Best For |
+| 模型 | 成本（每 1M input/output） | 品質 | Context | 最適合 |
 |-------|----------------------------|---------|---------|----------|
-| **Gemini 3 Flash** | $0.05 / $0.20 | Frontier-tier | 1M | High-volume RAG |
-| **o4-mini** | $0.10 / $0.40 | Excellent | 128K | Fast reasoning tasks |
-| **Llama 4 8B** | Self-hosted (H100/L40) | Strong | 128K | On-device, private |
+| **Gemini 3 Flash** | $0.05 / $0.20 | Frontier-tier | 1M | 高流量 RAG |
+| **o4-mini** | $0.10 / $0.40 | Excellent | 128K | 快速推理任務 |
+| **Llama 4 8B** | Self-hosted（H100/L40） | Strong | 128K | 裝置端、私有場景 |
 
-### Open Source Models
+<a id="open-source-models"></a>
+### 開源模型
 
-| Model | Parameters | Quality | Best For |
+| 模型 | 參數 | 品質 | 最適合 |
 |-------|------------|---------|----------|
-| **Llama 4 70B** | 70B | Frontier-competitive | Universal open choice |
-| **Nemotron 3 Ultra** | 500B MoE | Agentic mastery | Scalable open agents |
-| **DeepSeek V3.2** | 671B MoE | Ultra performance | Lowest TCO for frontier quality |
+| **Llama 4 70B** | 70B | Frontier-competitive | 通用開放首選 |
+| **Nemotron 3 Ultra** | 500B MoE | Agentic mastery | 可擴展的開放 agents |
+| **DeepSeek V3.2** | 671B MoE | Ultra performance | 以最低 TCO 達成 frontier 品質 |
 
 ---
 
-## Use Case Mapping
+<a id="use-case-mapping"></a>
+## 使用情境對應
 
-### By Application Type (Dec 2025)
+<a id="by-application-type-dec-2025"></a>
+### 依應用類型（2025 年 12 月）
 
-| Use Case | Recommended Models | Rationale |
+| 使用情境 | 建議模型 | 理由 |
 |----------|-------------------|-----------|
-| **Autonomous Dev** | Claude Opus 4.7, Claude Sonnet 4.6 | "Claude Code" agentic mastery & verified coding |
-| **Enterprise RAG** | Gemini 3.0 Pro, Gemini 3 Flash | 2.5M context removes retrieval complexity |
-| **customer Support** | Gemini 3 Flash, GPT-5.5-mini | Near-zero latency with strong reasoning |
-| **Reasoning / Debug** | o3, DeepSeek-R1 | Best at "Thinking" mode for code/logic |
-| **Video/Multimodal** | Gemini 3.0 Pro, GPT-5.5 | Native interleaved multimodal processing |
-| **Private Agent** | Llama 4 70B, Nemotron 3 | Strongest open-weight agentic planning |
+| **Autonomous Dev** | Claude Opus 4.7, Claude Sonnet 4.6 | 「Claude Code」的 agentic 掌控力與已驗證 coding 能力 |
+| **Enterprise RAG** | Gemini 3.0 Pro, Gemini 3 Flash | 2.5M context 可降低 retrieval 複雜度 |
+| **Customer Support** | Gemini 3 Flash, GPT-5.5-mini | 近乎零延遲且推理能力強 |
+| **Reasoning / Debug** | o3, DeepSeek-R1 | 在 code／logic 的「Thinking」模式中表現最佳 |
+| **Video/Multimodal** | Gemini 3.0 Pro, GPT-5.5 | 原生支援交錯式多模態處理 |
+| **Private Agent** | Llama 4 70B, Nemotron 3 | 最強的 open-weight agentic planning |
 
-### By Constraint
+<a id="by-constraint"></a>
+### 依限制條件
 
-| Constraint | Approach |
+| 限制 | 方法 |
 |------------|----------|
-| **Max latency < 100ms** | Gemini 3 Flash, o4-mini, or self-hosted Nano models |
-| **Context > 1M tokens** | Gemini 3.0 Pro (native 2.5M) |
-| **Zero-data Leakage** | Llama 4 70B on internal VPC |
-| **Complex Tool Use** | Claude Opus 4.7 or GPT-5.5 (best planning accuracy) |
+| **最大延遲 < 100ms** | Gemini 3 Flash、o4-mini，或 self-hosted Nano models |
+| **Context > 1M tokens** | Gemini 3.0 Pro（原生 2.5M） |
+| **零資料外洩** | 在內部 VPC 上部署 Llama 4 70B |
+| **複雜工具使用** | Claude Opus 4.7 或 GPT-5.5（規劃準確率最佳） |
 
 ---
 
-## Cost Analysis
+<a id="cost-analysis"></a>
+## 成本分析
 
-### Cost Modeling (Dec 2025)
+<a id="cost-modeling-dec-2025"></a>
+### 成本建模（2025 年 12 月）
 
-| Model | Input / 1M | Output / 1M | Notes |
+| 模型 | Input / 1M | Output / 1M | 備註 |
 |-------|------------|-------------|-------|
-| **GPT-5.5** | $5.00 | $20.00 | Agentic premium |
-| **Claude Opus 4.7** | $15.00 | $75.00 | Specialized engineering |
-| **Claude Sonnet 4.6** | $3.00 | $15.00 | Balanced choice |
-| **Gemini 3.0 Pro** | $1.25 | $5.00 | Best value frontier |
-| **Gemini 3 Flash** | $0.05 | $0.20 | RAG-at-scale winner |
-| **o4-mini** | $0.10 | $0.40 | Logic-on-a-budget |
+| **GPT-5.5** | $5.00 | $20.00 | Agentic 溢價 |
+| **Claude Opus 4.7** | $15.00 | $75.00 | 專注工程任務 |
+| **Claude Sonnet 4.6** | $3.00 | $15.00 | 均衡選擇 |
+| **Gemini 3.0 Pro** | $1.25 | $5.00 | 最有價值的 frontier 選項 |
+| **Gemini 3 Flash** | $0.05 | $0.20 | 大規模 RAG 贏家 |
+| **o4-mini** | $0.10 | $0.40 | 平價邏輯推理 |
 
-### Cost Comparison Example
+<a id="cost-comparison-example"></a>
+### 成本比較範例
 
-Assume 1M queries/month, 1K input tokens + 500 output tokens per query:
+假設每月 1M 次查詢，每次 1K input tokens + 500 output tokens：
 
-| Volume | GPT-5.5 | Claude Sonnet | Gemini 3 Pro | Gemini 3 Flash |
+| 量級 | GPT-5.5 | Claude Sonnet | Gemini 3 Pro | Gemini 3 Flash |
 |--------|---------|---------------|--------------|----------------|
-| 10K queries/mo | $150 | $105 | $37.50 | $1.50 |
-| 1M queries/mo | $15,000 | $10,500 | $3,750 | $150 |
+| 每月 10K 次查詢 | $150 | $105 | $37.50 | $1.50 |
+| 每月 1M 次查詢 | $15,000 | $10,500 | $3,750 | $150 |
 
-*2025 Insight: Gemini 3 Flash has effectively commoditized RAG, making long-context processing cheaper than traditional vector search infra at scale.*
+*2025 年洞察：Gemini 3 Flash 幾乎已把 RAG 商品化，在大規模場景下，長上下文處理甚至比傳統向量搜尋基礎設施更便宜。*
 
 ---
 
-## Operational Considerations
+<a id="operational-considerations"></a>
+## 營運考量
 
-### Rate Limits and Quotas
+<a id="rate-limits-and-quotas"></a>
+### Rate Limits 與配額
 
 | Provider | Tier | RPM | TPM |
 |----------|------|-----|-----|
-| OpenAI (Tier 1) | Basic | 500 | 30K |
-| OpenAI (Tier 5) | Enterprise | 10K | 10M |
-| Anthropic (Tier 1) | Basic | 50 | 40K |
-| Anthropic (Tier 4) | Enterprise | 4K | 400K |
+| OpenAI（Tier 1） | Basic | 500 | 30K |
+| OpenAI（Tier 5） | Enterprise | 10K | 10M |
+| Anthropic（Tier 1） | Basic | 50 | 40K |
+| Anthropic（Tier 4） | Enterprise | 4K | 400K |
 
-### Reliability Patterns
+<a id="reliability-patterns"></a>
+### 可靠性模式
 
 ```python
 class ReliableModelClient:
@@ -192,7 +210,8 @@ class ReliableModelClient:
         raise AllProvidersUnavailable()
 ```
 
-### Abstraction Layer
+<a id="abstraction-layer"></a>
+### 抽象層
 
 ```python
 class LLMClient:
@@ -228,9 +247,11 @@ class LLMClient:
 
 ---
 
-## Multi-Model Strategies
+<a id="multi-model-strategies"></a>
+## 多模型策略
 
-### Model Routing
+<a id="model-routing"></a>
+### 模型路由
 
 ```python
 class ModelRouter:
@@ -255,9 +276,10 @@ class ModelRouter:
         return self.models[query_type]
 ```
 
-### Cascade Pattern (2025 Refinement)
+<a id="cascade-pattern-2025-refinement"></a>
+### 級聯模式（2025 年版精修）
 
-**The Logic**: Never use a 70B model for a task a 1B model can do. Use a "Router" to score confidence.
+**核心邏輯：** 能由 1B 模型完成的任務，就不要動用 70B 模型。用「Router」來評估信心分數。
 
 ```python
 class ModelCascade:
@@ -278,62 +300,66 @@ class ModelCascade:
         return response
 ```
 
-**Principal-level Tip:** Implement "Semantic Fallback" where you don't just retry the same model on error, but immediately jump to a larger model or a different provider (OpenAI -> Anthropic) to avoid correlated failures.
+**Principal 級建議：** 實作「Semantic Fallback」——發生錯誤時，不要只重試同一模型，而是立即跳到更大的模型或不同供應商（OpenAI -> Anthropic），以避免相關性故障。
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: How do you choose between GPT-4o, Claude, and Gemini for a production application?
+<a id="q-how-do-you-choose-between-gpt-4o-claude-and-gemini-for-a-production-application"></a>
+### Q：在正式環境應用中，你會如何在 GPT-4o、Claude 與 Gemini 之間做選擇？
 
-**Strong answer:**
+**強答範例：**
 
-"My selection depends on specific requirements:
+「我的選擇會取決於具體需求：
 
-**For most production workloads**, I default to Claude 3.5 Sonnet or GPT-4o. Both are excellent general-purpose models. Sonnet has a slight edge on coding, GPT-4o has better ecosystem integration.
+**對大多數正式環境工作負載來說**，我通常先從 Claude 3.5 Sonnet 或 GPT-4o 開始。兩者都是很好的通用模型。Sonnet 在 coding 上略有優勢，GPT-4o 則有較佳的生態整合。
 
-**For long-context applications**, Gemini 1.5 Pro is the clear winner with 1-2 million token context. If I need to process entire codebases or very long documents, Gemini is my choice.
+**對長上下文應用來說**，Gemini 1.5 Pro 憑藉 100-200 萬 token context 明顯勝出。如果我要處理整個 codebase 或非常長的文件，Gemini 會是我的選擇。
 
-**For cost-sensitive high-volume**, GPT-4o-mini or Claude Haiku. These are 10-20x cheaper and handle straightforward tasks well.
+**對成本敏感且高流量的場景**，我會選 GPT-4o-mini 或 Claude Haiku。它們便宜 10-20 倍，而且能很好處理直接明確的任務。
 
-**My practical approach:**
-1. Prototype with Sonnet or GPT-4o to validate the use case
-2. Evaluate on MY specific task, not just benchmarks
-3. Build abstraction layer so I can switch easily
-4. Optimize costs by routing simpler requests to cheaper models
+**我的實務做法：**
+1. 先用 Sonnet 或 GPT-4o 做原型，驗證 use case
+2. 針對**我自己的任務**做評估，而不是只看 benchmarks
+3. 建立 abstraction layer，方便日後切換
+4. 透過把簡單請求路由到便宜模型來最佳化成本
 
-I never rely solely on benchmark scores. A model that ranks lower on MMLU might excel on my domain."
+我絕不只依賴 benchmark 分數。某個模型在 MMLU 排名較低，仍可能在我的領域明顯更強。」
 
-### Q: When would you self-host vs use API providers?
+<a id="q-when-would-you-self-host-vs-use-api-providers"></a>
+### Q：你會在什麼情況下自行託管，而不是使用 API 供應商？
 
-**Strong answer:**
+**強答範例：**
 
-"It is a tradeoff of control vs operational burden.
+「這本質上是控制權與營運負擔之間的取捨。
 
-**Use APIs when:**
-- Volume under 1M queries/month (cost crossover)
-- Need latest models immediately
-- Team lacks GPU infrastructure expertise
-- Variable workload hard to capacity plan
-- Time-to-market is critical
+**適合使用 API 的情況：**
+- 流量低於每月 1M 次查詢（成本交叉點之前）
+- 需要立即用到最新模型
+- 團隊缺乏 GPU 基礎設施專業能力
+- 工作負載波動大、難以做容量規劃
+- 上市時間非常關鍵
 
-**Self-host when:**
-- Data cannot leave infrastructure (compliance)
-- Volume exceeds 10M queries/month (cost savings)
-- Need latency under 100ms P99
-- Need custom model weights or fine-tuning
-- Full control over model behavior
+**適合自行託管的情況：**
+- 資料不得離開基礎設施（合規）
+- 流量超過每月 10M 次查詢（有明顯成本優勢）
+- 需要 P99 低於 100ms 的延遲
+- 需要自訂模型權重或 fine-tuning
+- 需要完整控制模型行為
 
-**Hybrid often works best:**
-- Self-host for high-volume predictable workloads
-- API for spikes and specialized models
-- API as fallback when self-hosted fails
+**Hybrid 往往最好：**
+- 高流量且可預測的工作負載用 self-host
+- 尖峰與特化模型用 API
+- self-hosted 失效時，API 作為 fallback
 
-Hidden costs of self-hosting: GPU procurement, engineering time, model updates, monitoring. Factor in 1-2 dedicated engineers for infrastructure."
+自行託管的隱性成本包括：GPU 採購、工程時間、模型更新與監控。把 1-2 位專職基礎設施工程師也算進去。」
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - OpenAI API: https://platform.openai.com/
 - Anthropic API: https://docs.anthropic.com/
@@ -342,4 +368,4 @@ Hidden costs of self-hosting: GPU procurement, engineering time, model updates, 
 
 ---
 
-*Next: [Fine-Tuning Guide](../03-fine-tuning/01-when-to-fine-tune.md)*
+*下一篇：[Fine-Tuning Guide](../03-fine-tuning/01-when-to-fine-tune.md)*

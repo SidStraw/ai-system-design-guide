@@ -358,6 +358,7 @@ Key, Value (Down-projected) ─▶ [Low-dim Latent Cache] ─▶ [Output]
 
 ---
 
+<a id="kv-cache-optimizations"></a>
 <a id="kv-cache-optimizations--context-caching"></a>
 ## KV Cache 最佳化與 Context Caching
 
@@ -556,4 +557,4 @@ MQA：所有 query heads 共用同一組 K 與 V。能節省最多記憶體，�
 
 ---
 
-*上一章：[Tokenization Deep Dive](02-tokenization-deep-dive.md) | 下一章：[Transformer Architecture](04-transformer-architecture.md)*
+*上一章：[Tokenization 深入解析](02-tokenization-deep-dive.md) | 下一章：[Transformer 架構](04-transformer-architecture.md)*
