@@ -1,379 +1,406 @@
-# Behavioral Questions for AI/ML Roles
+<a id="behavioral-questions-for-aiml-roles"></a>
+# AI/ML 職務的行為面試問題
 
-Behavioral questions in AI roles assess how you approach ambiguous problems, collaborate across disciplines, and handle the unique challenges of AI systems. This chapter covers common questions and frameworks for strong answers.
+AI 職務中的行為問題，主要評估你如何面對模糊不清的問題、跨領域協作，以及處理 AI 系統特有挑戰的方式。本章整理了常見問題與打造強而有力回答的框架。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Why Behavioral Questions Matter for AI Roles](#why-behavioral-questions-matter-for-ai-roles)
-- [AI-Specific Behavioral Themes](#ai-specific-behavioral-themes)
-- [Question Categories and Examples](#question-categories-and-examples)
-- [Sample Answers Using STAR-L](#sample-answers-using-star-l)
-- [Questions to Ask Your Interviewers](#questions-to-ask-your-interviewers)
+- [為什麼 AI 職務特別重視行為問題](#why-behavioral-questions-matter-for-ai-roles)
+- [AI 特有的行為面主題](#ai-specific-behavioral-themes)
+- [問題類別與範例](#question-categories-and-examples)
+- [使用 STAR-L 的示範回答](#sample-answers-using-star-l)
+- [可以反問面試官的問題](#questions-to-ask-your-interviewers)
 
 ---
 
-## Why Behavioral Questions Matter for AI Roles
+<a id="why-behavioral-questions-matter-for-ai-roles"></a>
+## 為什麼 AI 職務特別重視行為問題
 
-AI projects have unique characteristics that behavioral questions probe:
+AI 專案具有一些獨特特性，而行為問題正是用來探查這些面向：
 
-| Challenge | What Interviewers Assess |
+| 挑戰 | 面試官在評估什麼 |
 |-----------|--------------------------|
-| Uncertainty | How do you make decisions with incomplete information? |
-| Rapid change | How do you stay current and adapt? |
-| Cross-functional work | How do you collaborate with research, product, legal? |
-| Ethical concerns | How do you handle responsible AI considerations? |
-| Technical debt | How do you balance shipping with correctness? |
-| Stakeholder education | How do you explain AI limitations to non-technical peers? |
+| 不確定性 | 你如何在資訊不完整時做決策？ |
+| 快速變化 | 你如何保持最新並持續調整？ |
+| 跨職能合作 | 你如何與 research、product、legal 協作？ |
+| 倫理議題 | 你如何處理 responsible AI 的考量？ |
+| 技術債 | 你如何在交付速度與正確性之間取得平衡？ |
+| 利害關係人教育 | 你如何向非技術夥伴解釋 AI 的限制？ |
 
 ---
 
-## AI-Specific Behavioral Themes
+<a id="ai-specific-behavioral-themes"></a>
+## AI 特有的行為面主題
 
-### Theme 1: Handling Ambiguity
+<a id="theme-1-handling-ambiguity"></a>
+### 主題 1：處理模糊性
 
-AI projects often start with unclear requirements. Strong candidates show they can structure ambiguity.
+AI 專案往往從不明確的需求開始。強候選人會展現自己能把模糊問題結構化。
 
-**Questions to expect:**
-- Tell me about a time you started a project without clear requirements
-- How do you decide what to build when the path is not obvious?
-- Describe a situation where you changed direction mid-project
+**常見題型：**
+- 請談談你曾在需求不明確的情況下啟動專案的經驗
+- 當前進路徑不明顯時，你如何決定該做什麼？
+- 描述一次你在專案進行中途改變方向的情況
 
-**What they look for:**
-- Systematic approach to exploring unknowns
-- Willingness to prototype and learn
-- Knowing when to commit vs when to keep exploring
-
----
-
-### Theme 2: Managing Expectations
-
-AI capabilities are often misunderstood. Strong candidates manage stakeholder expectations.
-
-**Questions to expect:**
-- Tell me about a time you had to say no to a stakeholder request
-- How do you explain AI limitations to non-technical colleagues?
-- Describe a situation where expectations were unrealistic
-
-**What they look for:**
-- Clear communication without jargon
-- Proposing alternatives, not just saying no
-- Building trust through honesty about limitations
+**面試官想看什麼：**
+- 系統化探索未知的方式
+- 願意快速做 prototype 並從中學習
+- 知道何時該承諾、何時該持續探索
 
 ---
 
-### Theme 3: Dealing with Failure
+<a id="theme-2-managing-expectations"></a>
+### 主題 2：管理期待
 
-AI systems fail in ways that differ from traditional software. Strong candidates learn from failures without defensiveness.
+AI 能力經常被誤解。強候選人能妥善管理利害關係人的期待。
 
-**Questions to expect:**
-- Tell me about an AI system that did not work as expected
-- How do you handle a model that performs poorly in production?
-- Describe a time you shipped something that had issues
+**常見題型：**
+- 請談談你曾拒絕利害關係人需求的一次經驗
+- 你如何向非技術同事解釋 AI 的限制？
+- 描述一次大家的期待不切實際的情況
 
-**What they look for:**
-- Taking responsibility
-- Root cause analysis
-- Systems thinking about prevention
-
----
-
-### Theme 4: Cross-Functional Collaboration
-
-AI projects require working with research, product, legal, and operations. Strong candidates navigate these relationships.
-
-**Questions to expect:**
-- How do you work with researchers who have different priorities?
-- Tell me about a conflict with a product manager over AI capabilities
-- Describe collaborating with legal on an AI feature
-
-**What they look for:**
-- Respecting different expertise
-- Finding common ground
-- Translating between technical and business language
+**面試官想看什麼：**
+- 不使用術語也能清楚溝通
+- 不只是說不，而是提出替代方案
+- 以誠實說明限制來建立信任
 
 ---
 
-### Theme 5: Responsible AI
+<a id="theme-3-dealing-with-failure"></a>
+### 主題 3：面對失敗
 
-AI systems can cause harm. Strong candidates think proactively about ethics and safety.
+AI 系統的失敗方式與傳統軟體不同。強候選人能從失敗中學習，而不是防衛性回應。
 
-**Questions to expect:**
-- Tell me about a time you raised an ethical concern
-- How do you think about fairness in AI systems?
-- Describe a situation where you prioritized safety over speed
+**常見題型：**
+- 請談談一個未如預期運作的 AI 系統
+- 當模型在 production 表現不佳時，你如何處理？
+- 描述一次你交付了有問題的成果
 
-**What they look for:**
-- Awareness of AI risks
-- Willingness to slow down for safety
-- Practical approach to mitigation
-
----
-
-## Question Categories and Examples
-
-### Leadership and Influence
-
-**Q: Tell me about a time you led a technical initiative without formal authority.**
-
-Strong answer elements:
-- How you built consensus
-- How you handled disagreement
-- The outcome and what you learned
-
-**Q: Describe a situation where you had to convince others to adopt a new approach.**
-
-Strong answer elements:
-- Understanding their concerns
-- Providing evidence
-- Incremental adoption strategy
+**面試官想看什麼：**
+- 願意負責
+- 根因分析能力
+- 從系統角度思考如何預防再發
 
 ---
 
-### Technical Decision Making
+<a id="theme-4-cross-functional-collaboration"></a>
+### 主題 4：跨職能協作
 
-**Q: Tell me about a difficult technical decision you made with incomplete information.**
+AI 專案需要與 research、product、legal 與 operations 合作。強候選人能妥善處理這些關係。
 
-Strong answer elements:
-- What information was missing
-- How you bounded the uncertainty
-- How the decision played out
+**常見題型：**
+- 你如何與優先順序不同的研究人員合作？
+- 請談談你曾因 AI 能力問題與產品經理發生衝突的經驗
+- 描述一次你與法務合作 AI 功能的情況
 
-**Q: Describe a time you chose a simpler solution over a more sophisticated one.**
-
-Strong answer elements:
-- How you evaluated tradeoffs
-- Stakeholder alignment
-- Whether it was the right call
-
----
-
-### Project Challenges
-
-**Q: Tell me about the most complex AI project you worked on.**
-
-Strong answer elements:
-- Clear description of complexity
-- Your specific contribution
-- How you managed the complexity
-
-**Q: Describe a project that failed. What happened and what did you learn?**
-
-Strong answer elements:
-- Honest assessment of what went wrong
-- Your role in the failure
-- Concrete changes you made afterward
+**面試官想看什麼：**
+- 尊重不同專業
+- 找到共同基礎
+- 能在技術語言與商業語言之間翻譯
 
 ---
 
-### Collaboration and Conflict
+<a id="theme-5-responsible-ai"></a>
+### 主題 5：Responsible AI
 
-**Q: Tell me about a disagreement with a colleague about a technical approach.**
+AI 系統可能造成傷害。強候選人會主動思考倫理與安全。
 
-Strong answer elements:
-- Understanding their perspective
-- How you resolved it
-- Relationship afterward
+**常見題型：**
+- 請談談你曾提出倫理疑慮的一次經驗
+- 你如何看待 AI 系統中的公平性？
+- 描述一次你因安全而優先於速度的情況
 
-**Q: Describe working with someone who had a very different working style.**
-
-Strong answer elements:
-- Specific differences
-- Adaptations you made
-- What you learned about collaboration
-
----
-
-### Growth and Learning
-
-**Q: How do you stay current with the rapidly changing AI field?**
-
-Strong answer elements:
-- Specific sources and practices
-- How you filter signal from noise
-- Example of applying new knowledge
-
-**Q: Tell me about a skill you developed recently.**
-
-Strong answer elements:
-- Why you needed it
-- How you learned it
-- How you applied it
+**面試官想看什麼：**
+- 對 AI 風險有意識
+- 願意為安全放慢速度
+- 具體可行的緩解方式
 
 ---
 
-## Sample Answers Using STAR-L
+<a id="question-categories-and-examples"></a>
+## 問題類別與範例
 
-### Example 1: Handling Ambiguity
+<a id="leadership-and-influence"></a>
+### 領導力與影響力
 
-**Q: Tell me about a time you started an AI project with unclear requirements.**
+**Q: 請談談一次你在沒有正式職權下主導技術倡議的經驗。**
 
-**Situation:**
-We wanted to add AI-powered search to our product, but stakeholders had different visions. Sales wanted "magic" search that understood everything. Engineering wanted something we could build in a quarter. Leadership wanted differentiation from competitors.
+強回答應包含：
+- 你如何建立共識
+- 你如何處理分歧
+- 結果如何，以及你學到了什麼
 
-**Task:**
-As the tech lead, I needed to align stakeholders and define a concrete first version we could build and learn from.
+**Q: 描述一次你必須說服他人採用新方法的情況。**
 
-**Action:**
-I started by interviewing five key stakeholders to understand their underlying needs, not just their feature requests. I found the common thread was reducing time to find information.
-
-I then built three rapid prototypes showing different levels of sophistication:
-1. Keyword search with better ranking
-2. Semantic search with embeddings
-3. Conversational search with RAG
-
-I demoed each with real queries from our support logs, showing actual performance and explaining the engineering effort for each.
-
-This reframed the conversation from "what features" to "what value at what cost." We aligned on starting with semantic search, with a plan to add conversational features in phase two.
-
-**Result:**
-We shipped semantic search in 6 weeks. User time-to-answer dropped 40%. The clear success made it easy to get buy-in for phase two.
-
-**Learning:**
-I learned that ambiguity often comes from stakeholders optimizing for different things. Showing concrete options with real tradeoffs moves conversations forward faster than abstract discussions. I now start every ambiguous project with quick prototypes.
+強回答應包含：
+- 先理解對方的顧慮
+- 提供證據
+- 漸進式採用策略
 
 ---
 
-### Example 2: Managing Failed Expectations
+<a id="technical-decision-making"></a>
+### 技術決策能力
 
-**Q: Tell me about a time an AI system did not perform as expected in production.**
+**Q: 請談談一次你在資訊不完整時做出艱難技術決策的經驗。**
 
-**Situation:**
-We launched a content recommendation system that performed great in testing but showed 30% lower engagement in production than our heuristic baseline.
+強回答應包含：
+- 缺少了哪些資訊
+- 你如何界定不確定性範圍
+- 這個決策最後帶來什麼結果
 
-**Task:**
-As the ML engineer who built it, I needed to diagnose the issue, decide whether to roll back, and regain stakeholder trust.
+**Q: 描述一次你選擇較簡單方案而非更複雜方案的情況。**
 
-**Action:**
-First, I did not hide the problem. I immediately flagged it to leadership with the data showing the gap. I proposed keeping 10% of traffic on the new system while I investigated.
-
-Investigation revealed two issues:
-1. Our test set was not representative. It was from high-engagement users.
-2. Cold start was worse than expected for new users.
-
-I implemented stratified testing that matched production user distribution and added a heuristic fallback for cold users.
-
-I also created a monitoring dashboard so stakeholders could see real-time performance. This transparency helped rebuild trust.
-
-**Result:**
-The revised system outperformed the baseline by 15% after two more weeks of iteration. More importantly, I established testing practices that caught similar issues in future projects.
-
-**Learning:**
-I learned that production is the only true test for ML systems. I now always instrument for monitoring before launch and plan for rapid iteration. I also learned that transparency during failures builds more trust than hiding problems.
+強回答應包含：
+- 你如何評估權衡
+- 與利害關係人的對齊方式
+- 這是否真的是正確決定
 
 ---
 
-### Example 3: Ethical Concern
+<a id="project-challenges"></a>
+### 專案挑戰
 
-**Q: Tell me about a time you raised an ethical concern about an AI system.**
+**Q: 請談談你參與過最複雜的 AI 專案。**
 
-**Situation:**
-We were building a resume screening system to help recruiters process high volumes of applications. During development, I noticed the training data was heavily biased toward engineers from top universities.
+強回答應包含：
+- 清楚說明複雜性來源
+- 你的具體貢獻
+- 你如何管理這種複雜度
 
-**Task:**
-I needed to raise the concern in a way that was taken seriously without being dismissed as slowing down the project.
+**Q: 描述一個失敗的專案。發生了什麼？你學到了什麼？**
 
-**Action:**
-I started by quantifying the problem. I showed that the model had 80% precision on Stanford graduates but only 45% on state school graduates with similar qualifications.
-
-I presented this to the team not as "we should not do this" but as "this is a business and legal risk." I cited recent cases where companies faced lawsuits over biased hiring and showed how our model could create similar exposure.
-
-I proposed two alternatives:
-1. Rebalance training data to ensure diverse representation
-2. Use the model only for matching, not ranking, with human review for all candidates
-
-The team chose option one plus adding fairness metrics to our evaluation suite.
-
-**Result:**
-We delayed launch by three weeks but shipped a system that performed consistently across demographics. Legal and HR were grateful for the proactive approach. The fairness metrics became standard for all our ML models.
-
-**Learning:**
-I learned that framing ethical concerns in terms of business risk makes them more actionable. I also learned that raising concerns early with proposed solutions is more effective than waiting until problems are entrenched.
+強回答應包含：
+- 誠實評估哪裡出了問題
+- 你在失敗中的角色
+- 之後你做了哪些具體改變
 
 ---
 
-### Example 4: Cross-Functional Collaboration
+<a id="collaboration-and-conflict"></a>
+### 協作與衝突
 
-**Q: Tell me about working with a team that had different priorities.**
+**Q: 請談談一次你與同事在技術方案上意見不合的經驗。**
 
-**Situation:**
-Our research team had developed a novel retrieval approach that showed 20% better recall on benchmarks. They wanted to publish the paper and move on. Product wanted it shipped. I was the engineer responsible for productionizing it.
+強回答應包含：
+- 理解對方觀點
+- 你如何化解分歧
+- 事後關係如何
 
-**Task:**
-I needed to get the system into production while maintaining a good relationship with researchers who had different incentives.
+**Q: 描述一次與工作風格非常不同的人合作的經驗。**
 
-**Action:**
-I started by understanding what the researchers cared about. They wanted credit for the innovation and did not want their method "dumbed down" during productionization.
-
-I proposed a collaboration structure:
-- They would remain authors on any publications about the production system
-- I would document which of their contributions directly impacted production metrics
-- We would meet weekly to review changes and ensure scientific integrity
-
-This aligned their incentives with mine. They became invested in production success because it validated their research.
-
-When I needed to simplify their approach for latency reasons, I showed them benchmarks proving the simplification preserved their key innovations. They actually found this interesting and contributed ideas for further optimization.
-
-**Result:**
-We shipped in 8 weeks with 18% recall improvement (slightly less than their benchmark due to latency constraints). They published a follow-up paper on production learnings. We established a template for research-to-production collaboration.
-
-**Learning:**
-I learned that understanding what motivates others is the key to collaboration. Researchers want impact and credit. By making production success support those goals, I turned potential friction into partnership.
+強回答應包含：
+- 具體差異在哪裡
+- 你做了哪些調整
+- 你對協作有何新體會
 
 ---
 
-## Questions to Ask Your Interviewers
+<a id="growth-and-learning"></a>
+### 成長與學習
 
-Strong candidates ask thoughtful questions. Here are AI-specific questions that demonstrate depth:
+**Q: 在快速變動的 AI 領域中，你如何保持最新？**
 
-### About the Team
+強回答應包含：
+- 具體資訊來源與做法
+- 你如何從雜訊中過濾真正有價值的內容
+- 一個把新知識應用出去的例子
 
-- How does the team balance research exploration with production delivery?
-- What is the ratio of building new models versus improving existing systems?
-- How do ML engineers and researchers collaborate here?
+**Q: 請談談你最近培養的一項技能。**
 
-### About the Tech
-
-- What is the biggest technical challenge the team is facing right now?
-- How do you evaluate model quality in production?
-- What does your ML infrastructure look like? What would you change?
-
-### About the Culture
-
-- How does the team handle models that do not perform as expected?
-- What is the process for raising concerns about AI safety or ethics?
-- How do you balance moving fast with responsible AI practices?
-
-### About Growth
-
-- What does success look like in this role after 6 months? After a year?
-- How do engineers stay current with the rapidly changing AI landscape?
-- What are the paths for growth from this role?
+強回答應包含：
+- 為什麼你需要它
+- 你如何學會它
+- 你如何實際應用它
 
 ---
 
-## Red Flags to Avoid
+<a id="sample-answers-using-star-l"></a>
+## 使用 STAR-L 的示範回答
 
-| Behavior | Why It Is a Red Flag |
+<a id="example-1-handling-ambiguity"></a>
+### 範例 1：處理模糊性
+
+**Q: 請談談一次你在需求不明確的情況下啟動 AI 專案的經驗。**
+
+**Situation：**
+我們想在產品中加入 AI 驅動搜尋，但不同利害關係人有不同想像。Sales 想要能「像魔法一樣」什麼都懂的搜尋；Engineering 想要能在一季內做完的方案；Leadership 則希望能和競品做出差異化。
+
+**Task：**
+身為 tech lead，我需要先對齊各方，並定義出一個可落地、能快速學習的第一版。
+
+**Action：**
+我先訪談五位關鍵利害關係人，理解他們底層需求，而不是只看表面功能要求。我發現共同主軸都是縮短找到資訊的時間。
+
+接著我快速做了三個不同複雜度的 prototype：
+1. 加強排序的 keyword search
+2. 使用 embeddings 的 semantic search
+3. 使用 RAG 的 conversational search
+
+我用支援紀錄中的真實查詢做 demo，展示各方案的實際效果，並說明各自需要的工程投入。
+
+這讓討論從「要哪些功能」轉成「要用什麼成本換取什麼價值」。最後我們對齊為先做 semantic search，再規劃第二階段加入 conversational 功能。
+
+**Result：**
+我們在 6 週內上線 semantic search。使用者找到答案的時間下降了 40%。清楚的成功成果也讓第二階段更容易獲得支持。
+
+**Learning：**
+我學到，模糊通常來自不同利害關係人各自優化不同目標。與其抽象討論，不如用具體選項與真實 tradeoff 更快推進對話。現在我面對每個模糊專案時，都會先從快速 prototype 開始。
+
+---
+
+<a id="example-2-managing-failed-expectations"></a>
+### 範例 2：管理落空的期待
+
+**Q: 請談談一次 AI 系統在 production 中未達預期表現的經驗。**
+
+**Situation：**
+我們上線了一套內容推薦系統，在測試中表現很好，但在 production 的互動率卻比啟發式基線低了 30%。
+
+**Task：**
+身為負責建置該系統的 ML engineer，我必須找出問題、決定是否回滾，並重新贏得利害關係人的信任。
+
+**Action：**
+首先，我沒有掩蓋問題。我立刻把差距數據回報給 leadership，並提議讓新系統先維持 10% 流量，同時展開調查。
+
+調查後發現兩個問題：
+1. 我們的測試集沒有代表性，主要來自高互動使用者。
+2. 新使用者的 cold start 問題比預期更嚴重。
+
+我實作了更符合 production 使用者分布的分層測試，並為冷啟動使用者加入啟發式 fallback。
+
+我也建立了監控儀表板，讓利害關係人能看到即時表現。這種透明度幫助我們重建信任。
+
+**Result：**
+再經過兩週迭代後，修正版系統的表現比基線高出 15%。更重要的是，我建立了一套測試實務，能在未來專案中更早抓到類似問題。
+
+**Learning：**
+我學到，production 才是 ML 系統唯一真正的考場。現在我總是在上線前先做好監控埋點，也預留快速迭代空間。我也學到，失敗時保持透明，比掩蓋問題更能建立信任。
+
+---
+
+<a id="example-3-ethical-concern"></a>
+### 範例 3：倫理疑慮
+
+**Q: 請談談一次你對 AI 系統提出倫理疑慮的經驗。**
+
+**Situation：**
+我們正在打造一套履歷篩選系統，協助招募人員處理大量申請。在開發過程中，我注意到訓練資料明顯偏向頂尖大學背景的工程師。
+
+**Task：**
+我需要用一種會被認真對待的方式提出疑慮，同時避免被視為只是拖慢專案進度的人。
+
+**Action：**
+我先把問題量化。我展示模型對 Stanford 畢業生的 precision 有 80%，但對具備相似資格的州立大學畢業生只有 45%。
+
+我向團隊提報時，沒有用「我們不該做這個」的角度，而是用「這是商業與法律風險」來表述。我引用近年公司因偏頗招募而遭訴訟的案例，也說明我們的模型可能造成類似風險。
+
+我提出兩個替代方案：
+1. 重新平衡訓練資料，確保代表性多元
+2. 模型只用於 matching、不做 ranking，且所有候選人都由人工覆核
+
+團隊最終選擇第一個方案，並在評估套件中加入 fairness metrics。
+
+**Result：**
+我們將上線延後三週，但交付了一套在不同族群上表現一致的系統。Legal 與 HR 都很感謝這種主動做法，而公平性指標也成為之後所有 ML 模型的標準配備。
+
+**Learning：**
+我學到，若能把倫理疑慮框成商業風險，就更容易推動實際行動。我也學到，及早提出疑慮並附上可行解法，遠比等到問題根深蒂固後再介入有效。
+
+---
+
+<a id="example-4-cross-functional-collaboration"></a>
+### 範例 4：跨職能協作
+
+**Q: 請談談一次你與優先順序不同的團隊合作的經驗。**
+
+**Situation：**
+我們的 research 團隊開發出一種新的 retrieval 方法，在 benchmark 上帶來 20% 更好的 recall。他們想先發表 paper 後再往前走；product 想立刻上線；而我則是負責把它 productize 的工程師。
+
+**Task：**
+我需要在維持良好關係的前提下，讓系統順利進入 production，即使研究人員的誘因與我不同。
+
+**Action：**
+我先理解研究人員真正重視什麼。他們想要創新成果獲得認可，也不希望自己的方法在 productization 過程中被「簡化到失真」。
+
+我提出一個合作方式：
+- 關於 production system 的任何發表，他們都會是作者
+- 我會記錄他們哪些貢獻直接影響了 production metrics
+- 我們每週開會檢視變更，確保 scientific integrity
+
+這讓他們的誘因與我對齊。因為 production 成功也等於驗證了他們的研究，所以他們開始投入其中。
+
+當我為了延遲需求必須簡化他們的方法時，我拿 benchmark 證明這些簡化仍保留核心創新。他們反而覺得這很有意思，甚至主動提供更多最佳化想法。
+
+**Result：**
+我們在 8 週內上線，recall 提升 18%（因延遲限制，略低於 benchmark）。他們也發表了一篇關於 production learnings 的後續 paper。我們同時建立了一套 research-to-production 協作模板。
+
+**Learning：**
+我學到，理解他人的動機，是協作的核心。研究人員重視影響力與署名；當 production 成功也能支持這些目標時，原本可能的摩擦就會轉化為合作關係。
+
+---
+
+<a id="questions-to-ask-your-interviewers"></a>
+## 可以反問面試官的問題
+
+優秀的候選人會提出有深度的問題。以下是一些能展現你對 AI 議題理解的提問：
+
+<a id="about-the-team"></a>
+### 關於團隊
+
+- 團隊如何在 research exploration 與 production delivery 之間取得平衡？
+- 建立新模型與改進既有系統的比例大概是多少？
+- 這裡的 ML engineers 與 researchers 如何協作？
+
+<a id="about-the-tech"></a>
+### 關於技術
+
+- 團隊目前面臨的最大技術挑戰是什麼？
+- 你們如何在 production 中評估模型品質？
+- 你們的 ML infrastructure 長什麼樣子？如果可以改變，你會改什麼？
+
+<a id="about-the-culture"></a>
+### 關於文化
+
+- 當模型未達預期時，團隊通常如何處理？
+- 提出 AI 安全或倫理疑慮的流程是什麼？
+- 你們如何在快速推進與 responsible AI 實踐之間取得平衡？
+
+<a id="about-growth"></a>
+### 關於成長
+
+- 做這個職務 6 個月後、1 年後，成功會是什麼樣子？
+- 工程師如何跟上快速變化的 AI 生態？
+- 這個職務後續有哪些成長路徑？
+
+---
+
+<a id="red-flags-to-avoid"></a>
+## 應避免的警訊
+
+| 行為 | 為什麼是警訊 |
 |----------|----------------------|
-| Blaming others | Does not take responsibility |
-| No specific examples | May be inflating experience |
-| Only technical answers | Lacks awareness of human factors |
-| Dismissing ethics | May create liability |
-| No questions for interviewer | Lacks curiosity or engagement |
+| 責怪他人 | 代表不願負責 |
+| 沒有具體例子 | 可能誇大經驗 |
+| 只回答技術面 | 缺乏對人性因素的理解 |
+| 輕忽倫理 | 可能帶來風險 |
+| 沒有問題想反問 | 缺乏好奇心或投入感 |
 
 ---
 
-## Preparation Checklist
+<a id="preparation-checklist"></a>
+## 準備檢查清單
 
-Before your behavioral interviews:
+在行為面試前：
 
-- [ ] Prepare 5-7 stories covering: leadership, failure, conflict, ambiguity, learning
-- [ ] Practice telling stories in 2-3 minutes (timed)
-- [ ] For each story, identify: situation, your specific actions, measurable results, learnings
-- [ ] Include at least one AI-specific story (model failure, bias, stakeholder education)
-- [ ] Prepare 3-5 thoughtful questions for interviewers
-- [ ] Research the company's AI products and potential ethical considerations
+- [ ] 準備 5-7 個故事，涵蓋：領導、失敗、衝突、模糊性、學習
+- [ ] 練習用 2-3 分鐘講完每個故事（計時）
+- [ ] 每個故事都要辨識出：情境、你的具體行動、可量化結果、學習
+- [ ] 至少準備一個 AI 特有故事（模型失敗、偏誤、利害關係人教育）
+- [ ] 準備 3-5 個有深度的反問問題
+- [ ] 研究該公司的 AI 產品與可能的倫理考量
 
 ---
 
-*See also: [Question Bank](01-question-bank.md) | [Answer Frameworks](02-answer-frameworks.md) | [Common Pitfalls](03-common-pitfalls.md)*
+*另請參閱：[題庫](01-question-bank.md) | [回答框架](02-answer-frameworks.md) | [常見陷阱](03-common-pitfalls.md)*

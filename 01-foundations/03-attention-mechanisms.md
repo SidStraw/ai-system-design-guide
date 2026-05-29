@@ -1,42 +1,47 @@
-# Attention Mechanisms
+<a id="attention-mechanisms"></a>
+# 注意力機制
 
-Attention is the core innovation that enables transformers. This chapter covers the mathematical foundations, variants, and optimizations that are essential for system design and interviews.
+注意力是讓 transformer 成立的核心創新。本章涵蓋數學基礎、常見變體，以及對系統設計與面試至關重要的最佳化方式。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Attention Fundamentals](#attention-fundamentals)
-- [Scaled Dot-Product Attention](#scaled-dot-product-attention)
-- [Multi-Head Attention](#multi-head-attention)
-- [Attention Patterns](#attention-patterns)
-- [Efficient Attention Variants](#efficient-attention-variants)
-- [Flash Attention (v2 & v3)](#flash-attention)
-- [Multi-head Latent Attention (MLA)](#multi-head-latent-attention-mla)
-- [KV Cache Optimizations & Context Caching](#kv-cache-optimizations)
-- [Practical Implications](#practical-implications)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [注意力基礎](#attention-fundamentals)
+- [縮放點積注意力](#scaled-dot-product-attention)
+- [多頭注意力](#multi-head-attention)
+- [注意力模式](#attention-patterns)
+- [高效率注意力變體](#efficient-attention-variants)
+- [Flash Attention（v2 與 v3）](#flash-attention)
+- [Multi-head Latent Attention（MLA）](#multi-head-latent-attention-mla)
+- [KV Cache 最佳化與 Context Caching](#kv-cache-optimizations)
+- [實務影響](#practical-implications)
+- [面試問題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Attention Fundamentals
+<a id="attention-fundamentals"></a>
+## 注意力基礎
 
-### The Core Idea
+<a id="the-core-idea"></a>
+### 核心概念
 
-Attention allows each position in a sequence to gather information from all other positions. Unlike recurrence (which passes information step by step), attention creates direct connections.
+注意力讓序列中的每個位置都能從其他所有位置蒐集資訊。和 recurrence（逐步傳遞資訊）不同，注意力會直接建立位置之間的連結。
 
-**Mental model for distributed systems engineers:**
-- RNN: Message passing along a chain
-- Attention: Pub/sub where every node can query every other node
+**給分散式系統工程師的心智模型：**
+- RNN：沿著鏈條進行 message passing
+- Attention：像是 pub/sub，每個節點都能查詢其他所有節點
 
-### Query, Key, Value Framework
+<a id="query-key-value-framework"></a>
+### Query、Key、Value 架構
 
-Attention uses three projections of the input:
+注意力會對輸入做三種投影：
 
-| Component | Role | Analogy |
+| 元件 | 角色 | 類比 |
 |-----------|------|---------|
-| Query (Q) | What am I looking for? | Search query |
-| Key (K) | What do I contain? | Document index |
-| Value (V) | What do I contribute? | Document content |
+| Query (Q) | 我在找什麼？ | Search query |
+| Key (K) | 我包含什麼？ | 文件索引 |
+| Value (V) | 我能貢獻什麼？ | 文件內容 |
 
 ```python
 # Input: x of shape [batch, seq_len, d_model]
@@ -48,9 +53,10 @@ V = x @ W_v  # [batch, seq_len, d_v]
 
 ---
 
-## Scaled Dot-Product Attention
+<a id="scaled-dot-product-attention"></a>
+## 縮放點積注意力
 
-The fundamental attention operation:
+最基本的注意力運算如下：
 
 ```python
 def scaled_dot_product_attention(Q, K, V, mask=None):
@@ -73,16 +79,17 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
     return output, attention_weights
 ```
 
-### Why Scale by Square Root of d_k?
+<a id="why-scale-by-square-root-of-d_k"></a>
+### 為什麼要除以 d_k 的平方根？
 
-**Interview favorite**: This question tests numerical intuition.
+**面試常考題**：這題在測試你對數值直覺的理解。
 
-Without scaling, dot products grow with dimension:
-- For random unit vectors q and k of dimension d
-- E[q . k] = 0, but Var[q . k] = d
-- Standard deviation = sqrt(d)
+如果不做縮放，點積會隨維度增長：
+- 對於維度為 d 的隨機單位向量 q 與 k
+- E[q . k] = 0，但 Var[q . k] = d
+- 標準差 = sqrt(d)
 
-When d is large (512 or more), dot products can be very large or very small. Softmax on large values approaches one-hot, causing vanishing gradients.
+當 d 很大（512 以上）時，點積可能變得非常大或非常小。Softmax 遇到大數值時會趨近 one-hot，導致 gradient vanishing。
 
 ```python
 # Demonstration
@@ -96,9 +103,10 @@ unscaled = np.dot(q, k)      # Magnitude ~ sqrt(512) ~ 22
 scaled = unscaled / np.sqrt(d)  # Magnitude ~ 1
 ```
 
-### Causal Masking
+<a id="causal-masking"></a>
+### 因果遮罩
 
-For autoregressive generation, each position can only attend to previous positions:
+在 autoregressive generation 中，每個位置只能注意到先前的位置：
 
 ```python
 def create_causal_mask(seq_len):
@@ -113,13 +121,14 @@ def create_causal_mask(seq_len):
 #  [1, 1, 1, 1]]
 ```
 
-Positions with mask=0 get score of negative infinity, becoming 0 after softmax.
+mask=0 的位置會得到負無限大的分數，經過 softmax 後就會變成 0。
 
 ---
 
-## Multi-Head Attention
+<a id="multi-head-attention"></a>
+## 多頭注意力
 
-Instead of one attention function, use multiple "heads" that attend to different aspects:
+與其只用一個注意力函式，不如使用多個會關注不同面向的「head」：
 
 ```python
 class MultiHeadAttention(nn.Module):
@@ -159,41 +168,45 @@ class MultiHeadAttention(nn.Module):
         return output
 ```
 
-**Why multiple heads?**
-1. Different heads learn different patterns (syntax, semantics, coreference)
-2. Provides representational diversity (ensemble effect)
-3. Enables parallel computation across heads
+**為什麼要多個 head？**
+1. 不同 head 會學到不同模式（syntax、semantics、coreference）
+2. 提供表徵多樣性（類似 ensemble effect）
+3. 能在 head 之間平行計算
 
-### Head Count Patterns
+<a id="head-count-patterns"></a>
+### 頭數模式
 
-| Model | d_model | Heads | d_k per head |
+| 模型 | d_model | heads | 每個 head 的 d_k |
 |-------|---------|-------|--------------|
 | BERT-base | 768 | 12 | 64 |
 | GPT-2 | 768 | 12 | 64 |
 | GPT-3 175B | 12288 | 96 | 128 |
 | Llama 2 70B | 8192 | 64 | 128 |
 
-The d_k of 64 or 128 is remarkably consistent across model sizes.
+64 或 128 的 d_k 在不同模型規模之間非常一致。
 
 ---
 
-## Attention Patterns
+<a id="attention-patterns"></a>
+## 注意力模式
 
-### What Attention Learns
+<a id="what-attention-learns"></a>
+### 注意力會學到什麼
 
-Different heads specialize in different patterns:
+不同的 head 會專精於不同模式：
 
-| Pattern Type | What It Captures | Example |
+| 模式類型 | 它捕捉什麼 | 例子 |
 |--------------|------------------|---------|
-| Positional | Adjacent tokens | Next/previous word |
-| Syntactic | Grammatical relations | Subject-verb |
-| Semantic | Meaning relations | Coreference |
-| Delimiter | Punctuation, structure | Section boundaries |
-| Rare | Infrequent patterns | Rare word copying |
+| 位置 | 相鄰 token | 前一個／下一個字詞 |
+| 語法 | 文法關係 | 主詞－動詞 |
+| 語意 | 意義關係 | Coreference |
+| 分隔符 | 標點、結構 | 章節邊界 |
+| 稀有 | 不常見模式 | 稀有詞複製 |
 
-### Visualizing Attention
+<a id="visualizing-attention"></a>
+### 視覺化注意力
 
-Attention weights can be visualized as heatmaps showing which positions attend to which:
+注意力權重可以畫成 heatmap，顯示哪些位置在關注哪些位置：
 
 ```
 Query positions (rows) vs Key positions (columns)
@@ -211,26 +224,28 @@ mat     [○    ●    ○    ●    ●    □ ]
 ● = high attention, ○ = low attention
 ```
 
-"mat" attends strongly to "cat" (semantic), "on" (syntactic), and "the" (determiner).
+「mat」會強烈關注「cat」（語意）、「on」（語法）與「the」（限定詞）。
 
 ---
 
-## Efficient Attention Variants
+<a id="efficient-attention-variants"></a>
+## 高效率注意力變體
 
-Standard attention is O(n^2) in sequence length. Many variants reduce this:
+標準注意力在序列長度上是 O(n^2)。許多變體會將它降低為：
 
-### Sparse Attention
+<a id="sparse-attention"></a>
+### 稀疏注意力
 
-Attend only to a subset of positions rather than all:
+只注意部分位置，而不是全部位置：
 
-| Variant | Pattern | Complexity | Example |
+| 變體 | 模式 | 複雜度 | 例子 |
 |---------|---------|------------|---------|
-| Local | Window around each position | O(n * w) | Longformer |
-| Strided | Every k-th position | O(n^2 / k) | Sparse Transformer |
-| Global | Special tokens attend everywhere | O(n * g) | Longformer, BigBird |
-| Block | Block-diagonal attention | O(n * b) | BigBird |
+| Local | 每個位置周圍的視窗 | O(n * w) | Longformer |
+| Strided | 每隔 k 個位置 | O(n^2 / k) | Sparse Transformer |
+| Global | 特殊 token 可注意所有位置 | O(n * g) | Longformer, BigBird |
+| Block | 區塊對角注意力 | O(n * b) | BigBird |
 
-**Longformer pattern:**
+**Longformer 模式：**
 ```
 Local window + Global tokens
 
@@ -240,9 +255,10 @@ G: Global tokens (attend to/from all)
 L: Local tokens (attend within window)
 ```
 
-### Linear Attention
+<a id="linear-attention"></a>
+### 線性注意力
 
-Replace softmax with linearizable alternatives:
+以可線性化的替代方案取代 softmax：
 
 ```python
 # Standard attention (quadratic)
@@ -252,67 +268,77 @@ attention = softmax(Q @ K.T) @ V
 attention = (Q @ (K.T @ V))  # Associativity trick
 ```
 
-**Variants:**
-- Performer: Random feature approximation
-- Linear Transformer: elu(Q) @ (elu(K).T @ V)
+**常見變體：**
+- Performer：隨機特徵近似
+- Linear Transformer：elu(Q) @ (elu(K).T @ V)
 
-**Tradeoff:** Faster but quality degrades, especially for tasks requiring precise attention.
+**取捨：**速度更快，但品質會下降，特別是在需要精確注意力的任務上。
 
-### Complexity Comparison
+<a id="complexity-comparison"></a>
+### 複雜度比較
 
-| Method | Time | Space | Quality | Notes |
+| 方法 | 時間 | 空間 | 品質 | 備註 |
 |--------|------|-------|---------|-------|
-| Standard | O(n^2) | O(n^2) | Best | Baseline |
-| Sparse (Longformer) | O(n) | O(n) | Near best | For long docs |
-| Linear (Performer) | O(n) | O(n) | Degraded | Best for very long |
-| Flash Attention | O(n^2) | O(n) | Best | Best of both |
+| Standard | O(n^2) | O(n^2) | 最佳 | 基準線 |
+| Sparse (Longformer) | O(n) | O(n) | 接近最佳 | 適合長文件 |
+| Linear (Performer) | O(n) | O(n) | 較差 | 適合超長序列 |
+| Flash Attention | O(n^2) | O(n) | 最佳 | 兼顧兩者 |
 
 ---
 
+<a id="flash-attention"></a>
 ## Flash Attention
 
-Flash Attention is the state-of-the-art implementation that achieves O(n) memory while computing exact attention.
+Flash Attention 是目前最先進的實作方式，能在計算精確注意力的同時，把記憶體使用降到 O(n)。
 
-### The Problem It Solves
+<a id="the-problem-it-solves"></a>
+### 它解決的問題
 
-Standard attention requires materializing the n x n attention matrix:
-- For 8K context: 64M floats = 256 MB per layer per head
-- For 100K context: 10B floats = 40 GB per layer per head
+標準注意力需要將 n x n 的注意力矩陣完整 materialize：
+- 對 8K context：64M floats = 每層每個 head 256 MB
+- 對 100K context：10B floats = 每層每個 head 40 GB
 
-This memory requirement limits batch sizes and context lengths.
+這樣的記憶體需求會限制 batch size 與 context length。
 
-### How It Works
+<a id="how-it-works"></a>
+### 運作方式
 
-Flash Attention uses tiling and recomputation to avoid storing the full attention matrix:
+Flash Attention 使用 tiling 與 recomputation，避免儲存完整注意力矩陣：
 
 ```
 Standard: Q, K -> Attention Matrix (n x n) -> Output
 Flash:    Q, K -> Tiles (block_size x block_size) -> Incremental Output
 ```
 
-**Key ideas:**
-1. Process attention in blocks that fit in SRAM
-2. Never materialize full attention matrix in HBM
-3. Recompute attention during backward pass (faster than loading from HBM)
+**核心想法：**
+1. 以能放入 SRAM 的區塊來處理注意力
+2. 永遠不要在 HBM 中 materialize 完整注意力矩陣
+3. 在 backward pass 時重新計算注意力（比從 HBM 載入更快）
 
-### Performance Impact
+<a id="performance-impact"></a>
+### 效能影響
 
-### FlashAttention-2 (Work Partitioning)
-Optimized for A100/H100 by improving parallelism across heads and sequence length.
+<a id="flashattention-2-work-partitioning"></a>
+### FlashAttention-2（工作分割）
 
-### FlashAttention-3 (FP8 & H100 Optimization)
-**The 2025 Standard for H100/B200 Clusters:**
-- **Asynchronous Execution**: Overlaps GEMM (matrix mult) and softmax operations using TMA (Tensor Memory Accelerator) on H100.
-- **FP8 Support**: Native support for FP8 precision, doubling throughput compared to FP16 while maintaining attention accuracy via stochastic rounding.
-- **Speedup**: ~1.5x-2.0x faster than FlashAttention-2 for long context prefill.
+透過改善 head 與 sequence length 上的平行度，為 A100/H100 做最佳化。
+
+<a id="flashattention-3-fp8--h100-optimization"></a>
+### FlashAttention-3（FP8 與 H100 最佳化）
+
+**2025 年 H100/B200 叢集的標準：**
+- **非同步執行**：在 H100 上利用 TMA（Tensor Memory Accelerator）重疊 GEMM（矩陣乘法）與 softmax。
+- **FP8 支援**：原生支援 FP8 精度，透過 stochastic rounding 在維持注意力準確度的同時，讓吞吐量相較 FP16 倍增。
+- **加速效果**：對長 context prefill 而言，約比 FlashAttention-2 快 ~1.5x-2.0x。
 
 ---
 
-## Multi-head Latent Attention (MLA)
+<a id="multi-head-latent-attention-mla"></a>
+## Multi-head Latent Attention（MLA）
 
-Introduced by DeepSeek (V2/V3), **MLA is the modern alternative to GQA** for extreme KV cache pressure.
+由 DeepSeek（V2/V3）提出，**MLA 是面對極端 KV cache 壓力時，取代 GQA 的現代方案**。
 
-Instead of just grouping heads, MLA compresses the Key and Value vectors into a **low-dimensional latent space** before storing them in the cache.
+MLA 不只是將 head 分組，而是在寫入 cache 前，先把 Key 與 Value 向量壓縮到**低維 latent space**。
 
 ```
 Query (Up-projected) ────────┐
@@ -322,29 +348,35 @@ Key, Value (Down-projected) ─▶ [Low-dim Latent Cache] ─▶ [Output]
                              └─ Projection Matrices
 ```
 
-| Metric | MHA | GQA | MLA (Dec 2025) |
+| 指標 | MHA | GQA | MLA (Dec 2025) |
 |--------|-----|-----|----------------|
-| KV Cache Size | 100% | 12.5% | **~5%** |
-| Quality | Baseline | Near-Baseline | **Superior to GQA** |
-| Latency | Baseline | Faster | **Fastest (Reduced I/O)** |
+| KV Cache 大小 | 100% | 12.5% | **~5%** |
+| 品質 | Baseline | 接近 Baseline | **優於 GQA** |
+| 延遲 | Baseline | 更快 | **最快（I/O 更少）** |
 
-**Why MLA wins**: It uses "Decoupled Rotary Positional Embeddings" which allow the compressed latent KV to be reused without decoding, saving massive memory bandwidth during long-context generation.
+**MLA 為何勝出**：它使用「Decoupled Rotary Positional Embeddings」，讓壓縮後的 latent KV 可以不經解碼就直接重用，在長 context generation 時大幅節省記憶體頻寬。
 
 ---
 
-## KV Cache Optimizations & Context Caching
+<a id="kv-cache-optimizations--context-caching"></a>
+## KV Cache 最佳化與 Context Caching
 
-### Context Caching (System-level)
-API providers (OpenAI, Gemini, Anthropic) now offer **Context Caching**. 
-- **How it works**: Pre-computes and stores the KV tensors for a long "prefix" (e.g., a 100k token law book).
-- **Benefit**: Reduces TTFT (Time to First Token) by 90% and cost by 50-90% for repeated prefixes.
+<a id="context-caching-system-level"></a>
+### Context Caching（系統層級）
 
-### Sliding Window Attention (SWA)
-Used in Mistral/Gemma models to limit the attention depth to a fixed window (e.g., 4096 tokens), preventing the KV cache from growing indefinitely.
+API provider（OpenAI、Gemini、Anthropic）現在都提供 **Context Caching**。
+- **運作方式**：先預計算並儲存長前綴的 KV tensor（例如一本 100k token 的法律書）。
+- **好處**：對重複前綴可將 TTFT（Time to First Token）降低 90%，並把成本降 50-90%。
 
-### Multi-Query Attention (MQA)
+<a id="sliding-window-attention-swa"></a>
+### Sliding Window Attention（SWA）
 
-Share a single K and V across all query heads:
+Mistral/Gemma 模型使用它把注意力深度限制在固定視窗內（例如 4096 tokens），避免 KV cache 無限成長。
+
+<a id="multi-query-attention-mqa"></a>
+### Multi-Query Attention（MQA）
+
+讓所有 query heads 共用同一組 K 與 V：
 
 ```python
 # Standard MHA
@@ -358,11 +390,12 @@ K: [batch, 1, seq, d_k]          # 1 shared K
 V: [batch, 1, seq, d_k]          # 1 shared V
 ```
 
-**Effect:** 32x reduction in KV cache size, some quality loss.
+**效果：**KV cache 大小減少 32 倍，但會有一些品質損失。
 
-### Grouped-Query Attention (GQA)
+<a id="grouped-query-attention-gqa"></a>
+### Grouped-Query Attention（GQA）
 
-Share K and V across groups of query heads:
+讓多個 query heads 以群組方式共用 K 與 V：
 
 ```python
 # GQA with 8 KV heads for 64 query heads (8:1 ratio)
@@ -373,134 +406,145 @@ V: [batch, 8, seq, d_k]   # 8 KV heads
 # Each KV head serves 8 query heads
 ```
 
-**Effect:** 8x KV cache reduction with minimal quality loss.
+**效果：**KV cache 可縮小 8 倍，而且品質損失極小。
 
-**Models using GQA:**
-- Llama 2 70B: 8 KV heads for 64 query heads
-- Mistral 7B: 8 KV heads for 32 query heads
-- Gemma: Various configurations
+**使用 GQA 的模型：**
+- Llama 2 70B：64 個 query heads 對 8 個 KV heads
+- Mistral 7B：32 個 query heads 對 8 個 KV heads
+- Gemma：多種配置
 
-### Comparison
+<a id="comparison"></a>
+### 比較
 
-| Attention | KV Cache | Quality | Models |
+| 注意力 | KV Cache | 品質 | 模型 |
 |-----------|----------|---------|--------|
-| MHA | Full | Best | GPT-3 |
-| GQA | 1/8 typical | Near best | Llama 2, Mistral |
-| MQA | 1/n_heads | Reduced | PaLM, Falcon |
+| MHA | 完整 | 最佳 | GPT-3 |
+| GQA | 常見為 1/8 | 接近最佳 | Llama 2, Mistral |
+| MQA | 1/n_heads | 較低 | PaLM, Falcon |
 
 ---
 
-## Practical Implications
+<a id="practical-implications"></a>
+## 實務影響
 
-### For System Design
+<a id="for-system-design"></a>
+### 對系統設計的意義
 
-1. **Batch size vs context tradeoff:**
-   - Total GPU memory = Model + KV cache * batch_size
-   - Longer contexts mean smaller batches
-   - GQA models can serve more concurrent requests
+1. **Batch size 與 context 的取捨：**
+   - 總 GPU 記憶體 = Model + KV cache * batch_size
+   - Context 越長，batch 越小
+   - GQA 模型可以服務更多並發請求
 
-2. **Latency budget allocation:**
-   - Attention is O(n^2) compute, O(n) with Flash
-   - Prefill (processing prompt) scales with prompt length
-   - Decode (generating) scales with generated + prompt length
+2. **延遲預算配置：**
+   - Attention 的計算量是 O(n^2)，使用 Flash 時記憶體為 O(n)
+   - Prefill（處理 prompt）會隨 prompt 長度擴展
+   - Decode（生成）會隨 generated + prompt 長度擴展
 
-3. **Memory bandwidth bottleneck:**
-   - Generation is often memory-bound
-   - Loading KV cache for each token dominates
-   - Larger batches amortize this cost
+3. **記憶體頻寬瓶頸：**
+   - Generation 通常是 memory-bound
+   - 每個 token 都要載入 KV cache，往往是主成本
+   - 較大的 batch 能攤提這個成本
 
-### Prefill vs Decode
+<a id="prefill-vs-decode"></a>
+### Prefill 與 Decode
 
-| Phase | Compute Pattern | Bottleneck |
+| 階段 | 計算模式 | 瓶頸 |
 |-------|-----------------|------------|
-| Prefill | Process all input tokens | Compute (GPU cores) |
-| Decode | Generate one token at a time | Memory (bandwidth) |
+| Prefill | 處理所有輸入 token | Compute（GPU cores） |
+| Decode | 一次生成一個 token | Memory（bandwidth） |
 
-This is why TTFT (time to first token) and TPS (tokens per second) are measured separately.
+這也是為什麼 TTFT（time to first token）與 TPS（tokens per second）通常會分開衡量。
 
-### Context Length Scaling
+<a id="context-length-scaling"></a>
+### 上下文長度擴展
 
-| Context | Attention Compute | KV Cache (Llama 70B) |
+| Context | Attention Compute | KV Cache（Llama 70B） |
 |---------|-------------------|---------------------|
 | 4K | Baseline | 10.7 GB |
 | 8K | 4x | 21.5 GB |
 | 32K | 64x | 86 GB |
 | 128K | 1024x | 344 GB |
 
-Long context requires:
-- Flash Attention (memory efficient)
-- GQA or MQA (smaller KV cache)
-- Potentially model parallelism
+長 context 通常需要：
+- Flash Attention（節省記憶體）
+- GQA 或 MQA（較小的 KV cache）
+- 視情況採用 model parallelism
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試問題
 
-### Q: Explain the attention mechanism and why it scales quadratically.
+<a id="q-explain-the-attention-mechanism-and-why-it-scales-quadratically"></a>
+### 問：請解釋注意力機制，以及它為何呈二次方擴展。
 
-**Strong answer:**
-Attention computes pairwise interactions between all positions. For n positions:
+**強答範例：**
+注意力會計算所有位置兩兩之間的互動。對 n 個位置而言：
 
-1. Q @ K^T produces an n x n matrix of scores
-2. Each attention score is a dot product of a query and key
-3. Total: n^2 dot products
+1. Q @ K^T 會產生一個 n x n 的分數矩陣
+2. 每個注意力分數都是 query 與 key 的點積
+3. 總數：n^2 個點積
 
-This is quadratic in sequence length. For 8K tokens, that is 64 million pairwise scores per layer per head. For 128K tokens, it is 16 billion.
+因此它會隨序列長度呈二次方成長。對 8K tokens 來說，每層每個 head 需要 6400 萬個成對分數；對 128K tokens 則是 160 億。
 
-The quadratic scaling limits context length. Solutions include:
-- Flash Attention: O(n^2) compute but O(n) memory
-- Sparse attention: O(n) by attending to subsets
-- Linear attention: O(n) approximations
+這種二次方擴展會限制 context length。常見解法包括：
+- Flash Attention：計算是 O(n^2)，但記憶體是 O(n)
+- Sparse attention：透過只關注子集合，把成本降為 O(n)
+- Linear attention：使用 O(n) 的近似方法
 
-### Q: What is the KV cache and why is it critical for serving?
+<a id="q-what-is-the-kv-cache-and-why-is-it-critical-for-serving"></a>
+### 問：什麼是 KV cache？它為何對 serving 如此關鍵？
 
-**Strong answer:**
-During autoregressive generation, we produce one token at a time. Without caching, each new token would require recomputing K and V for all previous positions.
+**強答範例：**
+在 autoregressive generation 中，我們一次只產生一個 token。如果沒有快取，每個新 token 都要重新計算所有先前位置的 K 與 V。
 
-The KV cache stores K and V tensors from previous positions. On each new token:
-1. Compute Q, K, V only for the new position
-2. Append new K, V to cache
-3. Attend to full cached K, V
+KV cache 會儲存先前位置的 K 與 V tensor。對每個新 token：
+1. 只為新位置計算 Q、K、V
+2. 把新的 K、V 追加到 cache
+3. 對完整快取中的 K、V 做注意力運算
 
-This reduces per-token complexity from O(n) to O(1) for projection computation.
+這會把每個 token 在 projection 計算上的複雜度，從 O(n) 降到 O(1)。
 
-The cost is memory: KV cache scales linearly with sequence length. For Llama 70B at 8K context, it is about 21 GB per request. This directly limits batch size and throughput.
+代價是記憶體：KV cache 會隨序列長度線性成長。以 Llama 70B 的 8K context 為例，每個 request 約需要 21 GB。這會直接限制 batch size 與 throughput。
 
-GQA and MQA reduce this by sharing K, V across query heads.
+GQA 與 MQA 透過讓 query heads 共用 K、V 來降低這個成本。
 
-### Q: Compare MHA, GQA, and MQA.
+<a id="q-compare-mha-gqa-and-mqa"></a>
+### 問：比較 MHA、GQA 與 MQA。
 
-**Strong answer:**
-| Variant | K,V heads | KV Cache | Quality | Use Case |
+**強答範例：**
+| 變體 | K、V heads | KV Cache | 品質 | 使用情境 |
 |---------|-----------|----------|---------|----------|
-| MHA | Equal to Q heads | Full | Best | Training, quality-critical |
-| GQA | Fewer than Q heads | Reduced | Near MHA | Production serving |
-| MQA | 1 | Minimal | Reduced | Memory-constrained |
+| MHA | 與 Q heads 相同 | 完整 | 最佳 | 訓練、品質優先 |
+| GQA | 少於 Q heads | 較小 | 接近 MHA | 生產 serving |
+| MQA | 1 | 最小 | 較低 | 記憶體受限 |
 
-MHA: Each query head has its own K and V. Best quality but largest KV cache.
+MHA：每個 query head 都有自己的 K 與 V。品質最好，但 KV cache 最大。
 
-GQA: Groups of query heads share K and V. Llama 2 uses 8 KV heads for 64 query heads (8:1 ratio). 8x smaller cache with minimal quality loss.
+GQA：一組 query heads 共用 K 與 V。Llama 2 以 64 個 query heads 對 8 個 KV heads（8:1）。快取小 8 倍，品質損失極小。
 
-MQA: All query heads share one K and V. Maximum memory savings but measurable quality reduction. Used by PaLM.
+MQA：所有 query heads 共用同一組 K 與 V。能節省最多記憶體，但品質下降較明顯。PaLM 採用了這種方式。
 
-For serving, GQA is the best tradeoff. It enables larger batch sizes (higher throughput) with quality nearly identical to MHA.
+對 serving 來說，GQA 是最佳折衷：能支援更大的 batch size（更高 throughput），而品質幾乎與 MHA 相同。
 
-### Q: How does Flash Attention achieve O(n) memory?
+<a id="q-how-does-flash-attention-achieve-on-memory"></a>
+### 問：Flash Attention 如何做到 O(n) 記憶體？
 
-**Strong answer:**
-Standard attention materializes the full n x n attention matrix in GPU memory. Flash Attention avoids this by:
+**強答範例：**
+標準注意力會在 GPU 記憶體中 materialize 完整的 n x n 注意力矩陣。Flash Attention 透過以下方式避免這件事：
 
-1. **Tiling:** Process blocks of Q and K that fit in on-chip SRAM
-2. **Online softmax:** Compute softmax incrementally without storing all scores
-3. **Recomputation:** During backward pass, recompute attention rather than loading saved values
+1. **Tiling：**以能放入 on-chip SRAM 的 Q 與 K 區塊進行處理
+2. **Online softmax：**增量計算 softmax，而不儲存所有分數
+3. **Recomputation：**在 backward pass 重新計算注意力，而不是載入先前保存的值
 
-The key insight is that GPU SRAM (20 MB per SM) is 10x faster than HBM (80 GB). By doing more arithmetic in SRAM and fewer HBM reads/writes, Flash Attention is both faster and uses less memory.
+關鍵洞見是：GPU SRAM（每個 SM 約 20 MB）比 HBM（80 GB）快 10 倍。透過在 SRAM 中做更多算術、減少 HBM 讀寫，Flash Attention 不但更快，也更省記憶體。
 
-The result is exact attention (not an approximation) with O(n) memory and 2-4x speedup.
+結果是：在 O(n) 記憶體下得到精確注意力（不是近似值），並可帶來 2-4 倍加速。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - Vaswani et al. "Attention Is All You Need" (2017)
 - Dao et al. "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness" (2022)
@@ -512,4 +556,4 @@ The result is exact attention (not an approximation) with O(n) memory and 2-4x s
 
 ---
 
-*Previous: [Tokenization Deep Dive](02-tokenization-deep-dive.md) | Next: [Transformer Architecture](04-transformer-architecture.md)*
+*上一章：[Tokenization Deep Dive](02-tokenization-deep-dive.md) | 下一章：[Transformer Architecture](04-transformer-architecture.md)*

@@ -545,4 +545,3 @@ Contextual Retrieval 解決的是 RAG 中的「context dilution」問題。當�
 ---
 
 *上一節：[Advanced Retrieval Patterns](09-advanced-retrieval-patterns.md) | 下一節：[Late Interaction & ColBERT](11-late-interaction-colbert.md)*
-

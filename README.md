@@ -20,7 +20,7 @@
 
 > **生產級 AI 系統的活文件參考書。** 持續更新，深度足以應付面試。
 
-這是一份實用且持續更新的 AI 系統設計指南，涵蓋 AI system design、RAG 架構、LLM engineering、agentic AI、MCP 與 A2A protocols，以及 AI engineering 面試準備。內容包含生產環境模式、模型選型、評估方法，以及來自 staff-level 面試的真實案例研究。
+這是一份實用且持續更新的 AI 系統設計指南，涵蓋 AI 系統設計、RAG 架構、LLM 工程、agentic AI、MCP 與 A2A 協定，以及 AI engineering 面試準備。內容包含生產環境模式、模型選型、評估方法，以及來自 staff-level 面試的真實案例研究。
 
 **第一次來這裡？** 直接查看 [110 題面試題庫](00-interview-prep/01-question-bank.md)、[RAG Fundamentals 章節](06-retrieval-systems/01-rag-fundamentals.md)，或先選出[適合生產環境的 LLM](02-model-landscape/01-model-taxonomy.md)。
 
@@ -309,7 +309,7 @@ MIT License。詳見 [LICENSE](LICENSE)。
 ---
 
 <p align="center">
-  <b>Built by <a href="https://github.com/ombharatiya">Om Bharatiya</a></b><br/>
+  <b>由 <a href="https://github.com/ombharatiya">Om Bharatiya</a> 打造</b><br/>
   <a href="https://github.com/ombharatiya"><img src="https://img.shields.io/badge/GitHub-Follow-181717?logo=github" alt="GitHub"></a>
   <a href="https://x.com/ombharatiya"><img src="https://img.shields.io/badge/Twitter-Follow-1DA1F2?logo=twitter" alt="Twitter"></a>
   <a href="https://linkedin.com/in/ombharatiya"><img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?logo=linkedin" alt="LinkedIn"></a>
