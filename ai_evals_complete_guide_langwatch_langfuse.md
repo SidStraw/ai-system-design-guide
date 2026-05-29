@@ -1,113 +1,121 @@
-# AI Evals For Engineers, PMs & QAs: Complete Study Guide
+<a id="ai-evals-for-engineers-pms--qas-complete-study-guide"></a>
+# AI 評測：工程師、PM 與 QA 完整學習指南
 
-*Based on the Maven course by Hamel Husain & Shreya Shankar, enriched with hands-on examples, production-ready code, and platform-specific guides for LangWatch, Langfuse, and more*
+*本指南基於 Hamel Husain 與 Shreya Shankar 的 Maven 課程，並加入實作範例、可投入生產環境的程式碼，以及針對 LangWatch、Langfuse 等平台的專屬使用指南*
 
-**Who is this guide for?**
-- **Engineers** building AI-powered products who need to systematically evaluate quality
-- **Product Managers** who own the product experience and need to lead error analysis
-- **QA Engineers** who need to build automated evaluation pipelines for AI systems
-- **Anyone** who wants to learn how to evaluate AI applications without taking the full course
+**本指南適合哪些人？**
+- **工程師**：正在打造 AI 驅動產品並需要系統性評估品質的開發者
+- **產品經理（PM）**：負責產品體驗並需要主導錯誤分析的人員
+- **QA 工程師**：需要為 AI 系統建立自動化評測流程的測試人員
+- **任何人**：想學習如何在不參加完整課程的情況下評測 AI 應用程式
 
-**What you'll learn:**
-- How to set up observability for any AI application
-- How to systematically find what's broken (error analysis)
-- How to build automated evaluators (code-based and LLM judges)
-- How to evaluate RAG systems, multi-step pipelines, and multi-turn conversations
-- How to run production evals: guardrails, safety, and real-time monitoring
-- How to use statistical correction to account for judge errors
-- How to close the loop: turn eval results into system improvements
-- How to do all of this with your observability platform of choice (LangWatch, Langfuse, Braintrust, LangSmith, or your own)
+**你將學到什麼：**
+- 如何為任何 AI 應用程式設置可觀測性
+- 如何系統性地找出問題所在（錯誤分析）
+- 如何建立自動化評測器（基於程式碼與 LLM 裁判）
+- 如何評測 RAG 系統、多步驟流程與多輪對話
+- 如何執行生產環境評測：防護機制、安全性與即時監控
+- 如何運用統計修正來應對裁判誤差
+- 如何形成閉環：將評測結果轉化為系統改進
+- 如何透過你選擇的可觀測性平台完成上述所有工作（LangWatch、Langfuse、Braintrust、LangSmith 或你自己的平台）
 
-**Platform Examples:** This guide uses **LangWatch** (open-source, self-hosted or cloud) and **Langfuse** (open-source, cloud or self-hosted) as primary examples. The methodology is platform-agnostic — adapt it to whichever tool you use.
+**平台範例：** 本指南以 **LangWatch**（開源、可自架或使用雲端版）和 **Langfuse**（開源、雲端版或可自架）作為主要範例。本指南的方法論與平台無關——可自行調整至你所使用的工具。
 
-**LangWatch vs Langfuse:** Both are excellent open-source platforms with similar core capabilities. LangWatch offers simpler setup and built-in evaluators, while Langfuse provides more flexibility for custom pipelines and has a larger community. This guide shows both so you can choose based on your needs.
+**LangWatch 與 Langfuse 比較：** 兩者都是具備相似核心功能的優秀開源平台。LangWatch 設置更簡單且內建評測器，而 Langfuse 在自訂流程方面更具彈性，且社群規模更大。本指南同時介紹兩者，讓你根據自身需求做出選擇。
 
 ---
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-1. [What Are AI Evals and Why You Need Them](#chapter-1)
-2. [Setting Up Observability](#chapter-2)
-3. [Error Analysis: The Secret Sauce](#chapter-3)
-4. [Building LLM-as-a-Judge Evaluators](#chapter-4)
-5. [Code-Based Evaluators](#chapter-5)
-6. [RAG System Evaluation](#chapter-6)
-7. [Multi-Step Pipeline Evaluation](#chapter-7)
-8. [Multi-Turn Conversation Evaluation](#chapter-8)
-9. [Production Evals: Safety, Guardrails & Monitoring](#chapter-9)
-10. [Statistical Correction with judgy](#chapter-10)
-11. [Closing the Loop: From Evals to Improvements](#chapter-11)
-12. [Human Annotation Best Practices](#chapter-12)
-13. [Cost, Latency & Scaling Evals](#chapter-13)
-14. [Practical Implementation Guide](#chapter-14)
-15. [Common Mistakes to Avoid](#chapter-15)
-16. [Tools and Resources](#chapter-16)
+1. [什麼是 AI 評測以及為何需要它](#chapter-1)
+2. [設置可觀測性](#chapter-2)
+3. [錯誤分析：核心關鍵](#chapter-3)
+4. [建立 LLM-as-a-Judge 評測器](#chapter-4)
+5. [基於程式碼的評測器](#chapter-5)
+6. [RAG 系統評測](#chapter-6)
+7. [多步驟流程評測](#chapter-7)
+8. [多輪對話評測](#chapter-8)
+9. [生產環境評測：安全性、防護機制與監控](#chapter-9)
+10. [使用 judgy 進行統計修正](#chapter-10)
+11. [形成閉環：從評測到改進](#chapter-11)
+12. [人工標注最佳實踐](#chapter-12)
+13. [成本、延遲與評測擴展](#chapter-13)
+14. [實作指南](#chapter-14)
+15. [常見錯誤與規避方法](#chapter-15)
+16. [工具與資源](#chapter-16)
 
-**Appendices:**
-- [A: Glossary for PMs & QAs](#appendix-a)
-- [B: Quick Reference](#appendix-b)
-- [C: Complete Judge Prompts from Production](#appendix-c)
-- [D: Pipeline State Evaluator Prompts](#appendix-d)
-- [E: Judge Prompt Engineering Tips](#appendix-e)
-- [F: Platform Methods Reference (LangWatch & Langfuse)](#appendix-f)
-- [G: 30-Day Learning Path](#appendix-g)
+**附錄：**
+- [A：PM 與 QA 術語表](#appendix-a)
+- [B：快速參考指南](#appendix-b)
+- [C：來自生產環境的完整裁判提示詞](#appendix-c)
+- [D：流程狀態評測器提示詞](#appendix-d)
+- [E：裁判提示詞工程技巧](#appendix-e)
+- [F：平台方法參考（LangWatch 與 Langfuse）](#appendix-f)
+- [G：30 天學習路徑](#appendix-g)
 
 ---
 
 <a name="chapter-1"></a>
-## Chapter 1: What Are AI Evals and Why You Need Them
+<a id="chapter-1"></a>
+## 第一章：什麼是 AI 評測以及為何需要它
 
-### Simple Definition
+<a id="simple-definition"></a>
+### 簡單定義
 
-**Evals (Evaluations)** are systematic tests that check if your AI application is working correctly. Think of them like unit tests for traditional software, but for AI systems.
+**評測（Evals）** 是一種系統性測試，用以檢驗你的 AI 應用程式是否運作正常。可以把它想成是傳統軟體的單元測試，但應用於 AI 系統。
 
-### Why Everyone Needs Evals
+<a id="why-everyone-needs-evals"></a>
+### 為何所有人都需要評測
 
-There's a debate in the AI community: some people say "just vibe check your app" (meaning: just use it yourself and see if it feels good). But here's the truth:
+AI 社群中存在一場爭論：有些人說「只要用感覺測試你的應用程式就好」（意思是：自己用看看，感覺不錯就行）。但事實是：
 
-**Everyone needs evals.** The people who say they don't need evals are actually benefiting from evals that someone else did upstream.
+**所有人都需要評測。** 那些聲稱不需要評測的人，其實是在受益於別人在上游所做的評測。
 
-Example: If you're building a coding assistant with GPT-4, OpenAI already tested GPT-4 on massive code benchmarks. So you can "vibe check" your app. But for most applications that aren't simple uses of foundation models, you need your own evals.
+範例：如果你正在用 GPT-4 建立一個程式碼助理，OpenAI 已經在大量程式碼基準上測試過 GPT-4 了。所以你可以「用感覺測試」你的應用程式。但對於大多數非單純使用基礎模型的應用程式，你需要自己的評測。
 
-### The Three Core Truths About Evals
+<a id="the-three-core-truths-about-evals"></a>
+### 評測的三大核心真理
 
-1. **You can't improve what you don't measure**
-   - Generic metrics like "helpfulness score" won't catch specific problems
-   - You need application-specific evals
+1. **無法量測的，就無法改進**
+   - 像「有用性分數」這樣的通用指標無法發現特定問題
+   - 你需要針對應用程式的專屬評測
 
-2. **Error analysis is the most important step**
-   - More important than LLM judges
-   - More important than fancy observability tools
-   - This is where you actually learn what's broken
+2. **錯誤分析是最重要的步驟**
+   - 比 LLM 裁判更重要
+   - 比花俏的可觀測性工具更重要
+   - 這才是真正找出問題所在的地方
 
-3. **PMs and QAs must own error analysis, not just engineers**
-   - Engineers know if code works
-   - PMs know if the product experience is good
-   - QAs know how to systematically break things
-   - You have the domain expertise
-   - This is product work, not just technical work
+3. **PM 和 QA 必須主導錯誤分析，而不只是工程師**
+   - 工程師知道程式碼是否正常運作
+   - PM 知道產品體驗是否良好
+   - QA 知道如何系統性地找出問題
+   - 你擁有領域專業知識
+   - 這是產品工作，不只是技術工作
 
-### The AI Development Cycle is the Scientific Method
+<a id="the-ai-development-cycle-is-the-scientific-method"></a>
+### AI 開發週期就是科學方法
 
-Building great AI products requires a rigorous evaluation process. In many ways, AI development IS the scientific method:
+打造優秀的 AI 產品需要嚴謹的評測流程。在許多方面，AI 開發本身就是科學方法：
 
-1. **Observe** - Trace your AI's behavior (Chapter 2)
-2. **Hypothesize** - Identify what's broken through error analysis (Chapter 3)
-3. **Experiment** - Build evaluators and test changes (Chapters 4-9)
-4. **Measure** - Calculate metrics and correct for bias (Chapter 10)
-5. **Iterate** - Improve based on data, not hunches (Chapter 11)
+1. **觀察** — 追蹤 AI 的行為（第二章）
+2. **假設** — 透過錯誤分析找出問題所在（第三章）
+3. **實驗** — 建立評測器並測試變更（第四至九章）
+4. **量測** — 計算指標並修正偏差（第十章）
+5. **迭代** — 根據資料而非直覺進行改進（第十一章）
 
-### What Can Go Wrong Without Evals?
+<a id="what-can-go-wrong-without-evals"></a>
+### 沒有評測會出什麼問題？
 
-Your demo works great. Then production happens:
+你的 demo 效果很好。然後生產環境來了：
 
-- Users hit edge cases you never thought of
-- Text messages contain typos and unusual formatting
-- Dates are formatted differently than expected
-- AI tries to handle requests it should hand off to humans
-- Small prompt changes break things that were working
+- 使用者遇到你從未想到的邊界案例
+- 簡訊中包含錯字和不尋常的格式
+- 日期格式與預期不同
+- AI 試圖處理本應轉交給人工的請求
+- 小幅修改提示詞就導致原本正常的功能失效
 
-**Example from real production data:**
+**真實生產資料範例：**
 ```
 User: "I need a one bedroom with the bathroom NOT connected"
 AI: Returns apartments with connected bathrooms (WRONG!)
@@ -116,47 +124,53 @@ AI: "I'll check on that" but never actually checks
 PLUS: AI used markdown formatting (* asterisks *) in a text message
 ```
 
-Three different problems in one interaction! Without proper logging and evaluation, you'd never catch these patterns.
+一次互動中出現了三種不同的問題！沒有適當的日誌記錄和評測，你永遠不會發現這些規律。
 
-### For PMs: Why This Is Your Job
+<a id="for-pms-why-this-is-your-job"></a>
+### 致 PM：為何這是你的工作
 
-**Wrong approach:** "This is technical AI stuff, let engineering figure it out"
+**錯誤的做法：** 「這是技術性的 AI 相關工作，讓工程師去搞定」
 
-**Right approach:** PMs should lead error analysis because:
-1. You understand user needs
-2. You have product taste
-3. You have domain expertise
-4. This is product work disguised as technical work
+**正確的做法：** PM 應該主導錯誤分析，因為：
+1. 你了解使用者需求
+2. 你對產品有品味
+3. 你擁有領域專業知識
+4. 這是以技術工作為外表的產品工作
 
-**The teams shipping the best AI products have PMs who've personally reviewed hundreds or thousands of traces.**
+**交付最佳 AI 產品的團隊，其 PM 都親自審閱過數百甚至數千條 trace。**
 
-### For QAs: Your New Superpower
+<a id="for-qas-your-new-superpower"></a>
+### 致 QA：你的新超能力
 
-Traditional QA involves test cases with expected outputs. AI QA is different:
-1. Outputs are non-deterministic (same input can give different outputs)
-2. "Correct" is often subjective
-3. Edge cases are virtually infinite
-4. You need automated evaluators that scale
+傳統 QA 包含具有預期輸出的測試案例。AI 的 QA 不同：
+1. 輸出是不確定的（相同輸入可能產生不同輸出）
+2. 「正確」通常是主觀的
+3. 邊界案例幾乎是無窮無盡的
+4. 你需要能夠擴展的自動化評測器
 
-But the core QA mindset - systematic testing, edge case thinking, regression prevention - is exactly what AI evals need. QAs who learn evals become incredibly valuable.
+但 QA 的核心思維——系統性測試、邊界案例思考、迴歸預防——正是 AI 評測所需要的。學會評測的 QA 工程師會變得極具價值。
 
 ---
 
 <a name="chapter-2"></a>
-## Chapter 2: Setting Up Observability
+<a id="chapter-2"></a>
+<a id="setting-up-observability"></a>
+## 第二章：設置可觀測性
 
-### What is a Trace?
+<a id="what-is-a-trace"></a>
+### 什麼是 Trace？
 
-A **trace** is a complete recording of everything your AI did to respond to a user. It's like a detailed log that shows:
+**Trace** 是 AI 為回應使用者所做的一切完整記錄。就像一份詳細的日誌，顯示：
 
-1. **System prompt** (instructions given to the AI)
-2. **User messages** (what the person asked)
-3. **Tool calls** (functions the AI tried to use)
-4. **Tool responses** (what those functions returned)
-5. **Assistant responses** (what the AI said back)
-6. **All context** (everything the LLM saw when making decisions)
+1. **系統提示詞**（給予 AI 的指令）
+2. **使用者訊息**（使用者詢問的內容）
+3. **工具呼叫**（AI 嘗試使用的函式）
+4. **工具回應**（那些函式回傳的內容）
+5. **助理回應**（AI 的回覆）
+6. **所有上下文**（LLM 在做決策時所看到的一切）
 
-### Example of a Complete Trace
+<a id="example-of-a-complete-trace"></a>
+### 完整 Trace 範例
 
 ```
 === TRACE ID: abc123 ===
@@ -181,52 +195,56 @@ ASSISTANT RESPONSE:
 (Used markdown: ** ** in text message)
 ```
 
-### What Information to Capture
+<a id="what-information-to-capture"></a>
+### 應捕獲哪些資訊
 
-**Minimum requirements:**
-- Input (user message)
-- Output (AI response)
-- Timestamp
-- Unique ID for the interaction
+**最低需求：**
+- 輸入（使用者訊息）
+- 輸出（AI 回應）
+- 時間戳記
+- 互動的唯一 ID
 
-**Better to include:**
-- System prompts used
-- Tool calls and their results
-- Model parameters (temperature, max_tokens, etc.)
-- Token counts
-- Latency (response time)
-- Cost per request
+**建議納入：**
+- 所使用的系統提示詞
+- 工具呼叫及其結果
+- 模型參數（temperature、max_tokens 等）
+- Token 計數
+- 延遲（回應時間）
+- 每次請求的成本
 
-**Best practice:**
-- User context (session history)
-- Error messages if any occurred
-- Model version used
-- Feature flags active at the time
+**最佳實踐：**
+- 使用者上下文（對話歷史）
+- 若有發生的錯誤訊息
+- 使用的模型版本
+- 當時啟用的功能旗標
 
-### Choosing an Observability Platform
+<a id="choosing-an-observability-platform"></a>
+### 選擇可觀測性平台
 
-| Tool | Type | Best For | Cost |
+| 工具 | 類型 | 最適用於 | 費用 |
 |------|------|----------|------|
-| **LangWatch** | Open source, cloud or self-hosted | Simple setup, built-in evaluators, great UX | Free tier + paid |
-| **Langfuse** | Open source, cloud or self-hosted | Custom pipelines, large community | Free tier + paid |
-| **Braintrust** | Cloud | Excellent UI, team collaboration | Paid |
-| **LangSmith** | Cloud | LangChain users | Paid |
-| **Build Your Own** | Custom | Learning, custom needs | Free |
+| **LangWatch** | 開源、雲端或自架 | 設置簡單、內建評測器、絕佳使用者體驗 | 免費方案＋付費方案 |
+| **Langfuse** | 開源、雲端或自架 | 自訂流程、龐大社群 | 免費方案＋付費方案 |
+| **Braintrust** | 雲端 | 優秀的使用者介面、團隊協作 | 付費 |
+| **LangSmith** | 雲端 | LangChain 使用者 | 付費 |
+| **自行建置** | 客製化 | 學習、自訂需求 | 免費 |
 
-**LangWatch vs Langfuse comparison:**
-- **Setup:** LangWatch is simpler (3-line integration), Langfuse requires more configuration
-- **Evaluators:** LangWatch has 40+ built-in evaluators, Langfuse requires custom implementation
-- **Flexibility:** Langfuse is more flexible for custom workflows, LangWatch is more opinionated
-- **Community:** Langfuse has a larger community and more integrations
-- **UI:** Both have excellent UIs; LangWatch focuses on analytics, Langfuse on workflow
+**LangWatch 與 Langfuse 比較：**
+- **設置：** LangWatch 更簡單（3 行整合），Langfuse 需要更多設定
+- **評測器：** LangWatch 內建 40 個以上的評測器，Langfuse 需要自訂實作
+- **彈性：** Langfuse 對自訂工作流程更靈活，LangWatch 則更有既定主張
+- **社群：** Langfuse 擁有更龐大的社群和更多整合方式
+- **使用者介面：** 兩者都有優秀的介面；LangWatch 專注於分析，Langfuse 專注於工作流程
 
-All of these support the same core concepts: traces, spans, datasets, evaluations, and experiments. The methodology in this guide works with any of them.
+所有這些平台都支援相同的核心概念：trace、span、資料集、評測和實驗。本指南的方法論適用於其中任何一個。
 
-### Setting Up LangWatch (Open-Source, Cloud or Self-Hosted)
+<a id="setting-up-langwatch-open-source-cloud-or-self-hosted"></a>
+### 設置 LangWatch（開源、雲端或自架）
 
-LangWatch is an open-source LLM observability and analytics platform. It provides tracing, evaluation, datasets, experiments, and 40+ built-in evaluators.
+LangWatch 是一個開源的 LLM 可觀測性與分析平台。它提供追蹤、評測、資料集、實驗，以及 40 個以上的內建評測器。
 
-#### Install and Configure
+<a id="install-and-configure"></a>
+#### 安裝與設定
 
 ```bash
 pip install langwatch
@@ -238,13 +256,14 @@ import os
 os.environ["LANGWATCH_API_KEY"] = "lw_..."  # or set in .env file
 ```
 
-**Cloud vs Self-Hosted:**
-- **Cloud:** Sign up at [langwatch.ai](https://langwatch.ai), get API key, done in 5 minutes
-- **Self-Hosted:** Run `docker-compose up` with their Docker setup, point to your own instance
+**雲端版與自架版：**
+- **雲端版：** 在 [langwatch.ai](https://langwatch.ai) 註冊、取得 API 金鑰，5 分鐘內完成
+- **自架版：** 使用其 Docker 設定執行 `docker-compose up`，並指向你自己的執行個體
 
-#### Instrument Your Application (Auto-Tracing)
+<a id="instrument-your-application-auto-tracing"></a>
+#### 為應用程式加入追蹤（自動追蹤）
 
-LangWatch supports auto-instrumentation for most frameworks:
+LangWatch 支援大多數框架的自動追蹤：
 
 ```python
 import langwatch
@@ -267,14 +286,15 @@ response = client.chat.completions.create(
 # This call is automatically captured by LangWatch!
 ```
 
-**Framework Support:**
-- OpenAI (automatic)
-- LangChain (automatic)
-- LlamaIndex (automatic)
-- Anthropic Claude (automatic)
-- Any custom LLM (manual spans)
+**框架支援：**
+- OpenAI（自動）
+- LangChain（自動）
+- LlamaIndex（自動）
+- Anthropic Claude（自動）
+- 任何自訂 LLM（手動 span）
 
-#### Add Custom Spans with Decorators
+<a id="add-custom-spans-with-decorators"></a>
+#### 使用裝飾器新增自訂 Span
 
 ```python
 import langwatch
@@ -297,14 +317,16 @@ def execute_query(sql):
     return db.execute(sql)
 ```
 
-**Comparison with Langfuse:**
-Both use decorators, but LangWatch's `@langwatch.span()` is simpler than Langfuse's `@observe()`. LangWatch automatically categorizes spans by type, while Langfuse requires explicit `as_type` parameters.
+**與 Langfuse 比較：**
+兩者都使用裝飾器，但 LangWatch 的 `@langwatch.span()` 比 Langfuse 的 `@observe()` 更簡單。LangWatch 自動依類型分類 span，而 Langfuse 需要明確指定 `as_type` 參數。
 
-### Setting Up Langfuse (Open-Source, Cloud or Self-Hosted)
+<a id="setting-up-langfuse-open-source-cloud-or-self-hosted"></a>
+### 設置 Langfuse（開源、雲端或自架）
 
-Langfuse provides tracing, evaluation, datasets, experiments, and prompt management. It offers a managed cloud and a self-hosted option.
+Langfuse 提供追蹤、評測、資料集、實驗與提示詞管理。它提供託管雲端版和自架選項。
 
-#### Install and Configure
+<a id="install-and-configure-langfuse"></a>
+#### 安裝與設定
 
 ```bash
 pip install langfuse openai
@@ -317,7 +339,8 @@ pip install langfuse openai
 # LANGFUSE_HOST="https://cloud.langfuse.com"  # or your self-hosted URL
 ```
 
-#### Instrument Your Application (Drop-In Replacement)
+<a id="instrument-your-application-drop-in-replacement"></a>
+#### 為應用程式加入追蹤（即插即用替換）
 
 ```python
 # Just change your import — everything else stays the same!
@@ -336,7 +359,8 @@ response = client.chat.completions.create(
 )
 ```
 
-#### Add Custom Spans with Decorators
+<a id="add-custom-spans-with-decorators-langfuse"></a>
+#### 使用裝飾器新增自訂 Span
 
 ```python
 from langfuse import observe
@@ -354,10 +378,12 @@ def generate_sql(question):
     return client.chat.completions.create(...)
 ```
 
-### Creating and Managing Prompts
+<a id="creating-and-managing-prompts"></a>
+### 建立與管理提示詞
 
-Both platforms support versioned prompt management:
+兩個平台都支援版本化的提示詞管理：
 
+<a id="langwatch-prompts"></a>
 #### LangWatch
 
 ```python
@@ -380,8 +406,9 @@ messages = prompt.render(question="How do I make pancakes?")
 response = client.chat.completions.create(messages=messages, **prompt.settings)
 ```
 
-**LangWatch advantage:** Simpler API, automatic parameter management (temperature, model stored with prompt).
+**LangWatch 優勢：** 更簡潔的 API，自動管理參數（溫度、模型與提示詞一起儲存）。
 
+<a id="langfuse-prompts"></a>
 #### Langfuse
 
 ```python
@@ -404,10 +431,12 @@ prompt = langfuse.get_prompt("recipe-assistant", type="chat")
 compiled = prompt.compile(query="How do I make pancakes?")
 ```
 
-**Langfuse advantage:** More mature prompt management, better versioning UI, labels for organization.
+**Langfuse 優勢：** 更成熟的提示詞管理、更好的版本控制介面、用於組織管理的標籤功能。
 
-### Uploading Test Datasets
+<a id="uploading-test-datasets"></a>
+### 上傳測試資料集
 
+<a id="langwatch-datasets"></a>
 #### LangWatch
 
 ```python
@@ -428,8 +457,9 @@ dataset = langwatch.datasets.create(
 )
 ```
 
-**LangWatch advantage:** Direct pandas DataFrame support, simpler API.
+**LangWatch 優勢：** 直接支援 pandas DataFrame，API 更簡潔。
 
+<a id="langfuse-datasets"></a>
 #### Langfuse
 
 ```python
@@ -448,59 +478,59 @@ for query in ["Suggest a quick vegan breakfast recipe",
     )
 ```
 
-**Langfuse advantage:** More control over individual items, better for incremental additions.
+**Langfuse 優勢：** 對個別項目有更多控制，更適合增量新增。
 
-### Key Principle
+<a id="key-principle"></a>
+### 核心原則
 
-**Without traces, you can't do evals.** This is your foundation. Set this up first before anything else.
+**沒有 trace，就無法進行評測。** 這是你的基礎。在做任何其他事情之前，先設置好這一點。
 
-**For PMs/QAs:** You don't need to write the instrumentation code. Ask your engineers to set up tracing, then use the web UI to review traces visually. Both LangWatch (`langwatch.ai` or your self-hosted URL) and Langfuse (`cloud.langfuse.com` or your self-hosted URL) provide UIs that let you browse, search, and annotate traces without writing any code.
+**致 PM/QA：** 你不需要自己撰寫追蹤程式碼。請工程師設置追蹤，然後使用網頁介面視覺化審閱 trace。LangWatch（`langwatch.ai` 或你的自架 URL）和 Langfuse（`cloud.langfuse.com` 或你的自架 URL）都提供了讓你無需撰寫任何程式碼，即可瀏覽、搜尋和標注 trace 的介面。
 
-**Platform Choice Guidance:**
-- Choose **LangWatch** if: You want the fastest setup, built-in evaluators, and focus on analytics
-- Choose **Langfuse** if: You need maximum flexibility, have complex custom workflows, or want the largest community
-- Use **both**: They complement each other - LangWatch for quick evals, Langfuse for deep workflow customization
+**平台選擇指引：**
+- 選擇 **LangWatch** 如果：你想要最快速的設置、內建評測器，並專注於分析
+- 選擇 **Langfuse** 如果：你需要最大彈性、有複雜的自訂工作流程，或想要最大的社群支援
+- **兩者都用**：它們相輔相成——LangWatch 用於快速評測，Langfuse 用於深度工作流程自訂
 
 ---
-
 <a name="chapter-3"></a>
-## Chapter 3: Error Analysis: The Secret Sauce
+## 第三章：錯誤分析：致勝關鍵
 
-### What is Error Analysis?
+### 什麼是錯誤分析？
 
-Error analysis is the **systematic process** of:
-1. Reviewing traces (logs of AI interactions)
-2. Taking notes on problems you see
-3. Categorizing those problems
-4. Counting how often each type of problem occurs
+錯誤分析是一種**系統化的流程**，包含：
+1. 審閱 trace（AI 互動的日誌）
+2. 記錄你發現的問題
+3. 將問題分類
+4. 統計各類問題出現的頻率
 
-**This is THE most important skill** in building reliable AI products.
+**這是**打造可靠 AI 產品**最重要的技能**。
 
-Most teams skip straight to building fancy dashboards or LLM judges. That's backwards. You need to understand what's wrong before you can measure it.
+大多數團隊會直接跳去建立花俏的儀表板或 LLM 評審機制。這樣的順序是錯的。你必須先了解問題所在，才能加以衡量。
 
-### Why PMs and QAs MUST Do This (Not Just Engineers)
+### 為什麼 PM 和 QA 必須親自做（而不只是交給工程師）
 
-**Wrong approach:**
-"This is technical AI stuff, let engineering figure it out"
+**錯誤做法：**
+「這是 AI 技術的事，讓工程師去搞定就好」
 
-**Right approach:**
-PMs and QAs should lead error analysis because:
+**正確做法：**
+PM 和 QA 應該主導錯誤分析，原因如下：
 
-1. **You understand user needs** - Engineers don't know if a "connected bathroom" vs "disconnected bathroom" matters to users
-2. **You have product taste** - You know what good experiences look like
-3. **You have domain expertise** - You understand business requirements
-4. **This is product work** - Disguised as technical work, but it's really about product quality
+1. **你了解使用者需求** — 工程師不知道「有附屬衛浴」和「無附屬衛浴」對使用者來說有沒有差異
+2. **你有產品品味** — 你知道好的體驗應該是什麼樣子
+3. **你有領域專業** — 你了解業務需求
+4. **這是產品工作** — 表面上像技術工作，但本質上是產品品質的問題
 
-**Real impact:**
-The teams shipping the best AI products have PMs who've personally reviewed hundreds or thousands of traces.
+**實際影響：**
+打造出最優秀 AI 產品的團隊，都有親自審閱過數百甚至數千條 trace 的 PM。
 
-### Step 1: Generate Diverse Test Queries
+### 步驟一：產生多樣化的測試查詢
 
-Before you can review traces, you need diverse test inputs. A powerful technique for this is **dimensional sampling**.
+在審閱 trace 之前，你需要多樣化的測試輸入。一個強大的技術是**維度抽樣（dimensional sampling）**。
 
-#### Define Key Dimensions
+#### 定義關鍵維度
 
-Identify 3-4 dimensions that matter for your product:
+找出對你產品最重要的 3 到 4 個維度：
 
 ```python
 DIMENSIONS = {
@@ -521,7 +551,7 @@ DIMENSIONS = {
 # Total possible combinations: 5 x 5 x 5 x 3 = 375
 ```
 
-#### Generate Random Combinations
+#### 產生隨機組合
 
 ```python
 import random
@@ -539,11 +569,11 @@ for i in range(25):  # Generate 25 diverse tuples
     dimension_tuples.append(tuple_data)
 ```
 
-#### Convert Tuples to Natural Language Queries Using an LLM
+#### 使用 LLM 將元組轉換為自然語言查詢
 
-You can use any LLM to convert dimension tuples into realistic queries. Here are platform-specific approaches:
+你可以使用任何 LLM 將維度元組轉換為真實的查詢。以下是各平台的做法：
 
-**With LangWatch (built-in generation):**
+**使用 LangWatch（內建生成功能）：**
 
 ```python
 import langwatch
@@ -565,7 +595,7 @@ for t in dimension_tuples:
     queries.append(result.text)
 ```
 
-**With any LLM (platform-agnostic):**
+**使用任何 LLM（不限平台）：**
 
 ```python
 import openai
@@ -591,7 +621,7 @@ for t in dimension_tuples:
     queries.append(response.choices[0].message.content)
 ```
 
-**With Langfuse (manual tracking):**
+**使用 Langfuse（手動追蹤）：**
 
 ```python
 from langfuse.openai import OpenAI
@@ -610,30 +640,30 @@ for t in dimension_tuples:
     queries.append(response.choices[0].message.content)
 ```
 
-**Example conversions:**
+**範例轉換：**
 
-| Dimension Tuple | Generated Query |
+| 維度元組 | 生成的查詢 |
 |---|---|
-| vegan, Italian, dinner, beginner | "Hey, I'm new to cooking and vegan. Can you suggest an easy Italian dinner?" |
-| gluten-free, any, dessert, intermediate | "I'm looking for a gluten-free dessert that's a bit of a challenge to make" |
-| keto, American, breakfast, advanced | "Give me a complex keto breakfast recipe, American style" |
+| vegan, Italian, dinner, beginner | 「嘿，我剛開始學做菜，而且是素食者。你能推薦一道簡單的義大利晚餐嗎？」 |
+| gluten-free, any, dessert, intermediate | 「我在找一道有點難度的無麩質甜點食譜」 |
+| keto, American, breakfast, advanced | 「給我一道複雜的生酮美式早餐食譜」 |
 
-**For PMs/QAs:** This dimensional approach ensures you test the full space of user needs. Without it, you'll only test the obvious cases and miss edge cases where users combine unexpected requirements.
+**給 PM/QA：** 這種維度化的方式能確保你涵蓋所有使用者需求的空間。若沒有這樣做，你只會測試到顯而易見的情境，而遺漏使用者將意想不到的需求組合在一起的邊緣案例。
 
-### Step 2: Review 100 Traces and Take Notes (Open Coding)
+### 步驟二：審閱 100 條 Trace 並做筆記（開放編碼）
 
-**The process (30 seconds per trace):**
+**流程（每條 trace 約 30 秒）：**
 
-1. Open your trace viewer (LangWatch dashboard, Langfuse UI, or any tool)
-2. Look at the first trace
-3. Scan through it:
-   - Read the user message
-   - Check if AI called the right tools
-   - Look at what the tools returned
-   - Read the assistant's response
-   - Note any problems you see
+1. 開啟你的 trace 查看器（LangWatch 儀表板、Langfuse UI 或任何工具）
+2. 查看第一條 trace
+3. 快速瀏覽：
+   - 閱讀使用者訊息
+   - 確認 AI 是否呼叫了正確的工具
+   - 查看工具回傳的內容
+   - 閱讀助理的回應
+   - 記錄你發現的任何問題
 
-**Example notes from a real error analysis session:**
+**真實錯誤分析過程中的範例筆記：**
 
 ```
 TRACE #1:
@@ -653,32 +683,32 @@ TRACE #4:
 Policy violation."
 ```
 
-**Rules for error analysis:**
+**錯誤分析的規則：**
 
-1. **Don't try to catch everything** - Just note the most important things
-2. **Don't debate every trace** - Think quickly, write it down, move on
-3. **Skip the system prompt** - If it's usually the same, you don't need to read it every time
-4. **Get into a flow state** - This should feel fast, not tedious
+1. **不要試圖記錄所有問題** — 只記錄最重要的事項
+2. **不要在每條 trace 上糾結** — 快速思考、記下來、繼續往下
+3. **略過系統提示** — 如果內容大多相同，不需要每次都讀
+4. **進入心流狀態** — 這個過程應該感覺快速流暢，而不是枯燥乏味
 
-**Time commitment:**
-- First trace: 45 seconds
-- After 10 traces: 25 seconds each
-- After 50 traces: 20 seconds each
-- **Total time for 100 traces: ~45 minutes**
+**時間投入：**
+- 第一條 trace：45 秒
+- 第 10 條後：每條 25 秒
+- 第 50 條後：每條 20 秒
+- **100 條 trace 的總時間：約 45 分鐘**
 
-**Platform-Specific Note:**
-- **LangWatch:** Use the "Annotations" feature to add notes directly to traces in the UI
-- **Langfuse:** Use the "Comments" feature to add notes to traces
+**各平台注意事項：**
+- **LangWatch：** 使用「Annotations」功能直接在 UI 中為 trace 添加筆記
+- **Langfuse：** 使用「Comments」功能為 trace 添加筆記
 
-### Step 3: Categorize Errors Using Axial Coding
+### 步驟三：使用軸向編碼對錯誤進行分類
 
-Now you have 40-50 notes scattered across traces. Time to organize them.
+現在你手上有 40 到 50 條散落在各個 trace 中的筆記，是時候整理它們了。
 
-This process is called **"axial coding"** (a research method from sociology). You're grouping similar errors into categories.
+這個流程稱為**「軸向編碼（axial coding）」**（源自社會學的研究方法）。你要將類似的錯誤歸納成同一個類別。
 
-#### Using an LLM to Help Discover Categories
+#### 使用 LLM 協助發掘類別
 
-Export your notes, then use this prompt:
+匯出你的筆記，然後使用以下提示：
 
 ```python
 prompt = f"""
@@ -702,34 +732,34 @@ Respond with a list:
 """
 ```
 
-**Example results from a real recipe bot evaluation:**
+**真實食譜機器人評估的範例結果：**
 
 ```
 ["Dietary Ignored", "Formatting Error", "Complexity Mismatch",
  "Meal Type Mismatch", "Ingredient Omission", "Skill Level Misalignment"]
 ```
 
-#### Refine Categories to Be Specific and Actionable
+#### 將類別細化，使其具體且可操作
 
-**Problem:** Generic LLM suggestions are too vague!
+**問題：** LLM 給出的通用建議太模糊了！
 
-"Temporal issues" - what does that mean?
-"Quality issues" - too generic!
+「時間性問題」— 這到底是什麼意思？
+「品質問題」— 太籠統了！
 
-**Better categories (specific and actionable):**
+**更好的類別（具體且可操作）：**
 
-1. **Dietary Ignored** - Bot suggests ingredients that violate dietary restrictions
-2. **Formatting Error** - Markdown in SMS, wrong structure
-3. **Complexity Mismatch** - Recipe too hard/easy for stated skill level
-4. **Meal Type Mismatch** - Suggests dinner when asked for breakfast
-5. **Ingredient Omission** - Doesn't include unique ingredients user asked for
-6. **Skill Level Misalignment** - Advanced techniques for beginners
+1. **飲食需求被忽略（Dietary Ignored）** — 機器人推薦了違反飲食限制的食材
+2. **格式錯誤（Formatting Error）** — 在 SMS 中使用 Markdown，或結構錯誤
+3. **難度不符（Complexity Mismatch）** — 食譜對使用者的技能等級來說太難或太簡單
+4. **餐點類型不符（Meal Type Mismatch）** — 被問早餐卻推薦晚餐
+5. **食材遺漏（Ingredient Omission）** — 未納入使用者指定的特殊食材
+6. **技能等級不匹配（Skill Level Misalignment）** — 對初學者使用進階技巧
 
-**Your categories need to be specific enough that someone else could label errors using them.**
+**你的類別必須具體到讓其他人也能根據它們為錯誤貼上標籤。**
 
-### Step 4: Label Your Errors with LLM Assistance
+### 步驟四：借助 LLM 為錯誤貼上標籤
 
-This step works with any LLM. Use batch processing if your platform supports it:
+這個步驟適用於任何 LLM。如果你的平台支援，可以使用批次處理：
 
 ```python
 CLASSIFICATION_PROMPT = """Look at this Recipe Bot interaction and the
@@ -748,7 +778,7 @@ Respond with just the label name."""
 # or loop with any LLM client)
 ```
 
-**With LangWatch (batch evaluation):**
+**使用 LangWatch（批次評估）：**
 
 ```python
 import langwatch
@@ -761,7 +791,7 @@ results = langwatch.evaluate.batch(
 )
 ```
 
-**With Langfuse (manual iteration):**
+**使用 Langfuse（手動迭代）：**
 
 ```python
 from langfuse.openai import OpenAI
@@ -777,17 +807,17 @@ for note in error_notes:
     note["label"] = response.choices[0].message.content
 ```
 
-### Step 5: Count and Prioritize
+### 步驟五：統計並排定優先順序
 
-**Count how many times each category appears:**
+**統計每個類別出現的次數：**
 
 ```python
 label_counts = results["output"].value_counts()
 ```
 
-**Example results from a real evaluation:**
+**真實評估的範例結果：**
 
-| Category | Count | Percentage |
+| 類別 | 次數 | 百分比 |
 |----------|-------|------------|
 | Complexity Mismatch | 2 | 22% |
 | Meal Type Mismatch | 2 | 22% |
@@ -796,20 +826,20 @@ label_counts = results["output"].value_counts()
 | Formatting Error | 1 | 11% |
 | Skill Level Misalignment | 1 | 11% |
 
-### Why This Changes Everything
+### 為什麼這能改變一切
 
-**Before error analysis:**
-- You're paralyzed
-- Don't know what to fix first
-- Can't prioritize
+**錯誤分析之前：**
+- 你不知從何下手
+- 不知道該先修復什麼
+- 無法排定優先順序
 
-**After error analysis:**
-- Clear priorities based on frequency
-- Understanding of severity (frequency vs. impact)
-- Evidence for stakeholder discussions
-- Concrete list of what to build evals for
+**錯誤分析之後：**
+- 根據頻率建立清晰的優先順序
+- 了解嚴重程度（頻率與影響的權衡）
+- 為利害關係人討論提供依據
+- 具體列出需要建立評估機制的項目
 
-**Example prioritization discussion:**
+**優先順序討論範例：**
 
 ```
 "Dietary restriction violations happen in 11% of cases, but when
@@ -821,70 +851,69 @@ annoying, not dangerous. This is LOW-SEVERITY.
 Let's fix dietary adherence first, then complexity matching."
 ```
 
-### The "Theoretical Saturation" Concept
+### 「理論飽和度」的概念
 
-**When to stop reviewing traces?**
+**何時應該停止審閱 trace？**
 
-In qualitative research, there's a concept called "theoretical saturation" - when you stop finding new types of errors.
+在質性研究中，有一個概念叫做「理論飽和度（theoretical saturation）」— 即當你不再發現新類型的錯誤時。
 
-- Review your first 50 traces: You find 10 different error types
-- Review next 25 traces: You find 2 new error types
-- Review next 25 traces: You find 0 new error types
-- **Stop here!** You've reached saturation
+- 審閱前 50 條 trace：你發現了 10 種不同的錯誤類型
+- 再審閱 25 條：你發現了 2 種新的錯誤類型
+- 再審閱 25 條：你沒有發現任何新的錯誤類型
+- **停在這裡！** 你已達到飽和
 
-You don't need to review 1000 traces if you're not finding new patterns after 100.
+如果在審閱 100 條後就找不到新模式，你不需要再審閱 1000 條。
 
-### For PMs/QAs: Your Error Analysis Checklist
+### 給 PM/QA：你的錯誤分析檢查清單
 
-1. Ask engineering to set up tracing (LangWatch, Langfuse, or any tool)
-2. Open the trace viewer UI
-3. Browse 100 traces, taking quick notes on problems
-4. Use an LLM to help categorize your notes into 4-6 failure modes
-5. Count occurrences of each failure mode
-6. Create a prioritized list considering both frequency and severity
-7. Present findings to your team with data-backed recommendations
-8. Repeat monthly with new traces to catch new failure patterns
+1. 請工程師設置追蹤系統（LangWatch、Langfuse 或任何工具）
+2. 開啟 trace 查看器 UI
+3. 瀏覽 100 條 trace，快速記錄問題
+4. 使用 LLM 協助將筆記歸納為 4 到 6 種故障模式
+5. 統計每種故障模式的出現次數
+6. 根據頻率和嚴重程度建立優先順序清單
+7. 以數據支撐的建議向團隊呈現發現
+8. 每月使用新的 trace 重複此流程，以發現新的故障模式
 
 ---
-
 <a name="chapter-4"></a>
-## Chapter 4: Building LLM-as-a-Judge Evaluators
+## 第四章：建構 LLM 作為評測器的評估系統
 
-### What is LLM-as-a-Judge?
+### 什麼是 LLM 評測器？
 
-An **LLM judge** is an AI that evaluates other AI outputs. It reads traces and scores them.
+**LLM 評測器**是一種用來評估其他 AI 輸出結果的 AI。它讀取追蹤記錄並為其評分。
 
-**Why use it?**
-- Automates evaluation at scale
-- Provides consistent judgment
-- Much faster than manual review
+**為何使用它？**
+- 自動化大規模評估
+- 提供一致的判斷
+- 比人工審查快得多
 
-**The challenge:**
-Most people build judges wrong. Their judges hallucinate, miss problems, or create false confidence.
+**挑戰所在：**
+大多數人建構評測器的方式是錯的。他們的評測器會產生幻覺、遺漏問題，或製造虛假的信心。
 
-### When to Use LLM-as-a-Judge
+### 何時使用 LLM 評測器
 
-**Use LLM judges for:**
-- Subjective quality assessments
-- Policy compliance checking
-- Context understanding
-- Dietary adherence
-- Tone appropriateness
-- Multi-step reasoning checks
+**適合使用 LLM 評測器的情境：**
+- 主觀品質評估
+- 政策合規性檢查
+- 上下文理解
+- 飲食規範遵循
+- 語調適當性
+- 多步驟推理檢查
 
-**Don't use LLM judges for:**
-- Format validation (use code)
-- Required field checks (use code)
-- Simple pattern matching (use code)
-- Exact string matching (use code)
+**不適合使用 LLM 評測器的情境：**
+- 格式驗證（改用程式碼）
+- 必填欄位檢查（改用程式碼）
+- 簡單模式匹配（改用程式碼）
+- 精確字串匹配（改用程式碼）
 
-**Rule of thumb:** If you can express it as an if/else statement, use code. If you need judgment, use LLM.
+**基本原則：** 如果可以用 if/else 陳述式來表達，就用程式碼。如果需要判斷力，就用 LLM。
 
-### The Complete LLM Judge Workflow
+### LLM 評測器完整工作流程
 
-Building reliable LLM judges requires a rigorous 7-step workflow:
+建構可靠的 LLM 評測器需要嚴謹的 7 步驟工作流程：
 
-#### Overview: The Pipeline
+#### 概述：流程管線
 
 ```
 1. Generate traces (run your AI on test queries)
@@ -896,13 +925,13 @@ Building reliable LLM judges requires a rigorous 7-step workflow:
 7. Run on all traces + correct with judgy
 ```
 
-### Step 1: Generate Traces
+### 步驟一：生成追蹤記錄
 
-Run your AI system on diverse test queries to create traces. Use your platform's auto-instrumentation (see Chapter 2) to capture everything automatically.
+在多樣化的測試查詢上執行你的 AI 系統以建立追蹤記錄。使用你的平台自動化埋點（參見第二章）來自動捕獲所有資訊。
 
-### Step 2: Label Ground Truth Data
+### 步驟二：標記基準真相資料
 
-Label 150-200 traces as PASS or FAIL. You can do this manually (most accurate) or use a powerful LLM:
+將 150-200 筆追蹤記錄標記為 PASS 或 FAIL。你可以手動進行（最精確），也可以使用強大的 LLM：
 
 ```
 You are an expert nutritionist evaluating dietary adherence.
@@ -925,9 +954,9 @@ Response: {response}
 Return JSON: {"label": "PASS" or "FAIL", "explanation": "..."}
 ```
 
-**Platform-Specific Labeling:**
+**各平台標記方式：**
 
-**With LangWatch (built-in evaluators):**
+**使用 LangWatch（內建評估器）：**
 
 ```python
 import langwatch
@@ -952,7 +981,7 @@ results = langwatch.evaluate.batch(
 )
 ```
 
-**With Langfuse (custom implementation):**
+**使用 Langfuse（自訂實作）：**
 
 ```python
 from langfuse.openai import OpenAI
@@ -969,16 +998,16 @@ for trace in traces:
     labels.append(parse_json(response.choices[0].message.content))
 ```
 
-**LangWatch advantage:** 40+ built-in evaluators save time for common use cases.
-**Langfuse advantage:** Complete control over custom evaluation logic.
+**LangWatch 優勢：** 40 個以上的內建評估器，節省常見使用情境的時間。
+**Langfuse 優勢：** 對自訂評估邏輯擁有完全的控制權。
 
-### Step 3: Split Data (Train / Dev / Test)
+### 步驟三：分割資料（訓練集／開發集／測試集）
 
-This is critical and often skipped! You need three separate sets:
+這一步至關重要，卻經常被跳過！你需要三個獨立的資料集：
 
-- **Train (~15%):** Used to select few-shot examples for your judge prompt
-- **Dev (~40%):** Used to iterate and improve your judge prompt
-- **Test (~45%):** Used ONCE for final, unbiased evaluation
+- **訓練集（約 15%）：** 用於為評測器提示詞選取少樣本示例
+- **開發集（約 40%）：** 用於迭代和改進評測器提示詞
+- **測試集（約 45%）：** 僅使用**一次**，用於最終的無偏差評估
 
 ```python
 from sklearn.model_selection import train_test_split
@@ -998,13 +1027,13 @@ train, dev = train_test_split(
 )
 ```
 
-**Why stratified splitting?** You need both PASS and FAIL examples in every split. Without stratification, you might get a dev set with all PASS examples, making it useless for testing failure detection.
+**為何需要分層抽樣？** 你需要在每個分割中同時包含 PASS 和 FAIL 的範例。若不進行分層，你可能會得到一個全為 PASS 範例的開發集，使其無法用於測試失敗情境的偵測。
 
-### Step 4: Build Your Judge Prompt
+### 步驟四：建構評測器提示詞
 
-Your judge prompt needs **four key parts:**
+你的評測器提示詞需要**四個關鍵部分：**
 
-#### Part 1: Role and Domain Definitions
+#### 第一部分：角色與領域定義
 
 ```
 You are an expert nutritionist and dietary specialist evaluating
@@ -1021,7 +1050,7 @@ DIETARY RESTRICTION DEFINITIONS:
 [... all 16 definitions — see Appendix C for the full list ...]
 ```
 
-#### Part 2: Clear Evaluation Criteria
+#### 第二部分：明確的評估標準
 
 ```
 EVALUATION CRITERIA:
@@ -1032,9 +1061,9 @@ EVALUATION CRITERIA:
 - Consider both explicit ingredients AND cooking methods
 ```
 
-#### Part 3: Few-Shot Examples (From Your Train Set!)
+#### 第三部分：少樣本示例（來自你的訓練集！）
 
-This is where the train set pays off. Select 1-3 examples of correct judgments:
+這就是訓練集發揮作用的地方。從中選取 1-3 個正確判斷的示例：
 
 ```
 Example 1 (PASS):
@@ -1057,7 +1086,7 @@ Explanation: The recipe FAILS because it includes cooked quinoa.
 Label: FAIL
 ```
 
-#### Part 4: Output Format
+#### 第四部分：輸出格式
 
 ```
 Now evaluate the following:
@@ -1070,29 +1099,29 @@ RETURN YOUR EVALUATION IN JSON FORMAT:
 "explanation": "Detailed explanation citing specific ingredients or methods"
 ```
 
-### Why Binary Scores Work Best
+### 為何二元評分效果最好
 
-**Some people want 1-5 scales or percentages. Don't do this.**
+**有些人想要 1-5 分制或百分比評分。請不要這樣做。**
 
-**With binary (PASS/FAIL):**
-- Only need to verify two things
-- Clear decision boundary
-- Easier to debug
-- Simpler to explain to stakeholders
+**使用二元評分（PASS/FAIL）：**
+- 只需驗證兩件事
+- 決策邊界清晰
+- 更易於除錯
+- 更容易向利害關係人解釋
 
-**With 1-5 scale:**
-- Need to verify every score aligns
-- What's the difference between 2 and 3?
-- 5x more work to validate
-- Business decisions are binary anyway
+**使用 1-5 分制：**
+- 需要驗證每個分數的對齊情況
+- 2 分和 3 分之間有什麼差別？
+- 需要 5 倍的工作量來驗證
+- 業務決策本來就是二元的
 
-**Remember:** Either you fix something or you don't. Either it's broken or it's not.
+**請記住：** 要麼你解決了問題，要麼沒有。要麼它壞了，要麼沒壞。
 
-### Step 5: Validate on Dev Set
+### 步驟五：在開發集上驗證
 
-Run your judge on the Dev set and compare to ground truth. Here's how with each platform:
+在開發集上執行你的評測器，並與基準真相進行比較。以下是各平台的操作方式：
 
-#### Evaluator Functions (Platform-Agnostic)
+#### 評估器函數（平台無關）
 
 ```python
 def eval_tp(*, output, expected, **kwargs):
@@ -1120,9 +1149,9 @@ def eval_fn(*, output, expected, **kwargs):
     return 1.0 if judge == "FAIL" and truth == "PASS" else 0.0
 ```
 
-#### Running the Experiment
+#### 執行實驗
 
-**With LangWatch:**
+**使用 LangWatch：**
 
 ```python
 import langwatch
@@ -1147,9 +1176,9 @@ print(f"TPR: {results.metrics['tpr']:.1%}")
 print(f"TNR: {results.metrics['tnr']:.1%}")
 ```
 
-**LangWatch advantage:** Built-in metric calculation, no need to manually compute confusion matrix.
+**LangWatch 優勢：** 內建指標計算，無需手動計算混淆矩陣。
 
-**With Langfuse:**
+**使用 Langfuse：**
 
 ```python
 from langfuse import Evaluation
@@ -1182,42 +1211,42 @@ print(f"TPR: {tpr:.1%}")
 print(f"TNR: {tnr:.1%}")
 ```
 
-**Langfuse advantage:** More control over evaluation logic, better for complex custom metrics.
+**Langfuse 優勢：** 對評估邏輯有更多控制，更適合複雜的自訂指標。
 
-### The Metrics That Actually Matter
+### 真正重要的指標
 
-**Most people only look at "agreement":**
+**大多數人只看「一致性」：**
 
 ```
 Agreement = (Judge agrees with me) / (Total traces)
 Example: 90% agreement
 ```
 
-**Why this is misleading:**
+**為何這具有誤導性：**
 
-If failures only happen 10% of the time, a judge that always says "pass" gets 90% accuracy by being completely useless!
+如果失敗情況只佔 10% 的時間，一個總是說「通過」的評測器，在完全沒有用的情況下，仍可獲得 90% 的準確率！
 
-**The two metrics you actually need:**
+**你真正需要的兩個指標：**
 
-#### 1. TPR (True Positive Rate) - Recall
+#### 1. TPR（真陽性率）- 召回率
 
-**"When there's actually a PASS, how often does the judge correctly say PASS?"**
+**「當實際上是 PASS 時，評測器正確說 PASS 的頻率有多高？」**
 
 ```
 TPR = True Positives / (True Positives + False Negatives)
 ```
 
-#### 2. TNR (True Negative Rate) - Specificity
+#### 2. TNR（真陰性率）- 特異性
 
-**"When there's actually a FAIL, how often does the judge correctly say FAIL?"**
+**「當實際上是 FAIL 時，評測器正確說 FAIL 的頻率有多高？」**
 
 ```
 TNR = True Negatives / (True Negatives + False Positives)
 ```
 
-### Real Results: Why Iteration Matters
+### 真實結果：為何迭代很重要
 
-**After careful prompt iteration (production-quality judge):**
+**經過仔細的提示詞迭代（生產品質的評測器）：**
 
 ```
 Test Set Performance:
@@ -1229,7 +1258,7 @@ Test Set Performance:
   Overall Accuracy: 97.0%
 ```
 
-**First attempt (before iteration):**
+**首次嘗試（迭代前）：**
 
 ```
 Test Set Performance:
@@ -1238,42 +1267,42 @@ Test Set Performance:
   Accuracy: 84.0%
 ```
 
-Notice the first attempt had a TNR of only 22.2% — meaning when a recipe actually violated dietary restrictions, the judge only caught it 22% of the time! This is dangerous (imagine telling a diabetic a recipe is safe when it isn't). After careful prompt iteration, the judge achieved 100% TNR.
+請注意，首次嘗試的 TNR 僅為 22.2%——這意味著當食譜實際上違反飲食限制時，評測器只有 22% 的時間能夠發現。這非常危險（試想一下，告訴糖尿病患者某道食譜是安全的，但其實不是）。經過仔細的提示詞迭代後，評測器達到了 100% 的 TNR。
 
-### Target Metrics
+### 目標指標
 
-**Good judge:**
+**良好的評測器：**
 - TPR > 80%
 - TNR > 80%
 
-**Great judge:**
+**優秀的評測器：**
 - TPR > 90%
 - TNR > 90%
 
-**Both must be high!** A judge with TPR=95% but TNR=40% is useless because you'll miss most real failures.
+**兩者都必須很高！** TPR=95% 但 TNR=40% 的評測器毫無用處，因為你會錯過大多數真實的失敗案例。
 
-### Iterating on Your Judge Prompt
+### 迭代你的評測器提示詞
 
-**Your first prompt won't be perfect. That's expected.**
+**你的第一個提示詞不會完美。這是正常的。**
 
-**Process:**
+**流程：**
 
-1. **Test your judge** on Dev set
-2. **Calculate TPR and TNR**
-3. **Look at errors:**
-   - Where did it miss real failures? (False Negatives)
-   - Where did it false alarm? (False Positives)
-4. **Update the prompt:**
-   - Add missed scenarios to criteria
-   - Add false alarm scenarios to "NOT a failure" section
-   - Add 1-2 more examples of correct judgments
-5. **Test again on Dev set**
-6. **Repeat until both metrics > 80%**
-7. **THEN test once on Test set for final, unbiased metrics**
+1. **測試你的評測器**，在開發集上執行
+2. **計算 TPR 和 TNR**
+3. **查看錯誤：**
+   - 它在哪裡遺漏了真實的失敗？（假陰性）
+   - 它在哪裡誤報了？（假陽性）
+4. **更新提示詞：**
+   - 將遺漏的場景添加到評估標準中
+   - 將誤報場景添加到「非失敗」部分
+   - 添加 1-2 個正確判斷的示例
+5. **再次在開發集上測試**
+6. **重複，直到兩個指標都超過 80%**
+7. **然後在測試集上測試一次，以獲得最終的無偏差指標**
 
-### Step 6: Final Evaluation on Test Set
+### 步驟六：在測試集上進行最終評估
 
-Once your judge performs well on Dev, run it on the Test set ONCE:
+一旦評測器在開發集上表現良好，就在測試集上執行**一次**：
 
 ```python
 # Calculate final metrics from test set results
@@ -1289,11 +1318,11 @@ print(f"Final TPR: {tpr:.1%}")
 print(f"Final TNR: {tnr:.1%}")
 ```
 
-### Step 7: Run on All Traces at Scale
+### 步驟七：大規模在所有追蹤記錄上執行
 
-Once validated, run your judge on ALL production traces:
+一旦驗證通過，就在**所有**生產追蹤記錄上執行你的評測器：
 
-**With LangWatch (batch evaluation with built-in concurrency):**
+**使用 LangWatch（具有內建並發功能的批次評估）：**
 
 ```python
 import langwatch
@@ -1311,9 +1340,9 @@ pass_rate = results.metrics["pass_rate"]
 print(f"Raw pass rate: {pass_rate:.1%}")
 ```
 
-**LangWatch advantage:** Automatic concurrency management, built-in caching, progress tracking.
+**LangWatch 優勢：** 自動並發管理、內建快取、進度追蹤。
 
-**With Langfuse (experiment on dataset):**
+**使用 Langfuse（在資料集上實驗）：**
 
 ```python
 result = langfuse.run_experiment(
@@ -1325,7 +1354,7 @@ result = langfuse.run_experiment(
 )
 ```
 
-**With plain OpenAI (platform-agnostic):**
+**使用原生 OpenAI（平台無關）：**
 
 ```python
 import openai
@@ -1345,64 +1374,63 @@ with ThreadPoolExecutor(max_workers=20) as executor:
     results = list(executor.map(run_judge, all_traces))
 ```
 
-**Example result:** Raw pass rate on 1000 traces = 84.4%
+**範例結果：** 1000 筆追蹤記錄的原始通過率 = 84.4%
 
-But this raw rate doesn't account for judge errors. Chapter 10 covers how to correct for this using the `judgy` library.
+但此原始率未考慮評測器本身的錯誤。第 10 章將介紹如何使用 `judgy` 函式庫來進行校正。
 
-### LLM-as-Judge Across Different Domains
+### LLM 評測器在不同領域的應用
 
-The recipe bot is one example. Here's how the same methodology applies to other domains:
+食譜機器人只是一個例子。以下展示相同的方法論如何應用於其他領域：
 
-**Customer Support Bot:**
+**客服機器人：**
 ```
 Criterion: "Did the agent follow the refund policy correctly?"
 PASS: Agent offered refund within 30-day window per policy
 FAIL: Agent denied valid refund or offered refund outside policy
 ```
 
-**Code Generation Assistant:**
+**程式碼生成助手：**
 ```
 Criterion: "Does the generated code actually solve the user's problem?"
 PASS: Code compiles, handles edge cases, follows the user's constraints
 FAIL: Code has syntax errors, misses requirements, or uses deprecated APIs
 ```
 
-**Medical Information Bot:**
+**醫療資訊機器人：**
 ```
 Criterion: "Does the response include appropriate disclaimers?"
 PASS: Includes "consult your doctor" and avoids specific diagnoses
 FAIL: Provides diagnosis-like statements without medical disclaimers
 ```
 
-**E-commerce Search:**
+**電子商務搜尋：**
 ```
 Criterion: "Are the recommended products relevant to the query?"
 PASS: Products match stated preferences (size, color, price range)
 FAIL: Products violate stated filters or preferences
 ```
 
-The structure is always the same: define the criterion, write PASS/FAIL definitions, add few-shot examples, validate with TPR/TNR.
+結構始終相同：定義標準、撰寫 PASS/FAIL 定義、添加少樣本示例、使用 TPR/TNR 進行驗證。
 
 ---
-
 <a name="chapter-5"></a>
-## Chapter 5: Code-Based Evaluators
+## 第五章：基於程式碼的評估器
 
-### What Are Code-Based Evals?
+### 什麼是基於程式碼的評估？
 
-Code-based evals are **checks you write in programming code** (like Python) to verify specific, objective properties of your AI's outputs.
+基於程式碼的評估是指你**以程式碼撰寫的檢查**（例如 Python），用來驗證 AI 輸出的特定、客觀屬性。
 
-### When to Use Code-Based Evals
+### 何時使用基於程式碼的評估
 
-**Use code when you can test something without calling an LLM:**
+**在不需要呼叫 LLM 就能測試的情況下，使用程式碼：**
 
-1. **Format validation** - Is markdown appearing in text messages?
-2. **Required field checks** - Did the AI include all required information?
-3. **Tool call validation** - Did the AI call the right tool?
-4. **Response length constraints** - Is the response under 500 characters?
-5. **Prohibited content patterns** - Are there PII (emails, phone numbers)?
+1. **格式驗證** - Markdown 是否出現在文字訊息中？
+2. **必要欄位檢查** - AI 是否包含所有必要資訊？
+3. **工具呼叫驗證** - AI 是否呼叫了正確的工具？
+4. **回應長度限制** - 回應是否在 500 個字元以內？
+5. **禁止內容模式** - 是否有 PII（電子郵件、電話號碼）？
 
-### Example 1: Check for Markdown in Text Messages
+### 範例一：檢查文字訊息中的 Markdown
 
 ```python
 import re
@@ -1432,9 +1460,9 @@ def eval_no_markdown_in_sms(trace) -> dict:
     return {'passed': True, 'reason': 'No markdown found'}
 ```
 
-**Platform Integration:**
+**平台整合：**
 
-**With LangWatch:**
+**使用 LangWatch：**
 
 ```python
 import langwatch
@@ -1452,7 +1480,7 @@ results = langwatch.evaluate.batch(
 )
 ```
 
-**With Langfuse:**
+**使用 Langfuse：**
 
 ```python
 from langfuse import get_client
@@ -1472,7 +1500,7 @@ for trace in traces:
     )
 ```
 
-### Example 2: Validate Tool Calls
+### 範例二：驗證工具呼叫
 
 ```python
 def eval_correct_tool_called(trace) -> dict:
@@ -1505,7 +1533,7 @@ def eval_correct_tool_called(trace) -> dict:
         }
 ```
 
-### Example 3: Validate Required Information in Tour Confirmations
+### 範例三：驗證看房確認中的必要資訊
 
 ```python
 import re
@@ -1541,19 +1569,19 @@ def eval_tour_confirmation_complete(trace) -> dict:
         return {'passed': False, 'reason': f'Missing: {", ".join(missing)}'}
 ```
 
-### Benefits of Code-Based Evals
+### 基於程式碼評估的優點
 
-1. **Fast** - No API calls, instant results
-2. **Cheap** - No tokens used
-3. **Deterministic** - Same input always gives same output
-4. **Easy to debug** - Stack traces, breakpoints work normally
-5. **No hallucination** - Code does exactly what you tell it
+1. **快速** - 無需 API 呼叫，即時得到結果
+2. **低成本** - 不消耗 token
+3. **確定性** - 相同輸入永遠產生相同輸出
+4. **易於除錯** - 堆疊追蹤、中斷點可正常運作
+5. **無幻覺** - 程式碼完全按照你的指示執行
 
-### Combining Code-Based and LLM-Based Evals
+### 結合基於程式碼與基於 LLM 的評估
 
-A complete eval suite typically has:
-- **2-3 code-based evals** for objective checks
-- **1-2 LLM-based evals** for subjective judgments
+一套完整的評估套件通常包含：
+- **2–3 個基於程式碼的評估**，用於客觀檢查
+- **1–2 個基於 LLM 的評估**，用於主觀判斷
 
 ```python
 # Code-based evals (fast, cheap, deterministic)
@@ -1566,9 +1594,9 @@ A complete eval suite typically has:
 5. evaluate_response_helpfulness()
 ```
 
-**Platform Comparison for Mixed Eval Suites:**
+**混合評估套件的平台比較：**
 
-**LangWatch approach (unified):**
+**LangWatch 方式（統一）：**
 ```python
 import langwatch
 
@@ -1584,7 +1612,7 @@ langwatch.evaluate.batch(
 )
 ```
 
-**Langfuse approach (flexible but manual):**
+**Langfuse 方式（靈活但需手動）：**
 ```python
 # Run code-based evals
 for trace in traces:
@@ -1601,9 +1629,9 @@ for result in llm_results:
     langfuse.create_score(trace_id=result.trace_id, ...)
 ```
 
-### Testing Your Code-Based Evals
+### 測試你的基於程式碼評估
 
-**Always test your evals with known good and bad cases:**
+**務必以已知的正確和錯誤案例測試你的評估：**
 
 ```python
 def test_no_markdown_evaluator():
@@ -1639,28 +1667,28 @@ def test_no_markdown_evaluator():
 ---
 
 <a name="chapter-6"></a>
-## Chapter 6: RAG System Evaluation
+## 第六章：RAG 系統評估
 
-### What is RAG?
+### 什麼是 RAG？
 
-**RAG (Retrieval Augmented Generation)** means your AI:
-1. **Retrieves** relevant information from a database
-2. **Uses that information** to generate a response
+**RAG（Retrieval Augmented Generation，檢索增強生成）**意味著你的 AI：
+1. 從資料庫中**檢索**相關資訊
+2. **利用該資訊**生成回應
 
-### Why RAG Needs Special Evaluation
+### 為何 RAG 需要特殊評估
 
-RAG has **two failure modes:**
+RAG 有**兩種失敗模式：**
 
-1. **Retrieval fails** - Doesn't find the right information
-2. **Generation fails** - Uses the information wrong
+1. **檢索失敗** - 未能找到正確資訊
+2. **生成失敗** - 使用資訊的方式有誤
 
-You need to evaluate **both** separately to know where problems occur.
+你需要**分別**評估兩者，才能知道問題出在哪裡。
 
-### Building a BM25 Retrieval Engine
+### 建立 BM25 檢索引擎
 
-When building keyword-based retrieval for a domain like recipes, here's the key insight: **your tokenizer matters**.
+在為特定領域（例如食譜）建立基於關鍵字的檢索時，有一個關鍵洞察：**你的分詞器至關重要**。
 
-#### Custom Tokenizer for Domain-Specific Content
+#### 針對特定領域內容的自訂分詞器
 
 ```python
 import re
@@ -1682,11 +1710,11 @@ def tokenize(text: str) -> list[str]:
     return _TOKEN_RE.findall(s)
 ```
 
-**Why this matters:** Standard tokenizers strip numbers. But in recipes, "375" (temperature), "9x13" (pan size), and "1/2" (measurement) are critical search terms.
+**為何這很重要：** 標準分詞器會去除數字。但在食譜中，「375」（溫度）、「9x13」（烤盤尺寸）和「1/2」（用量）都是關鍵搜尋詞。
 
-### Generating Synthetic Queries for RAG Testing
+### 為 RAG 測試生成合成查詢
 
-Instead of manually writing test queries, use an LLM to generate queries that depend on specific facts in your documents:
+與其手動撰寫測試查詢，不如使用 LLM 生成依賴文件中特定事實的查詢：
 
 ```python
 SYSTEM_PROMPT = """You are an advanced user of a recipe search engine.
@@ -1702,17 +1730,17 @@ Return EXACTLY a single JSON object:
 {"query": "...?", "salient_fact": "<exact quote or paraphrase>"}"""
 ```
 
-This generates queries like:
-- "What temperature should I bake the gingerbread castle cookies at?" (salient fact: "350 degrees F for 8-10 minutes")
-- "How long should I let the bread dough rise?" (salient fact: "rise for 1 hour until doubled")
+這會生成如下查詢：
+- 「薑餅城堡餅乾應該在幾度烘烤？」（顯著事實：「350 degrees F for 8-10 minutes」）
+- 「麵包麵團需要發酵多久？」（顯著事實：「rise for 1 hour until doubled」）
 
-The `salient_fact` is your ground truth - you know which recipe has the answer.
+`salient_fact` 是你的基準真相——你知道哪道食譜有答案。
 
-### Evaluating Retrieval Quality
+### 評估檢索品質
 
 #### Recall@K
 
-"Did the correct recipe appear in the top K results?"
+「正確食譜是否出現在前 K 個結果中？」
 
 ```python
 def recall_at_k(k, output, metadata, **kwargs):
@@ -1733,9 +1761,9 @@ def RecallAt3(**kwargs): return recall_at_k(3, **kwargs)
 def RecallAt5(**kwargs): return recall_at_k(5, **kwargs)
 ```
 
-#### Mean Reciprocal Rank (MRR)
+#### 平均倒數排名（MRR）
 
-"If we found it, how high did it rank?"
+「如果找到了，它排在第幾位？」
 
 ```python
 def MRR(output, metadata, **kwargs):
@@ -1750,9 +1778,9 @@ def MRR(output, metadata, **kwargs):
     return 0.0
 ```
 
-### Running RAG Experiments
+### 執行 RAG 實驗
 
-#### With LangWatch
+#### 使用 LangWatch
 
 ```python
 import langwatch
@@ -1775,9 +1803,9 @@ results = langwatch.evaluate.batch(
 )
 ```
 
-**LangWatch advantage:** Built-in RAG metrics, automatic visualization of retrieval performance.
+**LangWatch 優勢：** 內建 RAG 指標，自動視覺化檢索效能。
 
-#### With Langfuse
+#### 使用 Langfuse
 
 ```python
 from langfuse import Evaluation
@@ -1800,9 +1828,9 @@ result = langfuse.run_experiment(
 )
 ```
 
-### Diagnosing RAG Failures
+### 診斷 RAG 失敗
 
-When a RAG test fails, diagnose WHERE:
+當 RAG 測試失敗時，診斷**失敗所在：**
 
 ```python
 def diagnose_rag_failure(query, target_recipe_id, retriever, pipeline):
@@ -1829,35 +1857,35 @@ def diagnose_rag_failure(query, target_recipe_id, retriever, pipeline):
     return {'failure_point': None, 'status': 'PASS'}
 ```
 
-### Improving RAG Performance
+### 改善 RAG 效能
 
-**When retrieval fails:**
-1. Try different chunking strategies
-2. Add metadata filters
-3. Use hybrid search (keyword + semantic)
-4. Implement query expansion
-5. Try reranking models
-6. Use domain-specific tokenizers (like the number-preserving one above)
+**當檢索失敗時：**
+1. 嘗試不同的分塊策略
+2. 新增元資料過濾器
+3. 使用混合搜尋（關鍵字 + 語意）
+4. 實作查詢擴展
+5. 嘗試重新排序模型
+6. 使用特定領域的分詞器（例如上述保留數字的分詞器）
 
-**When generation fails:**
-1. Improve system prompt
-2. Add few-shot examples
-3. Use chain-of-thought prompting
-4. Add explicit grounding instructions
-5. Implement citation requirements
+**當生成失敗時：**
+1. 改善系統提示詞
+2. 新增少量範例（few-shot examples）
+3. 使用思維鏈（chain-of-thought）提示
+4. 新增明確的依據指示
+5. 實作引用要求
 
 ---
 
 <a name="chapter-7"></a>
-## Chapter 7: Multi-Step Pipeline Evaluation
+## 第七章：多步驟流程評估
 
-### What is a Multi-Step Pipeline?
+### 什麼是多步驟流程？
 
-A **multi-step pipeline** is when your AI breaks a task into several stages, each doing a specific job.
+**多步驟流程**是指您的 AI 將任務拆分成數個階段，每個階段負責特定的工作。
 
-### The 7-State Recipe Bot Pipeline
+### 七狀態食譜機器人流程
 
-Here's an example of a complete 7-state pipeline for a recipe assistant:
+以下是食譜助理完整七狀態流程的範例：
 
 ```
 User query
@@ -1879,23 +1907,23 @@ User query
 Final response
 ```
 
-### Why State-Level Evaluation Matters
+### 為何狀態層級評估至關重要
 
-**Problem:** If your pipeline fails, where did it fail?
+**問題：** 若您的流程失敗，失敗發生在哪裡？
 
-Without state-level evals, you only know:
-- "The system produced a bad response"
+沒有狀態層級評估時，您只知道：
+- 「系統產生了一個錯誤的回應」
 
-With state-level evals, you know:
-- "The GenRecipeArgs state dropped the oatmeal filter"
-- "That caused GetRecipes to return wrong recipes"
-- "Which led to the bad final response"
+有了狀態層級評估，您會知道：
+- 「GenRecipeArgs 狀態遺漏了燕麥過濾條件」
+- 「這導致 GetRecipes 回傳了錯誤的食譜」
+- 「進而造成最終回應出錯」
 
-### Building State-Level Evaluators
+### 建立狀態層級評估器
 
-Each pipeline state gets its own evaluator prompt. Here are real evaluators for a recipe pipeline:
+每個流程狀態都有自己的評估器提示。以下是食譜流程的實際評估器：
 
-#### ParseRequest Evaluator
+#### ParseRequest 評估器
 
 ```
 You are an expert evaluator for the ParseRequest state.
@@ -1918,7 +1946,7 @@ Here is the output: {output}
 Return JSON: {"explanation": "...", "label": "pass" or "fail"}
 ```
 
-#### PlanToolCalls Evaluator
+#### PlanToolCalls 評估器
 
 ```
 You are an expert evaluator for the PlanToolCalls state.
@@ -1940,7 +1968,7 @@ Here is the output: {output}
 Return JSON: {"explanation": "...", "label": "pass" or "fail"}
 ```
 
-#### ComposeResponse Evaluator
+#### ComposeResponse 評估器
 
 ```
 You are an expert evaluator for the ComposeResponse state.
@@ -1964,11 +1992,11 @@ Here is the output: {output}
 Return JSON: {"explanation": "...", "label": "pass" or "fail"}
 ```
 
-### Running State-Level Evaluations
+### 執行狀態層級評估
 
-The approach is the same regardless of platform: query spans by pipeline state, run the appropriate evaluator, and log results.
+無論使用哪個平台，方法都相同：依流程狀態查詢 span、執行對應的評估器，並記錄結果。
 
-#### With LangWatch
+#### 使用 LangWatch
 
 ```python
 import langwatch
@@ -2005,9 +2033,9 @@ for state_name in STATES:
     print(f"{state_name}: {results.metrics['pass_rate']:.1%} pass rate")
 ```
 
-**LangWatch advantage:** Automatic span querying, built-in result aggregation by state.
+**LangWatch 優勢：** 自動查詢 span、依狀態內建結果彙整。
 
-#### With Langfuse
+#### 使用 Langfuse
 
 ```python
 from langfuse import get_client, observe
@@ -2035,9 +2063,9 @@ for trace in traces.data:
             )
 ```
 
-### Analyzing Failure Distribution
+### 分析失敗分佈
 
-Example results from evaluating 100 synthetic traces with intentional failures:
+以下是對 100 筆刻意包含失敗的合成 trace 進行評估後的範例結果：
 
 ```
 Pipeline State Failure Distribution:
@@ -2056,15 +2084,15 @@ Summary:
   predictable spots
 ```
 
-**Key insight:** GetWebInfo is the biggest bottleneck. Focus optimization there first.
+**關鍵洞察：** GetWebInfo 是最大的瓶頸，應優先在此進行最佳化。
 
-**Platform Comparison for Analytics:**
+**平台分析比較：**
 
-**LangWatch:** Built-in analytics dashboard automatically shows failure distribution by state, no manual aggregation needed.
+**LangWatch：** 內建分析儀表板，自動顯示各狀態的失敗分佈，無需手動彙整。
 
-**Langfuse:** More flexible custom queries, but requires manual aggregation to generate these statistics.
+**Langfuse：** 自訂查詢更靈活，但需要手動彙整才能產生這些統計數據。
 
-### Using LLM to Synthesize Improvement Strategies
+### 使用 LLM 合成改善策略
 
 ```python
 def synthesize_fixes(state_name, failed_traces):
@@ -2095,36 +2123,36 @@ def synthesize_fixes(state_name, failed_traces):
     return llm(prompt)
 ```
 
-### For PMs/QAs: Pipeline Evaluation Without Code
+### 給 PM／QA 的說明：無需撰寫程式碼的流程評估
 
-Even without writing code, you can:
+即使不撰寫程式碼，您也可以：
 
-1. **Open your observability UI** (LangWatch or Langfuse) and look at traces by pipeline state
-2. **Filter for failed states** using the annotation/score filters
-3. **Read the failure explanations** generated by the LLM evaluators
-4. **Identify patterns** (e.g., "GetWebInfo fails whenever the query is about cooking techniques")
-5. **File specific, data-backed bugs** (e.g., "GenRecipeArgs drops dietary filters 12% of the time")
+1. **開啟可觀測性 UI**（LangWatch 或 Langfuse），依流程狀態查看 trace
+2. **利用標註／分數篩選器**過濾失敗的狀態
+3. **閱讀 LLM 評估器產生的失敗說明**
+4. **識別模式**（例如：「每當查詢涉及烹飪技巧時，GetWebInfo 就會失敗」）
+5. **提出具體、有數據支撐的 bug 報告**（例如：「GenRecipeArgs 有 12% 的機率遺漏飲食過濾條件」）
 
 ---
 
 <a name="chapter-8"></a>
-## Chapter 8: Multi-Turn Conversation Evaluation
+## 第八章：多輪對話評估
 
-### Why Multi-Turn Is Different
+### 為何多輪對話有所不同
 
-Most eval examples show single-turn Q&A: user asks, AI answers, done. But real applications have **conversations** — and new failure modes emerge across turns:
+大多數評估範例展示的是單輪問答：使用者提問、AI 回答，結束。但真實的應用程式有**對話**——跨輪次會出現新的失敗模式：
 
-1. **Context loss** — AI forgets what the user said 3 messages ago
-2. **Contradiction** — AI says one thing in turn 2, contradicts it in turn 5
-3. **Instruction drift** — AI gradually stops following the original system prompt
-4. **Repetition** — AI repeats the same information or suggestion
-5. **Escalation failure** — AI doesn't know when to hand off to a human
+1. **情境遺失** — AI 忘記使用者 3 則訊息前說過的內容
+2. **前後矛盾** — AI 在第 2 輪說了某件事，卻在第 5 輪自我矛盾
+3. **指令漂移** — AI 逐漸不再遵循原始系統提示
+4. **重複資訊** — AI 重複相同的資訊或建議
+5. **升級失敗** — AI 不知道何時應移交給真人客服
 
-### Strategies for Multi-Turn Evaluation
+### 多輪對話評估策略
 
-#### Strategy 1: Evaluate Each Turn Independently
+#### 策略一：逐輪獨立評估
 
-Treat each assistant response as a separate eval, but include the full conversation history as context:
+將每則助理回應視為獨立的評估，但將完整的對話歷史作為情境納入：
 
 ```python
 MULTI_TURN_JUDGE_PROMPT = """You are evaluating one response in a multi-turn conversation.
@@ -2144,9 +2172,9 @@ Return JSON: {"label": "PASS" or "FAIL", "explanation": "..."}
 """
 ```
 
-#### Strategy 2: Evaluate the Entire Conversation
+#### 策略二：評估整段對話
 
-Score the conversation as a whole after it ends:
+對話結束後，對整段對話進行整體評分：
 
 ```python
 CONVERSATION_JUDGE_PROMPT = """Evaluate this complete conversation.
@@ -2164,9 +2192,9 @@ Return JSON: {"label": "PASS" or "FAIL", "explanation": "..."}
 """
 ```
 
-#### Strategy 3: Synthetic Multi-Turn Tests
+#### 策略三：合成多輪測試
 
-Generate multi-turn test scenarios that specifically target failure modes:
+產生專門針對失敗模式的多輪測試情境：
 
 ```python
 SCENARIOS = [
@@ -2189,34 +2217,34 @@ SCENARIOS = [
 ]
 ```
 
-### Key Metrics for Multi-Turn
+### 多輪對話的關鍵指標
 
-- **Context retention rate**: % of turns where the AI correctly referenced earlier information
-- **Contradiction rate**: % of conversations with at least one self-contradiction
-- **Task completion rate**: % of conversations where the user's goal was achieved
-- **Average turns to resolution**: How many turns it takes to complete the task
+- **情境保留率**：AI 正確引用先前資訊的輪次百分比
+- **矛盾率**：出現至少一次自我矛盾的對話百分比
+- **任務完成率**：使用者目標達成的對話百分比
+- **平均解決輪次**：完成任務所需的平均輪次數
 
 ---
 
 <a name="chapter-9"></a>
-## Chapter 9: Production Evals: Safety, Guardrails & Monitoring
+## 第九章：生產環境評估：安全性、防護機制與監控
 
-### Offline vs. Online Evals
+### 離線評估 vs. 線上評估
 
-Everything in Chapters 3-8 is **offline evaluation** — you run evals after the fact on collected traces. But production systems also need **online evaluation**:
+第三章至第八章的所有內容都屬於**離線評估**——您在事後對收集的 trace 執行評估。但生產環境系統也需要**線上評估**：
 
-| | Offline Evals | Online Evals |
+| | 離線評估 | 線上評估 |
 |---|---|---|
-| **When** | After traces are collected | In real-time, before/during response |
-| **Speed** | Minutes to hours | Milliseconds to seconds |
-| **Purpose** | Measure quality trends | Prevent bad responses |
-| **Examples** | TPR/TNR on test set | Guardrails, content filters |
+| **時機** | trace 收集後 | 即時，在回應前／回應中 |
+| **速度** | 數分鐘至數小時 | 毫秒至數秒 |
+| **目的** | 衡量品質趨勢 | 防止錯誤回應 |
+| **範例** | 測試集上的 TPR/TNR | 防護機制、內容過濾 |
 
-### Safety Evaluations
+### 安全性評估
 
-Every production AI system should evaluate for these safety risks:
+每個生產環境 AI 系統都應針對以下安全風險進行評估：
 
-#### Prompt Injection Detection
+#### 提示注入偵測
 
 ```python
 def eval_prompt_injection(trace) -> dict:
@@ -2243,7 +2271,7 @@ def eval_prompt_injection(trace) -> dict:
     return {'passed': True, 'reason': 'No injection patterns detected'}
 ```
 
-#### PII Leakage Detection
+#### PII 洩漏偵測
 
 ```python
 import re
@@ -2269,9 +2297,9 @@ def eval_no_pii_in_response(trace) -> dict:
     return {'passed': True, 'reason': 'No PII patterns detected'}
 ```
 
-#### Harmful Content / Off-Topic Detection
+#### 有害內容／離題偵測
 
-Use an LLM judge for nuanced safety checks:
+使用 LLM 裁判進行細緻的安全性檢查：
 
 ```
 You are a safety evaluator. Determine if the AI response contains:
@@ -2285,9 +2313,9 @@ Response to evaluate: {response}
 Return JSON: {"safe": true/false, "category": "...", "explanation": "..."}
 ```
 
-**Platform Integration for Safety Evals:**
+**平台安全性評估整合：**
 
-**With LangWatch (built-in safety evaluators):**
+**使用 LangWatch（內建安全性評估器）：**
 
 ```python
 import langwatch
@@ -2308,7 +2336,7 @@ if not results.all_passed:
     return "I'm sorry, I can't help with that."
 ```
 
-**With Langfuse (custom implementation):**
+**使用 Langfuse（自訂實作）：**
 
 ```python
 # Run safety checks
@@ -2326,9 +2354,9 @@ if not injection_result['passed'] or not pii_result['passed']:
     return "I'm sorry, I can't help with that."
 ```
 
-### Real-Time Guardrails
+### 即時防護機制
 
-Guardrails run **before** the response reaches the user:
+防護機制在回應**送達使用者之前**執行：
 
 ```python
 class GuardrailPipeline:
@@ -2352,9 +2380,9 @@ class GuardrailPipeline:
         return {'action': 'allow'}
 ```
 
-### Production Monitoring
+### 生產環境監控
 
-Set up automated checks that run on a sample of production traces:
+設定自動化檢查，對一部分生產環境 trace 定期執行：
 
 ```python
 def daily_eval_report(traces_df):
@@ -2373,45 +2401,44 @@ def daily_eval_report(traces_df):
     return results
 ```
 
-**Platform Monitoring Dashboards:**
+**平台監控儀表板：**
 
-**LangWatch:** Built-in monitoring dashboard with automatic alerts for safety violations, cost spikes, and latency increases.
+**LangWatch：** 內建監控儀表板，自動針對安全性違規、成本飆升與延遲上升發出警報。
 
-**Langfuse:** Custom dashboards via API, requires manual setup but more flexible for complex alerting logic.
+**Langfuse：** 透過 API 自訂儀表板，需要手動設定，但對複雜的警報邏輯更具彈性。
 
-### For PMs: Safety Eval Checklist
+### 給 PM 的說明：安全性評估檢查清單
 
-Before any AI feature ships, ensure these evals exist:
-1. PII leakage detection (code-based)
-2. Prompt injection detection (code-based + LLM)
-3. Off-topic/harmful content (LLM judge)
-4. Response length limits (code-based)
-5. Appropriate disclaimers for regulated domains (LLM judge)
+在任何 AI 功能上線前，請確認以下評估已到位：
+1. PII 洩漏偵測（程式碼實作）
+2. 提示注入偵測（程式碼實作 + LLM）
+3. 離題／有害內容（LLM 裁判）
+4. 回應長度限制（程式碼實作）
+5. 受監管領域的適當免責聲明（LLM 裁判）
 
 ---
-
 <a name="chapter-10"></a>
-## Chapter 10: Statistical Correction with judgy
+## 第十章：使用 judgy 進行統計校正
 
-### The Problem: Your Judge Isn't Perfect
+### 問題所在：您的評審並非完美
 
-Even a good judge makes mistakes. If your judge has:
-- TPR = 95.7% (misses 4.3% of real passes)
-- TNR = 100% (never misses a real fail)
+即使是優秀的評審也會犯錯。若您的評審具備以下指標：
+- TPR = 95.7%（漏判 4.3% 的真實通過案例）
+- TNR = 100%（從不漏判真實失敗案例）
 
-Then the raw pass rate from your judge is slightly biased.
+那麼評審所得出的原始通過率就會略有偏差。
 
-### What is judgy?
+### 什麼是 judgy？
 
-[judgy](https://github.com/ai-evals-course/judgy) is a Python library that corrects for judge errors using statistical methods. It takes:
+[judgy](https://github.com/ai-evals-course/judgy) 是一個 Python 函式庫，使用統計方法校正評審誤差。它需要以下輸入：
 
-1. **Test labels** (ground truth from your labeled data)
-2. **Test predictions** (what your judge said about the labeled data)
-3. **Unlabeled predictions** (what your judge said about all production traces)
+1. **測試標籤**（來自您已標記資料的真實答案）
+2. **測試預測**（評審對已標記資料的判斷結果）
+3. **未標記預測**（評審對所有生產環境追蹤記錄的判斷結果）
 
-And returns a corrected success rate with confidence intervals.
+並回傳帶有置信區間的校正後成功率。
 
-### How to Use judgy
+### 如何使用 judgy
 
 ```python
 import numpy as np
@@ -2432,7 +2459,7 @@ results = estimate_success_rate(
 )
 ```
 
-### Real Results: Before and After Correction
+### 實際結果：校正前後對比
 
 ```
 Final Evaluation on 1000 traces:
@@ -2446,11 +2473,11 @@ Interpretation:
   between 84.4% and 98.5%.
 ```
 
-**Why the correction matters:** The raw rate (84.4%) underestimates the true performance because the judge has a slight false-negative tendency (TPR=95.7%, not 100%). The corrected rate (88.2%) accounts for this bias.
+**為何校正很重要：** 原始比率（84.4%）低估了真實表現，因為評審存在輕微的偽陰性傾向（TPR=95.7%，而非 100%）。校正後的比率（88.2%）已將此偏差納入考量。
 
-### Platform Integration
+### 平台整合
 
-**Platform-agnostic:** `judgy` works with results from any platform. Export your test set results and production predictions, then run the correction:
+**平台無關性：** `judgy` 可與任何平台的結果搭配使用。匯出您的測試集結果與生產環境預測，然後執行校正：
 
 ```python
 # With LangWatch results
@@ -2475,9 +2502,9 @@ unlabeled_preds = [score.value for score in production_scores if score.name == "
 corrected = estimate_success_rate(test_labels, test_preds, unlabeled_preds)
 ```
 
-### For PMs: How to Report These Results
+### 給 PM 的建議：如何呈報結果
 
-When presenting to stakeholders:
+向利害關係人報告時：
 
 ```
 "Our Recipe Bot correctly follows dietary restrictions 88% of the time,
@@ -2488,18 +2515,18 @@ violate the user's stated dietary preferences. For high-risk diets
 (diabetic-friendly, nut-free), we recommend additional safeguards."
 ```
 
-This is much more credible than "we tested it and it seems to work."
+這比「我們測試過，感覺沒問題」要可信得多。
 
 ---
 
 <a name="chapter-11"></a>
-## Chapter 11: Closing the Loop — From Evals to Improvements
+## 第十一章：閉環——從評估到改進
 
-### The Most Common Failure: Measuring Without Acting
+### 最常見的失敗：只量測不行動
 
-Many teams build great eval suites, then never systematically use the results to improve their system. Evals are only valuable if they drive action.
+許多團隊建立了完善的評估套件，卻從未系統性地利用結果改善系統。評估只有在驅動行動時才有價值。
 
-### The Improvement Cycle
+### 改進循環
 
 ```
 1. Run evals → identify top failure mode
@@ -2509,21 +2536,21 @@ Many teams build great eval suites, then never systematically use the results to
 5. Repeat with the next failure mode
 ```
 
-### Root-Causing Failures
+### 追溯失敗根因
 
-When your eval identifies a failure, ask **where** in the pipeline it happened:
+當評估識別出失敗時，詢問失敗**發生在管線的哪個環節**：
 
-| Failure Location | Symptoms | Typical Fixes |
+| 失敗位置 | 症狀 | 典型修復方式 |
 |---|---|---|
-| **System prompt** | Wrong tone, missing capabilities, policy violations | Edit prompt, add examples, add constraints |
-| **Retrieval** | Wrong documents, missing context | Better chunking, reranking, query expansion |
-| **Tool calls** | Wrong tool selected, wrong parameters | Improve tool descriptions, add validation |
-| **Generation** | Hallucination, wrong format, ignores context | Few-shot examples, structured output, temperature tuning |
-| **Post-processing** | Truncation, encoding issues, format errors | Fix parsing code, add validation |
+| **系統提示詞** | 語調錯誤、缺少功能、違反政策 | 編輯提示詞、新增範例、增加限制條件 |
+| **檢索** | 文件錯誤、上下文缺失 | 改善分塊方式、重新排序、擴展查詢 |
+| **工具呼叫** | 選錯工具、參數錯誤 | 改善工具描述、新增驗證機制 |
+| **生成** | 幻覺、格式錯誤、忽略上下文 | 少量範例、結構化輸出、調整溫度 |
+| **後處理** | 截斷、編碼問題、格式錯誤 | 修復解析程式碼、新增驗證 |
 
-### Regression Testing
+### 回歸測試
 
-Every time you fix something, you risk breaking something else. Set up regression tests:
+每次修復某個問題時，都有可能破壞其他功能。請建立回歸測試：
 
 ```python
 class RegressionSuite:
@@ -2558,15 +2585,15 @@ suite.add_regression_case(
 )
 ```
 
-**Platform Support for Regression Testing:**
+**平台對回歸測試的支援：**
 
-**LangWatch:** Built-in regression test suites, automatic comparison with baseline runs.
+**LangWatch：** 內建回歸測試套件，可自動與基準執行結果進行比較。
 
-**Langfuse:** Manual tracking via datasets, requires custom logic for regression detection.
+**Langfuse：** 透過資料集進行手動追蹤，回歸偵測需要自訂邏輯。
 
-### Model Comparison with Evals
+### 使用評估進行模型比較
 
-When evaluating whether to switch models (e.g., GPT-4o vs. Claude vs. Gemini):
+評估是否要切換模型時（例如 GPT-4o vs. Claude vs. Gemini）：
 
 ```python
 MODELS = ["gpt-4o", "claude-sonnet-4-5-20250929", "gemini-2.0-flash"]
@@ -2577,9 +2604,9 @@ for model in MODELS:
           f"cost=${results['cost']:.2f}, latency={results['latency_p50']:.0f}ms")
 ```
 
-### For PMs: The Improvement Playbook
+### 給 PM 的建議：改進劇本
 
-After every eval cycle, create a simple report:
+每個評估週期結束後，製作一份簡單報告：
 
 ```
 EVAL REPORT — Week of [date]
@@ -2598,24 +2625,24 @@ Regressions detected: [None / List]
 ---
 
 <a name="chapter-12"></a>
-## Chapter 12: Human Annotation Best Practices
+## 第十二章：人工標注最佳實踐
 
-### When Manual Labels Beat LLM Labels
+### 人工標籤勝過 LLM 標籤的情境
 
-- **Ambiguous cases** where even experts disagree — you need to capture that disagreement
-- **High-stakes domains** (medical, legal, financial) where errors have real consequences
-- **New failure modes** that your LLM judge hasn't been trained to detect
-- **Ground truth calibration** — even if you use LLM labeling at scale, validate a sample manually
+- **模糊案例**——即使是專家也意見分歧，您需要記錄這種分歧
+- **高風險領域**（醫療、法律、金融），錯誤會帶來真實後果
+- **新型失敗模式**——您的 LLM 評審尚未受過訓練而無法偵測的情況
+- **真實答案校準**——即使您以大規模 LLM 標記為主，也應手動驗證一個樣本
 
-### Inter-Annotator Agreement
+### 標注者間一致性
 
-If two humans disagree on a label, your eval criteria aren't clear enough.
+若兩個人對同一標籤意見相左，代表您的評估標準還不夠清晰。
 
-**Process:**
-1. Have 2-3 people independently label the same 50 traces
-2. Calculate agreement rate (% they agree)
-3. If agreement < 80%, your criteria need to be more specific
-4. Discuss disagreements, update criteria, re-label
+**流程：**
+1. 讓 2-3 人獨立標注同 50 筆追蹤記錄
+2. 計算一致率（相同比例）
+3. 若一致率 < 80%，標準需要更具體
+4. 討論分歧、更新標準、重新標注
 
 ```python
 def cohen_kappa(labels_a, labels_b):
@@ -2637,44 +2664,44 @@ def cohen_kappa(labels_a, labels_b):
 # kappa < 0.6: Poor agreement (rewrite criteria)
 ```
 
-### Label Quality > Label Quantity
+### 標籤品質 > 標籤數量
 
-**50 high-quality labels beat 500 noisy labels.** Invest time in:
-1. Clear, written labeling guidelines with examples
-2. Edge case documentation ("if you see X, label it as Y because...")
-3. Regular calibration sessions where labelers discuss disagreements
+**50 個高品質標籤勝過 500 個低品質標籤。** 請投入時間於：
+1. 清晰、書面的標注指引，並附上範例
+2. 邊緣案例說明文件（「若遇到 X，請標記為 Y，因為……」）
+3. 定期校準會議，讓標注者一起討論分歧
 
-### For PMs/QAs: You Are the Best Labelers
+### 給 PM／QA 的建議：您是最佳標注者
 
-PMs and QAs often produce better labels than engineers because:
-- You know what a good user experience looks like
-- You understand the product's policies and constraints
-- You think from the user's perspective, not the code's perspective
+PM 和 QA 往往能提供比工程師更好的標籤，因為：
+- 您知道良好使用者體驗的樣貌
+- 您了解產品的政策與限制
+- 您從使用者的角度思考，而非從程式碼的角度
 
 ---
 
 <a name="chapter-13"></a>
-## Chapter 13: Cost, Latency & Scaling Evals
+## 第十三章：成本、延遲與評估擴展
 
-### The Cost Problem
+### 成本問題
 
-Running GPT-4o as a judge on 10,000 traces is expensive. Here's how to manage costs:
+以 GPT-4o 作為評審，對 10,000 筆追蹤記錄進行評估的代價高昂。以下是管控成本的方法：
 
-### Strategy 1: Use Cheaper Models for Judges
+### 策略一：使用更便宜的模型作為評審
 
-Not every eval needs the best model:
+並非每個評估都需要最佳模型：
 
-| Judge Model | Cost (per 1K traces) | When to Use |
+| 評審模型 | 費用（每 1K 筆追蹤記錄） | 適用時機 |
 |---|---|---|
-| GPT-4o / Claude Opus | ~$5-15 | Complex subjective judgments, safety-critical |
-| GPT-4o-mini / Claude Haiku | ~$0.50-1.50 | Clear-cut criteria, well-defined rubrics |
-| Code-based | $0 | Format checks, pattern matching, validation |
+| GPT-4o / Claude Opus | ~$5-15 | 複雜的主觀判斷、安全關鍵情境 |
+| GPT-4o-mini / Claude Haiku | ~$0.50-1.50 | 明確標準、定義清晰的評分規則 |
+| 程式碼判斷 | $0 | 格式檢查、模式比對、驗證 |
 
-**Tip:** Start with a strong model, validate your judge prompt, then test if a cheaper model gives similar TPR/TNR. Often it does.
+**小提示：** 先用強力模型驗證您的評審提示詞，再測試較便宜的模型是否能達到相近的 TPR/TNR。通常可以。
 
-### Strategy 2: Sample Instead of Exhaustive
+### 策略二：抽樣而非全量評估
 
-You don't need to eval every trace:
+您不需要評估每一筆追蹤記錄：
 
 ```python
 import random
@@ -2688,9 +2715,9 @@ def sample_traces(traces, sample_rate=0.1, min_sample=100):
 # Statistical confidence is still high with proper sampling
 ```
 
-### Strategy 3: Tiered Evaluation
+### 策略三：分層評估
 
-Run cheap evals on everything, expensive evals on a sample:
+對所有追蹤記錄執行廉價評估，只對樣本執行昂貴評估：
 
 ```python
 # Tier 1: Run on ALL traces (code-based, free)
@@ -2705,9 +2732,9 @@ sample = random.sample(tier1_passed, 500)
 tier3_results = run_llm_eval(sample, model="gpt-4o")
 ```
 
-### Strategy 4: Cache Duplicate Evaluations
+### 策略四：快取重複評估
 
-If the same input appears multiple times, cache the eval result:
+若相同輸入多次出現，快取評估結果：
 
 ```python
 import hashlib
@@ -2721,37 +2748,37 @@ def cached_eval(trace, eval_fn):
     return eval_cache[key]
 ```
 
-**Platform Support for Caching:**
+**平台對快取的支援：**
 
-**LangWatch:** Built-in caching for evaluations, automatically deduplicates identical traces.
+**LangWatch：** 內建評估快取，自動去除重複的相同追蹤記錄。
 
-**Langfuse:** Manual caching required, but supports custom cache keys via metadata.
+**Langfuse：** 需要手動快取，但支援透過 metadata 自訂快取鍵值。
 
-### Latency Considerations for Real-Time Guardrails
+### 即時防護措施的延遲考量
 
-| Check Type | Typical Latency | Suitable for Real-Time? |
+| 檢查類型 | 典型延遲 | 適合即時使用？ |
 |---|---|---|
-| Regex/code checks | <1ms | Yes |
-| Embedding similarity | 10-50ms | Yes |
-| Small LLM (Haiku-class) | 200-500ms | Marginal (adds noticeable delay) |
-| Large LLM (GPT-4o-class) | 1-3s | No (use offline only) |
+| 正則表達式／程式碼檢查 | <1ms | 是 |
+| 嵌入向量相似度 | 10-50ms | 是 |
+| 小型 LLM（Haiku 等級） | 200-500ms | 勉強（會增加明顯延遲） |
+| 大型 LLM（GPT-4o 等級） | 1-3s | 否（僅適用於離線） |
 
 ---
 
 <a name="chapter-14"></a>
-## Chapter 14: Practical Implementation Guide
+## 第十四章：實用實施指南
 
-### Your First Two Weeks with Evals
+### 評估的前兩週計畫
 
-### Week 1: Foundation
+### 第一週：奠定基礎
 
-#### Day 1-2: Set Up Logging (4 hours)
+#### 第 1-2 天：設定日誌記錄（4 小時）
 
-**Goal:** Capture traces of every AI interaction.
+**目標：** 捕捉每次 AI 互動的追蹤記錄。
 
-Pick your platform and set it up:
+選擇您的平台並進行設定：
 
-**LangWatch:**
+**LangWatch：**
 ```bash
 pip install langwatch
 # Sign up at langwatch.ai or run self-hosted Docker
@@ -2762,7 +2789,7 @@ import langwatch
 langwatch.init()  # That's it! Auto-instrumentation enabled
 ```
 
-**Langfuse:**
+**Langfuse：**
 ```bash
 pip install langfuse openai
 # Sign up at cloud.langfuse.com or self-host
@@ -2773,53 +2800,53 @@ from langfuse.openai import OpenAI  # Drop-in replacement
 client = OpenAI()  # Auto-traced
 ```
 
-Then instrument your app (see Chapter 2 for full examples).
+接著對您的應用程式進行儀器化（完整範例請參見第二章）。
 
-**Deliverable:** Every AI interaction is logged and visible in your observability UI.
+**交付成果：** 每次 AI 互動皆已記錄，並可在您的可觀測性 UI 中查看。
 
-#### Day 3: Manual Error Analysis (3 hours)
+#### 第 3 天：手動錯誤分析（3 小時）
 
-**Goal:** Review 100 traces and take notes.
+**目標：** 審查 100 筆追蹤記錄並做筆記。
 
-1. Open your trace viewer (LangWatch or Langfuse UI)
-2. Browse through traces
-3. Note problems in a spreadsheet or CSV
-4. Budget 30-60 seconds per trace
+1. 開啟您的追蹤記錄檢視器（LangWatch 或 Langfuse UI）
+2. 瀏覽追蹤記錄
+3. 在試算表或 CSV 中記錄問題
+4. 每筆追蹤記錄預算 30-60 秒
 
-**Deliverable:** 40-50 error notes from 100 traces.
+**交付成果：** 從 100 筆追蹤記錄中得到 40-50 條錯誤筆記。
 
-#### Day 4: Categorize Errors (2 hours)
+#### 第 4 天：分類錯誤（2 小時）
 
-**Goal:** Group your notes into 5-6 categories.
+**目標：** 將您的筆記分組為 5-6 個類別。
 
-1. Export your notes
-2. Use an LLM to suggest categories
-3. Refine categories to be specific and actionable
-4. Label each note with a category
-5. Count occurrences
+1. 匯出您的筆記
+2. 使用 LLM 建議類別
+3. 將類別精鍊為具體且可執行的內容
+4. 為每條筆記標記類別
+5. 統計出現次數
 
-**Deliverable:** Prioritized list of what's broken, with frequency data.
+**交付成果：** 已依優先順序排列的問題清單，附帶頻率資料。
 
-#### Day 5-7: Build Your First Eval (6 hours)
+#### 第 5-7 天：建立第一個評估（6 小時）
 
-**Goal:** Create one code-based eval and one LLM judge.
+**目標：** 建立一個程式碼評估和一個 LLM 評審。
 
-**Code-based eval (Day 5):** Pick your highest-frequency objective issue.
+**程式碼評估（第 5 天）：** 挑選出現頻率最高的客觀問題。
 
-**LLM judge (Day 6-7):**
-1. Write the judge prompt with criteria + examples
-2. Label 50-100 traces as ground truth
-3. Split into train/dev/test
-4. Validate on dev set (iterate prompt until TPR/TNR > 80%)
-5. Test on test set for final metrics
+**LLM 評審（第 6-7 天）：**
+1. 撰寫含標準與範例的評審提示詞
+2. 將 50-100 筆追蹤記錄標記為真實答案
+3. 分為訓練集／開發集／測試集
+4. 在開發集上驗證（反覆修改提示詞，直到 TPR/TNR > 80%）
+5. 在測試集上測試以獲取最終指標
 
-**Deliverable:** Two working evals you can run on new traces.
+**交付成果：** 兩個可對新追蹤記錄執行的有效評估。
 
-### Week 2: Automation and Monitoring
+### 第二週：自動化與監控
 
-#### Day 8-9: Automate Eval Runs
+#### 第 8-9 天：自動化評估執行
 
-**With LangWatch:**
+**With LangWatch：**
 ```python
 import langwatch
 
@@ -2835,7 +2862,7 @@ results = langwatch.evaluate.batch(
 print(f"Pass rate: {results.metrics['pass_rate']:.1%}")
 ```
 
-**With Langfuse:**
+**With Langfuse：**
 ```python
 # Run evaluators separately
 for trace in daily_traces:
@@ -2848,7 +2875,7 @@ for trace in daily_traces:
     langfuse.create_score(trace_id=trace.id, name="dietary", ...)
 ```
 
-#### Day 10-11: Set Up Alerts
+#### 第 10-11 天：設定警報
 
 ```python
 def check_for_degradation(current_rate, historical_avg, threshold=1.5):
@@ -2860,15 +2887,15 @@ if check_for_degradation(today_failure_rate, avg_failure_rate):
     send_slack_alert("Eval failure rate spiked!")
 ```
 
-**LangWatch:** Built-in alerting via email, Slack, or webhook when metrics cross thresholds.
+**LangWatch：** 內建警報功能，可在指標超過閾值時透過電子郵件、Slack 或 webhook 發送通知。
 
-**Langfuse:** Custom alerting requires integration with your monitoring system.
+**Langfuse：** 自訂警報需要與您的監控系統整合。
 
-#### Day 12-14: Dashboard
+#### 第 12-14 天：儀表板
 
-**LangWatch:** Built-in analytics dashboard, no setup needed.
+**LangWatch：** 內建分析儀表板，無需設定。
 
-**Langfuse:** Create custom dashboard using their API:
+**Langfuse：** 使用其 API 建立自訂儀表板：
 ```python
 # Fetch recent scores
 scores = langfuse.api.score.list(limit=1000, from_timestamp=last_week)
@@ -2878,259 +2905,258 @@ failure_rates = aggregate_by_day(scores)
 plot_dashboard(failure_rates)
 ```
 
-### Ongoing: 30 Minutes Per Week
+### 持續進行：每週 30 分鐘
 
-**Every Monday (15 minutes):**
-1. Check your observability UI for anomalies
-2. Review any alerts from past week
-3. Note patterns
+**每週一（15 分鐘）：**
+1. 檢查您的可觀測性 UI 是否有異常
+2. 審查上週的任何警報
+3. 記錄模式
 
-**Every Month (2 hours):**
-1. Do error analysis on 50 new traces
-2. Look for new failure modes
-3. Add new evals if needed
-4. Retire evals that never fire
+**每月（2 小時）：**
+1. 對 50 筆新追蹤記錄進行錯誤分析
+2. 尋找新的失敗模式
+3. 必要時新增評估
+4. 淘汰從未觸發的評估
 
-**After Major Changes (1 hour):**
-1. Run full eval suite
-2. Compare to baseline
-3. Investigate any regressions
+**重大變更後（1 小時）：**
+1. 執行完整評估套件
+2. 與基準進行比較
+3. 調查任何回歸情況
 
 ---
 
 <a name="chapter-15"></a>
-## Chapter 15: Common Mistakes to Avoid
+## 第十五章：應避免的常見錯誤
 
-### Mistake #1: Skipping Error Analysis
+### 錯誤 #1：跳過錯誤分析
 
-**What people do:** Jump straight to building LLM judges or dashboards.
-**Why it's wrong:** You don't know what to measure yet.
-**Fix:** Always start with error analysis. Spend real time reviewing traces.
+**常見做法：** 直接跳到建立 LLM 評審或儀表板。
+**為何有問題：** 您還不知道要量測什麼。
+**修正方式：** 永遠從錯誤分析開始。花時間審查追蹤記錄。
 
-### Mistake #2: Using Only Agreement for Validation
+### 錯誤 #2：僅使用一致率進行驗證
 
-**What people do:** "My judge has 90% agreement with humans, ship it!"
-**Why it's wrong:** A judge that always says "pass" gets 90% agreement when failures are rare.
-**Fix:** Always calculate TPR and TNR separately. Both must be high.
+**常見做法：** 「我的評審與人類的一致率達 90%，可以上線了！」
+**為何有問題：** 在失敗案例稀少時，一個永遠說「通過」的評審也能達到 90% 一致率。
+**修正方式：** 永遠分別計算 TPR 與 TNR。兩者都必須高。
 
-### Mistake #3: PM/QA Delegates Error Analysis
+### 錯誤 #3：PM／QA 委外處理錯誤分析
 
-**What people do:** "This is technical, let engineering review the logs."
-**Why it's wrong:** Engineers don't have product intuition or domain expertise.
-**Fix:** PMs and QAs must do error analysis. This is core product/quality work.
+**常見做法：** 「這是技術性工作，讓工程師審查日誌吧。」
+**為何有問題：** 工程師不具備產品直覺或領域專業知識。
+**修正方式：** PM 和 QA 必須親自進行錯誤分析。這是核心的產品／品質工作。
 
-### Mistake #4: Not Splitting Data (Train/Dev/Test)
+### 錯誤 #4：未拆分資料（訓練集／開發集／測試集）
 
-**What people do:** Use all labeled data to build and test the judge.
-**Why it's wrong:** You're overfitting to your test data. Your metrics are meaningless.
-**Fix:** Use the 15%/40%/45% split. Never touch the test set until final evaluation.
+**常見做法：** 使用所有已標記資料來建立並測試評審。
+**為何有問題：** 您是在對測試資料過擬合，您的指標毫無意義。
+**修正方式：** 使用 15%／40%／45% 的拆分比例。在最終評估前絕對不要碰測試集。
 
-### Mistake #5: Not Doing Evals Until After Launch
+### 錯誤 #5：上線後才開始進行評估
 
-**What people do:** Build the product, ship it, then start thinking about evals.
-**Fix:** Build evals while building the product, not after.
+**常見做法：** 建立產品、上線，然後才開始思考評估。
+**修正方式：** 在建立產品的同時建立評估，而非事後才做。
 
-### Mistake #6: Building Too Many Evals
+### 錯誤 #6：建立過多評估
 
-**What people do:** "Let's have an eval for everything!"
-**Fix:** Start with 2-3 evals for your biggest problems. Add more only when needed.
-**Rule:** If an eval hasn't fired in 3 months, remove it.
+**常見做法：** 「讓我們對所有事情都建立評估！」
+**修正方式：** 從最大問題的 2-3 個評估開始。只有在需要時才新增。
+**規則：** 若一個評估在 3 個月內從未觸發，請移除它。
 
-### Mistake #7: Low TNR (Ignoring False Positives)
+### 錯誤 #7：TNR 過低（忽視假陽性）
 
-**What people do:** "My eval catches all real problems (TPR=95%), good enough."
-**Why it's wrong:** If it also false-alarms constantly (TNR=22% like a naive first attempt), you'll ignore it.
-**Fix:** Both TPR AND TNR must be high. Low TNR means the eval is useless.
+**常見做法：** 「我的評估能抓到所有真實問題（TPR=95%），夠用了。」
+**為何有問題：** 若它也頻繁誤報（TNR=22%，就像初次嘗試的天真作法），您將會忽視它。
+**修正方式：** TPR 與 TNR 都必須高。TNR 低意味著評估毫無用處。
 
-### Mistake #8: Not Testing the Evals Themselves
+### 錯誤 #8：不測試評估本身
 
-**What people do:** Write an eval, assume it works, run it on all data.
-**Fix:** Test your evals with known good and bad cases before deploying.
+**常見做法：** 撰寫評估後假設它能正常運作，直接對所有資料執行。
+**修正方式：** 在部署前，用已知的好案例與壞案例測試您的評估。
 
-### Mistake #9: Copy-Pasting Eval Prompts
+### 錯誤 #9：複製貼上評審提示詞
 
-**What people do:** "This LLM judge prompt worked for someone else, I'll use it."
-**Fix:** Write evals specific to YOUR product, YOUR policies, YOUR users.
+**常見做法：** 「這個 LLM 評審提示詞對別人有用，我也用吧。」
+**修正方式：** 針對**您的**產品、**您的**政策、**您的**使用者撰寫評估。
 
-### Mistake #10: Not Versioning System Prompts
+### 錯誤 #10：不對系統提示詞進行版本控制
 
-**What people do:** Edit system prompt directly in production.
-**Fix:** Use your platform's prompt management (LangWatch, Langfuse, etc.) to version prompts. Log which version was used with each trace.
+**常見做法：** 直接在生產環境編輯系統提示詞。
+**修正方式：** 使用平台的提示詞管理功能（LangWatch、Langfuse 等）進行版本控制。在每筆追蹤記錄中記錄使用了哪個版本。
 
-### Mistake #11: Not Correcting for Judge Bias
+### 錯誤 #11：未校正評審偏差
 
-**What people do:** Report the raw pass rate from the judge as the true rate.
-**Fix:** Use judgy to correct for judge errors and report confidence intervals.
+**常見做法：** 將評審的原始通過率直接作為真實比率呈報。
+**修正方式：** 使用 judgy 校正評審誤差，並呈報置信區間。
 
-### Mistake #12: Over-Engineering Early
+### 錯誤 #12：過早過度工程化
 
-**What people do:** Build a distributed eval platform before reviewing a single trace.
-**Fix:** Start simple. CSV + Python script + any observability tool. Add complexity only when simple stops working.
+**常見做法：** 在審查任何一筆追蹤記錄之前，就建立一個分散式評估平台。
+**修正方式：** 從簡單開始。CSV + Python 腳本 + 任何可觀測性工具。只有在簡單方法無法應付時才增加複雜度。
 
 ---
 
 <a name="chapter-16"></a>
-## Chapter 16: Tools and Resources
+## 第十六章：工具與資源
 
-### Observability Platforms
+### 可觀測性平台
 
-| Tool | Type | Best For | Cost |
+| 工具 | 類型 | 最適用於 | 費用 |
 |------|------|----------|------|
-| **LangWatch** | Open source, cloud or self-hosted | Simple setup, built-in evaluators, great analytics | Free tier + paid |
-| **Langfuse** | Open source, cloud or self-hosted | Custom pipelines, maximum flexibility, large community | Free tier + paid |
-| **Braintrust** | Cloud | Excellent UI, team collaboration | Paid |
-| **LangSmith** | Cloud | LangChain users | Paid |
-| **Build Your Own** | Custom | Learning, custom needs | Free |
+| **LangWatch** | 開源，雲端或自架 | 簡易設定、內建評估器、優秀的分析功能 | 免費方案 + 付費 |
+| **Langfuse** | 開源，雲端或自架 | 自訂管線、最大彈性、龐大社群 | 免費方案 + 付費 |
+| **Braintrust** | 雲端 | 出色的 UI、團隊協作 | 付費 |
+| **LangSmith** | 雲端 | LangChain 使用者 | 付費 |
+| **自行建立** | 自訂 | 學習、客製化需求 | 免費 |
 
-### Eval Frameworks
+### 評估框架
 
-- **LangWatch Evaluators** - 40+ built-in evaluators covering safety, quality, RAG, and custom domains
-- **Langfuse Evals** - Built-in LLM-as-Judge, custom evaluators via SDK
-- **Simple Evals** (OpenAI) - Lightweight model-graded evals
-- **Ragas** - Specialized for RAG evaluation
-- **DeepEval** - Comprehensive eval framework
+- **LangWatch Evaluators** - 40+ 種內建評估器，涵蓋安全性、品質、RAG 及自訂領域
+- **Langfuse Evals** - 內建 LLM-as-Judge、透過 SDK 自訂評估器
+- **Simple Evals**（OpenAI）- 輕量級模型評分評估
+- **RAGAS** - 專為 RAG 評估設計
+- **DeepEval** - 完整的評估框架
 
-### Key Libraries
+### 核心函式庫
 
-- **judgy** - Statistical bias correction for LLM judges: [github.com/ai-evals-course/judgy](https://github.com/ai-evals-course/judgy)
-- **rank_bm25** - BM25 retrieval for RAG systems
-- **litellm** - Unified LLM API interface
+- **judgy** - LLM 評審的統計偏差校正：[github.com/ai-evals-course/judgy](https://github.com/ai-evals-course/judgy)
+- **rank_bm25** - BM25 檢索，用於 RAG 系統
+- **LiteLLM** - 統一的 LLM API 介面
 
-### Platform Comparison Matrix
+### 平台比較矩陣
 
-| Feature | LangWatch | Langfuse | Notes |
+| 功能 | LangWatch | Langfuse | 備注 |
 |---------|-----------|----------|-------|
-| **Setup Time** | 5 min (3 lines) | 15 min (more config) | LangWatch: langwatch.init() |
-| **Built-in Evaluators** | 40+ | 0 (all custom) | LangWatch saves significant dev time |
-| **Custom Evaluators** | Yes (decorator) | Yes (full SDK) | Both support custom logic |
-| **Analytics Dashboard** | Built-in, automatic | Build your own | LangWatch: zero-config analytics |
-| **Cost Tracking** | Automatic | Manual tagging | LangWatch tracks per-model costs |
-| **Community Size** | Growing | Large, established | Langfuse has more integrations |
-| **Self-Hosting** | Docker (simple) | Docker (more complex) | Both are fully open-source |
-| **Prompt Management** | Yes | Yes (more mature) | Langfuse has richer versioning UI |
-| **Caching** | Built-in | Manual | LangWatch auto-caches duplicate evals |
-| **Batch Evaluation** | Native API | Via experiments | LangWatch: simpler for large batches |
-| **Real-time Evals** | Supported | Via scores API | Both work, LangWatch is faster to set up |
+| **設定時間** | 5 分鐘（3 行程式碼） | 15 分鐘（更多設定） | LangWatch: langwatch.init() |
+| **內建評估器** | 40+ | 0（全部自訂） | LangWatch 節省大量開發時間 |
+| **自訂評估器** | 支援（裝飾器） | 支援（完整 SDK） | 兩者皆支援自訂邏輯 |
+| **分析儀表板** | 內建，自動化 | 需自行建立 | LangWatch：零設定分析 |
+| **費用追蹤** | 自動 | 手動標記 | LangWatch 追蹤每個模型的費用 |
+| **社群規模** | 成長中 | 龐大、成熟 | Langfuse 有更多整合 |
+| **自架** | Docker（簡單） | Docker（較複雜） | 兩者皆完全開源 |
+| **提示詞管理** | 支援 | 支援（較成熟） | Langfuse 有更豐富的版本控制 UI |
+| **快取** | 內建 | 手動 | LangWatch 自動快取重複評估 |
+| **批次評估** | 原生 API | 透過實驗 | LangWatch：大批次更簡單 |
+| **即時評估** | 支援 | 透過 scores API | 兩者皆可，LangWatch 設定更快 |
 
-**When to choose LangWatch:**
-- You want to start fast (< 10 min setup)
-- You need built-in evaluators for common use cases
-- You want automatic analytics without configuration
-- You prefer opinionated tooling that "just works"
+**選擇 LangWatch 的時機：**
+- 您希望快速起步（設定 < 10 分鐘）
+- 您需要常見使用案例的內建評估器
+- 您希望無需設定就能獲得自動分析
+- 您偏好「開箱即用」的固定意見工具
 
-**When to choose Langfuse:**
-- You need maximum flexibility for custom workflows
-- You have complex evaluation logic
-- You want the largest community and integration ecosystem
-- You prefer building your own dashboards and analytics
+**選擇 Langfuse 的時機：**
+- 您需要自訂工作流程的最大彈性
+- 您有複雜的評估邏輯
+- 您希望擁有最大的社群與整合生態系統
+- 您偏好自行建立儀表板與分析
 
-**Why not both?**
-Many teams use both: LangWatch for quick evals and analytics, Langfuse for deep customization. They're complementary, not competitive.
+**為何不兩者並用？**
+許多團隊同時使用兩者：LangWatch 用於快速評估與分析，Langfuse 用於深度客製化。它們是互補的，而非競爭關係。
 
-### Key Principles (Revisited)
+### 核心原則（重新整理）
 
-1. **Start simple** - Don't over-engineer
-2. **Error analysis first** - Always
-3. **PMs and QAs must be involved** - This is product/quality work
-4. **Both TPR and TNR matter** - Not just agreement
-5. **Code evals when possible** - LLM judges when needed
-6. **Test your evals** - They can have bugs too
-7. **Split your data** - Train/Dev/Test is non-negotiable
-8. **Correct for bias** - Use judgy for honest metrics
-9. **Version your prompts** - Track what changed when
-10. **Iterate based on data** - Not hunches
+1. **從簡單開始** - 不要過度工程化
+2. **先進行錯誤分析** - 永遠如此
+3. **PM 和 QA 必須參與** - 這是產品／品質工作
+4. **TPR 與 TNR 都重要** - 而非只看一致率
+5. **盡可能使用程式碼評估** - 必要時才用 LLM 評審
+6. **測試您的評估** - 它們也可能有 bug
+7. **拆分您的資料** - 訓練集／開發集／測試集不容妥協
+8. **校正偏差** - 使用 judgy 以獲得誠實的指標
+9. **對提示詞進行版本控制** - 追蹤何時發生了什麼變更
+10. **根據資料迭代** - 而非靠直覺
 
 ---
-
 <a name="appendix-a"></a>
-## Appendix A: Glossary for PMs & QAs
+## 附錄 A：PM 與 QA 術語詞彙表
 
-A plain-language glossary of the technical terms used throughout this guide. Share this with non-technical stakeholders.
+本指南全文使用的技術術語簡明詞彙表，可與非技術利害關係人分享。
 
-### Evaluation & Metrics Terms
+### 評估與指標術語
 
-| Term | Definition |
+| 術語 | 定義 |
 |------|-----------|
-| **Eval (Evaluation)** | A systematic test that checks if an AI system is working correctly for a specific criterion |
-| **LLM-as-a-Judge** | Using a language model to automatically evaluate the output of another AI system |
-| **Ground Truth** | Human-verified labels that represent the "correct" answer; used to measure judge accuracy |
-| **True Positive Rate (TPR)** | The percentage of actual positives (e.g., good responses) that the judge correctly identifies. Also called *recall* or *sensitivity*. Formula: TP / (TP + FN) |
-| **True Negative Rate (TNR)** | The percentage of actual negatives (e.g., bad responses) that the judge correctly catches. Also called *specificity*. Formula: TN / (TN + FP) |
-| **False Positive (FP)** | When the judge says "Pass" but the real answer is "Fail" — a missed defect |
-| **False Negative (FN)** | When the judge says "Fail" but the real answer is "Pass" — a false alarm |
-| **Precision** | Of all items the judge labeled positive, how many were actually positive. Formula: TP / (TP + FP) |
-| **F1 Score** | The harmonic mean of precision and recall — a single number balancing both. Formula: 2 * (Precision * Recall) / (Precision + Recall) |
-| **Confusion Matrix** | A 2x2 table showing TP, FP, FN, TN counts — the foundation of all classification metrics |
-| **Confidence Interval (CI)** | A range of values (e.g., 72%–81%) within which the true metric likely falls, given sampling uncertainty |
-| **Bias Correction** | Adjusting raw judge scores to account for systematic over- or under-counting of passes/fails |
-| **Cohen's Kappa** | A statistic measuring agreement between two raters (or a rater and ground truth), adjusting for chance agreement. Values: <0.2 poor, 0.4–0.6 moderate, 0.6–0.8 substantial, >0.8 almost perfect |
+| **Eval（評估）** | 一種系統性測試，用於檢查 AI 系統是否針對特定標準正常運作 |
+| **LLM-as-a-Judge** | 使用語言模型自動評估另一個 AI 系統的輸出 |
+| **Ground Truth（基準真相）** | 由人工驗證的標籤，代表「正確」答案；用於衡量評估器的準確度 |
+| **True Positive Rate (TPR)** | 評估器正確識別的實際正例（如良好回應）百分比。亦稱為*召回率（recall）*或*敏感度（sensitivity）*。公式：TP / (TP + FN) |
+| **True Negative Rate (TNR)** | 評估器正確抓出的實際負例（如不良回應）百分比。亦稱為*特異度（specificity）*。公式：TN / (TN + FP) |
+| **False Positive (FP)** | 評估器判定「通過」但真實答案為「失敗」的情況——即漏失的缺陷 |
+| **False Negative (FN)** | 評估器判定「失敗」但真實答案為「通過」的情況——即誤報警報 |
+| **Precision（精確率）** | 在所有評估器標記為正例的項目中，實際為正例的比例。公式：TP / (TP + FP) |
+| **F1 Score** | 精確率與召回率的調和平均數——一個同時平衡兩者的數值。公式：2 * (Precision * Recall) / (Precision + Recall) |
+| **Confusion Matrix（混淆矩陣）** | 顯示 TP、FP、FN、TN 計數的 2x2 表格——所有分類指標的基礎 |
+| **Confidence Interval (CI)** | 考慮抽樣不確定性後，真實指標很可能落在其中的數值範圍（例如 72%–81%） |
+| **Bias Correction（偏差校正）** | 調整評估器的原始分數，以修正對通過/失敗的系統性高估或低估 |
+| **Cohen's Kappa** | 衡量兩個評分者（或評分者與基準真相）一致性的統計量，已扣除機率一致性。數值：<0.2 差、0.4–0.6 中等、0.6–0.8 顯著、>0.8 幾乎完美 |
 
-### Data & Workflow Terms
+### 資料與工作流程術語
 
-| Term | Definition |
+| 術語 | 定義 |
 |------|-----------|
-| **Train/Dev/Test Split** | Dividing labeled data into three sets: Train (for building the judge prompt), Dev (for iterating), Test (for final unbiased measurement) |
-| **Stratified Split** | Splitting data so each subset has the same proportion of Pass/Fail labels as the original |
-| **Few-Shot Examples** | Example input-output pairs included in a prompt to show the model what good evaluation looks like |
-| **Open Coding** | Reading traces and writing freeform notes about what's going wrong — no categories yet |
-| **Axial Coding** | Grouping your open-coded notes into categories (error types) and counting frequency |
-| **Dimensional Sampling** | Systematically creating test inputs that cover all important dimensions (topics, edge cases, user types) |
-| **Failure Mode** | A specific, named way the AI system can fail (e.g., "dietary violation," "hallucinated citation") |
-| **Error Taxonomy** | The organized list of all failure modes for your application, ranked by frequency and severity |
+| **Train/Dev/Test Split（訓練/開發/測試分割）** | 將標記資料分為三組：Train（用於建立評估器提示）、Dev（用於迭代改進）、Test（用於最終無偏測量） |
+| **Stratified Split（分層分割）** | 分割資料時確保每個子集的通過/失敗標籤比例與原始資料相同 |
+| **Few-Shot Examples（少樣本範例）** | 包含在提示中的範例輸入/輸出對，用以向模型示範良好評估的形式 |
+| **Open Coding（開放編碼）** | 閱讀追蹤記錄並自由記錄問題所在——尚無分類 |
+| **Axial Coding（軸心編碼）** | 將開放編碼的筆記整理成類別（錯誤類型）並統計頻率 |
+| **Dimensional Sampling（維度抽樣）** | 系統性地建立覆蓋所有重要維度（主題、邊界案例、使用者類型）的測試輸入 |
+| **Failure Mode（失敗模式）** | AI 系統可能發生失敗的具體、命名方式（例如「違反飲食限制」、「幻覺引用」） |
+| **Error Taxonomy（錯誤分類法）** | 針對應用程式的所有失敗模式整理成的清單，依頻率與嚴重程度排序 |
 
-### Observability & Platform Terms
+### 可觀測性與平台術語
 
-| Term | Definition |
+| 術語 | 定義 |
 |------|-----------|
-| **Trace** | A complete record of one AI interaction — from user input through all processing steps to final output |
-| **Span** | A single unit of work within a trace (e.g., one LLM call, one database lookup, one tool invocation) |
-| **Instrumentation** | Adding code to your application so that traces and spans are automatically captured |
-| **Dataset** | A stored collection of examples (inputs + expected outputs) used for running experiments |
-| **Experiment** | Running your AI system (or judge) against a dataset and recording all results |
-| **Annotation** | A label or score attached to a trace or span — can be human-generated or from an automated eval |
-| **Prompt Version** | A saved snapshot of a prompt template, allowing you to track changes and compare performance |
+| **Trace（追蹤）** | 一次完整的 AI 互動記錄——從使用者輸入，經過所有處理步驟，到最終輸出 |
+| **Span（跨度）** | 追蹤中的單一工作單元（例如一次 LLM 呼叫、一次資料庫查詢、一次工具調用） |
+| **Instrumentation（植入監測）** | 在應用程式中加入程式碼，使追蹤與跨度能自動被捕獲 |
+| **Dataset（資料集）** | 用於執行實驗的已儲存範例集合（輸入 + 預期輸出） |
+| **Experiment（實驗）** | 針對資料集執行 AI 系統（或評估器）並記錄所有結果 |
+| **Annotation（標注）** | 附加在追蹤或跨度上的標籤或分數——可由人工產生或來自自動化評估 |
+| **Prompt Version（提示版本）** | 提示模板的已儲存快照，可用於追蹤變更並比較效能 |
 
-### RAG-Specific Terms
+### RAG 專用術語
 
-| Term | Definition |
+| 術語 | 定義 |
 |------|-----------|
-| **RAG (Retrieval-Augmented Generation)** | An AI architecture that retrieves relevant documents before generating a response |
-| **BM25** | A classic keyword-based search algorithm used as a baseline for retrieval quality |
-| **Recall@K** | Of all relevant documents, what fraction appear in the top K retrieved results |
-| **MRR (Mean Reciprocal Rank)** | Average of 1/rank for the first relevant document — higher means relevant docs appear sooner |
-| **Chunking** | Splitting large documents into smaller pieces for retrieval |
-| **Context Window** | The maximum amount of text an LLM can process in a single call |
-| **Hallucination** | When an LLM generates information not supported by the retrieved context |
+| **RAG (Retrieval-Augmented Generation)** | 一種在生成回應前先檢索相關文件的 AI 架構 |
+| **BM25** | 一種傳統的關鍵字搜尋演算法，用作檢索品質的基準線 |
+| **Recall@K** | 在所有相關文件中，有多少比例出現在前 K 個檢索結果中 |
+| **MRR (Mean Reciprocal Rank)** | 第一個相關文件排名倒數的平均值——數值越高表示相關文件越早出現 |
+| **Chunking（切塊）** | 將大型文件切分為較小片段以供檢索 |
+| **Context Window（上下文視窗）** | LLM 在單次呼叫中能處理的最大文字量 |
+| **Hallucination（幻覺）** | LLM 生成不受檢索上下文支持的資訊 |
 
-### Statistical Terms
+### 統計術語
 
-| Term | Definition |
+| 術語 | 定義 |
 |------|-----------|
-| **p_obs (Observed Rate)** | The raw pass rate from the judge, before any correction |
-| **θ̂ (Theta-hat)** | The corrected true success rate after accounting for judge errors |
-| **judgy** | A Python library that computes corrected success rates and confidence intervals given TPR and TNR |
-| **Sampling** | Evaluating a random subset of traces instead of all traces — used to manage cost |
-| **Statistical Significance** | Whether an observed difference is likely real or could be due to random chance |
+| **p_obs（觀測率）** | 評估器的原始通過率，校正前的數值 |
+| **θ̂ (Theta-hat)** | 考量評估器誤差後的校正真實成功率 |
+| **judgy** | 一個 Python 函式庫，依據 TPR 和 TNR 計算校正後的成功率與信賴區間 |
+| **Sampling（抽樣）** | 評估追蹤記錄的隨機子集而非全部——用於控制成本 |
+| **Statistical Significance（統計顯著性）** | 觀測到的差異是否可能為真實存在，或可能只是隨機波動所致 |
 
 ---
 
 <a name="appendix-b"></a>
-## Appendix B: Quick Reference
+## 附錄 B：快速參考
 
-### When to Use What Type of Eval
+### 何時使用哪種評估類型
 
-| Situation | Type | Example |
+| 情境 | 類型 | 範例 |
 |-----------|------|---------|
-| Format checking | Code-based | No markdown in SMS |
-| Required fields | Code-based | Tour confirmation has date/time |
-| Tool selection | Code-based | Called correct function |
-| Subjective quality | LLM judge | Response is helpful |
-| Policy compliance | LLM judge | Handoff requirements met |
-| Dietary adherence | LLM judge | Recipe follows restrictions |
-| Factual accuracy | LLM judge | Answer matches sources |
-| Response length | Code-based | Under 500 characters |
+| 格式檢查 | 程式碼型 | SMS 中無 Markdown |
+| 必填欄位 | 程式碼型 | 行程確認包含日期/時間 |
+| 工具選擇 | 程式碼型 | 呼叫了正確的函數 |
+| 主觀品質 | LLM 評估器 | 回應是否有幫助 |
+| 政策合規 | LLM 評估器 | 是否符合轉接要求 |
+| 飲食遵守 | LLM 評估器 | 食譜是否符合飲食限制 |
+| 事實準確性 | LLM 評估器 | 答案是否與來源相符 |
+| 回應長度 | 程式碼型 | 少於 500 個字元 |
 
-### Metrics Cheat Sheet
+### 指標速查表
 
 ```
 Confusion Matrix:
@@ -3149,7 +3175,7 @@ Target for evals:
 - TNR > 80% (doesn't false alarm)
 ```
 
-### Data Split Ratios
+### 資料分割比例
 
 ```
 Train: ~15%  (few-shot examples for judge prompt)
@@ -3157,28 +3183,28 @@ Dev:   ~40%  (iterate and improve judge prompt)
 Test:  ~45%  (final, unbiased evaluation - use ONCE)
 ```
 
-### Time Estimates
+### 時間估算
 
-| Activity | Time | Frequency |
+| 活動 | 時間 | 頻率 |
 |----------|------|-----------|
-| Initial setup (LangWatch) | 30 min | Once |
-| Initial setup (Langfuse) | 1 hour | Once |
-| Error analysis (100 traces) | 1 hour | Monthly |
-| Build code-based eval | 1 hour | As needed |
-| Build LLM judge (full pipeline) | 4-6 hours | As needed |
-| Validate eval on dev set | 1 hour | Per iteration |
-| Weekly maintenance | 30 min | Weekly |
+| 初始設定（LangWatch） | 30 分鐘 | 一次 |
+| 初始設定（Langfuse） | 1 小時 | 一次 |
+| 錯誤分析（100 筆追蹤） | 1 小時 | 每月 |
+| 建立程式碼型評估 | 1 小時 | 視需要 |
+| 建立 LLM 評估器（完整流程） | 4-6 小時 | 視需要 |
+| 在開發集上驗證評估 | 1 小時 | 每次迭代 |
+| 每週維護 | 30 分鐘 | 每週 |
 
-### Platform Quick Start
+### 平台快速入門
 
-**LangWatch (fastest):**
+**LangWatch（最快速）：**
 ```python
 import langwatch
 langwatch.init()
 # Done! Auto-tracing enabled
 ```
 
-**Langfuse (more config):**
+**Langfuse（需要更多設定）：**
 ```python
 from langfuse.openai import OpenAI
 client = OpenAI()
@@ -3188,9 +3214,9 @@ client = OpenAI()
 ---
 
 <a name="appendix-c"></a>
-## Appendix C: Complete Judge Prompts from Production
+## 附錄 C：正式生產環境的完整評估器提示
 
-This is a production-quality judge prompt that achieved TPR=95.7% and TNR=100%:
+以下是一個達到 TPR=95.7% 與 TNR=100% 的正式生產品質評估器提示：
 
 ```
 You are an expert nutritionist and dietary specialist evaluating whether
@@ -3251,11 +3277,11 @@ RETURN YOUR EVALUATION IN JSON FORMAT:
 ---
 
 <a name="appendix-d"></a>
-## Appendix D: Pipeline State Evaluator Prompts
+## 附錄 D：流水線狀態評估器提示
 
-Complete evaluator prompts for each pipeline state. Each follows the same structure:
+各流水線狀態的完整評估器提示，每個提示遵循相同結構：
 
-### Standard Evaluator Structure
+### 標準評估器結構
 
 ```
 1. Role definition ("You are an expert evaluator for the X state")
@@ -3267,41 +3293,41 @@ Complete evaluator prompts for each pipeline state. Each follows the same struct
 7. Output format (JSON with label and explanation)
 ```
 
-### Available Evaluators
+### 可用評估器
 
-| State | Key Criteria | Common Failures |
+| 狀態 | 關鍵標準 | 常見失敗 |
 |-------|-------------|----------------|
-| ParseRequest | Accuracy, completeness, format | Misinterpretation, missing constraints |
-| PlanToolCalls | Tool selection, ordering, rationale | Missing tools, incorrect tools |
-| GenRecipeArgs | Query relevance, filter accuracy | Missing dietary filters, wrong servings |
-| GetRecipes | Relevance, dietary compliance | Irrelevant recipes, dietary violations |
-| GenWebArgs | Relevance, context alignment | Off-topic queries, too generic |
-| GetWebInfo | Relevance, quality | Irrelevant results, off-topic content |
-| ComposeResponse | Recipe accuracy, step clarity, constraint compliance | Contradictions, missing info, violations |
+| ParseRequest | 準確性、完整性、格式 | 誤解、遺漏限制條件 |
+| PlanToolCalls | 工具選擇、順序、理由 | 缺少工具、選錯工具 |
+| GenRecipeArgs | 查詢相關性、篩選器準確性 | 缺少飲食篩選器、份量錯誤 |
+| GetRecipes | 相關性、飲食合規性 | 不相關食譜、違反飲食限制 |
+| GenWebArgs | 相關性、上下文對齊 | 偏離主題的查詢、過於籠統 |
+| GetWebInfo | 相關性、品質 | 不相關結果、偏離主題的內容 |
+| ComposeResponse | 食譜準確性、步驟清晰度、限制合規性 | 矛盾、資訊缺漏、違規 |
 
-Full evaluator prompts for each state follow the structure above, tailored to the specific responsibilities and failure modes of each pipeline stage.
+各狀態的完整評估器提示遵循上述結構，並針對各流水線階段的具體職責與失敗模式加以調整。
 
 ---
 
 <a name="appendix-e"></a>
-## Appendix E: Judge Prompt Engineering Tips
+## 附錄 E：評估器提示工程技巧
 
-A collection of techniques that consistently improve LLM judge accuracy. Use this as a checklist when building or debugging a judge.
+一系列能持續提升 LLM 評估器準確度的技巧，在建立或除錯評估器時可作為檢查清單使用。
 
-### 1. Explanation Before Verdict
+### 1. 先寫解釋，再給判定
 
-Always ask the judge to explain its reasoning *before* giving the final label. This is the single most impactful technique.
+永遠要求評估器在給出最終標籤*之前*先說明其推理過程。這是最具影響力的單一技巧。
 
 ```
 ❌ Bad:  "Label: PASS or FAIL. Explanation: ..."
 ✅ Good: "Explanation: [your reasoning]. Label: PASS or FAIL"
 ```
 
-**Why it works:** When the model writes the label first, the explanation becomes a post-hoc rationalization. When reasoning comes first, the model actually deliberates, and the label follows logically.
+**為何有效：** 當模型先寫標籤時，解釋會變成事後的合理化說詞。當推理過程在前，模型才會真正深思熟慮，標籤也才能合乎邏輯地得出。
 
-### 2. Be Ruthlessly Specific About Criteria
+### 2. 對標準毫不妥協地具體
 
-Vague criteria lead to inconsistent judgments. Define exactly what counts as Pass and Fail.
+模糊的標準會導致不一致的判斷。精確定義何者算通過、何者算失敗。
 
 ```
 ❌ Vague:  "Does the response follow dietary restrictions?"
@@ -3311,9 +3337,9 @@ Vague criteria lead to inconsistent judgments. Define exactly what counts as Pas
    dairy-free)."
 ```
 
-### 3. Include "What Does NOT Count as a Failure"
+### 3. 列出「什麼情況不算失敗」
 
-Judges tend to be overly strict. Explicitly list acceptable variations to calibrate leniency.
+評估器傾向過度嚴苛。明確列出可接受的變體，以校準寬鬆度。
 
 ```
 What does NOT count as a failure:
@@ -3323,31 +3349,31 @@ What does NOT count as a failure:
 - Providing substitution suggestions alongside the main recipe
 ```
 
-### 4. Use Domain-Specific Few-Shot Examples
+### 4. 使用領域特定的少樣本範例
 
-Generic examples are far less effective than examples from your actual data. Always pull few-shot examples from your Train set.
+通用範例的效果遠不如來自實際資料的範例。務必從訓練集中挑選少樣本範例。
 
-**Example selection strategy:**
-- 1 clear Pass (easy case)
-- 1 clear Fail (easy case)
-- 1 borderline case (the kind the judge will struggle with most)
+**範例選取策略：**
+- 1 個明確通過的案例（容易判斷的案例）
+- 1 個明確失敗的案例（容易判斷的案例）
+- 1 個邊界案例（評估器最容易出錯的類型）
 
-**Include the reasoning** in each example, not just the label. The judge learns the reasoning pattern, not just the answer.
+**在每個範例中包含推理過程**，而非只有標籤。評估器學習的是推理模式，而非只是答案。
 
-### 5. Temperature Settings
+### 5. 溫度設定
 
-| Use Case | Temperature | Rationale |
+| 使用情境 | 溫度 | 理由 |
 |----------|-------------|-----------|
-| Binary classification (Pass/Fail) | 0.0 | Deterministic, reproducible |
-| Likert scale scoring (1-5) | 0.0–0.3 | Low variance, consistent |
-| Generating diverse critiques | 0.5–0.7 | Some creativity for different angles |
-| Brainstorming failure modes | 0.7–1.0 | High creativity for exploration |
+| 二元分類（通過/失敗） | 0.0 | 確定性、可重現 |
+| Likert 量表評分（1-5） | 0.0–0.3 | 低變異、一致性高 |
+| 產生多樣化評論 | 0.5–0.7 | 適度創意以涵蓋不同角度 |
+| 腦力激盪失敗模式 | 0.7–1.0 | 高創意以利探索 |
 
-For judge evaluation, always use temperature 0.0. You want the same input to produce the same output every time.
+進行評估器評估時，請一律使用溫度 0.0。您希望相同的輸入每次產生相同的輸出。
 
-### 6. Structured Output Formats
+### 6. 結構化輸出格式
 
-Tell the judge exactly how to format its response. JSON is preferred for parsing reliability.
+明確告訴評估器如何格式化其回應。JSON 因解析可靠性而為首選。
 
 ```
 Return your evaluation as JSON:
@@ -3359,19 +3385,19 @@ Return your evaluation as JSON:
 }
 ```
 
-**Tip:** The `confidence` field is useful for identifying borderline cases during error analysis but is not a reliable calibrated probability.
+**提示：** `confidence` 欄位在錯誤分析期間有助於識別邊界案例，但並非可靠的校正機率。
 
-### 7. Guard Against Common Judge Biases
+### 7. 防範常見的評估器偏差
 
-| Bias | Description | Mitigation |
+| 偏差 | 說明 | 緩解方式 |
 |------|-------------|------------|
-| **Leniency bias** | Judge defaults to "Pass" too often | Add explicit failure examples; emphasize "when in doubt, FAIL" |
-| **Verbosity bias** | Judge favors longer, more detailed responses | Add examples where a short response passes and a long one fails |
-| **Position bias** | Judge favors the first/last option in a list | Randomize order if comparing multiple outputs |
-| **Sycophancy bias** | Judge agrees with confident-sounding text | Add examples where confident text is wrong |
-| **Anchoring bias** | Judge is swayed by the first piece of evidence | Instruct judge to consider ALL evidence before concluding |
+| **寬鬆偏差** | 評估器過於頻繁地預設「通過」 | 新增明確的失敗範例；強調「有疑慮時判為失敗」 |
+| **冗長偏差** | 評估器偏好更長、更詳細的回應 | 新增短回應通過而長回應失敗的範例 |
+| **位置偏差** | 評估器偏好清單中第一個或最後一個選項 | 若比較多個輸出，隨機打亂順序 |
+| **奉承偏差** | 評估器認同措辭充滿信心的文字 | 新增充滿信心但內容錯誤的文字範例 |
+| **錨定偏差** | 評估器受到第一條證據影響 | 指示評估器在得出結論前考慮所有證據 |
 
-### 8. Iterative Refinement Workflow
+### 8. 迭代改進工作流程
 
 ```
 1. Write initial prompt with 2-3 few-shot examples
@@ -3385,33 +3411,33 @@ Return your evaluation as JSON:
 7. Run ONCE on Test set for final, unbiased metrics
 ```
 
-**Common iteration patterns:**
-- TPR too low → Judge is missing real failures. Add more Fail examples, make fail criteria more explicit.
-- TNR too low → Judge has too many false alarms. Add "what does NOT count as a failure" section, add Pass examples for edge cases.
-- Both low → Criteria are ambiguous. Rewrite from scratch with clearer definitions.
+**常見迭代模式：**
+- TPR 過低 → 評估器遺漏了真實失敗。新增更多失敗範例，使失敗標準更明確。
+- TNR 過低 → 評估器有太多誤報。新增「什麼情況不算失敗」段落，為邊界案例新增通過範例。
+- 兩者均低 → 標準模糊不清。以更清晰的定義從頭重寫。
 
-### 9. Model Selection for Judges
+### 9. 評估器的模型選擇
 
-| Model Tier | When to Use | Typical Accuracy |
+| 模型層級 | 使用時機 | 典型準確度 |
 |------------|------------|-----------------|
-| GPT-4o / Claude Sonnet 4.6 | High-stakes evals, complex reasoning | 85–95% |
-| GPT-4o-mini / Claude Haiku | Cost-sensitive, high-volume evals | 75–90% |
-| Open-source (Llama, Mistral) | Self-hosted, privacy-sensitive | 70–85% |
+| GPT-4o / Claude Sonnet 4.6 | 高風險評估、複雜推理 | 85–95% |
+| GPT-4o-mini / Claude Haiku | 對成本敏感、高量評估 | 75–90% |
+| 開源模型（Llama, Mistral） | 自架、隱私敏感 | 70–85% |
 
-**Tip:** Start with the most capable model to establish a performance ceiling. Then test whether a cheaper model can match it for your specific use case. Often it can — especially with good few-shot examples.
+**提示：** 先使用能力最強的模型以建立效能上限，再測試較便宜的模型是否能在您的特定使用情境下達到相同效果。通常是可以的——尤其是搭配良好的少樣本範例時。
 
-### 10. Prompt Versioning
+### 10. 提示版本控制
 
-Always version your judge prompts. Track:
-- The prompt text
-- The few-shot examples used
-- The model and temperature
-- Dev set metrics (TPR, TNR) at that version
-- Date and reason for the change
+永遠為您的評估器提示進行版本控制。追蹤：
+- 提示文字
+- 使用的少樣本範例
+- 模型與溫度
+- 該版本的開發集指標（TPR、TNR）
+- 變更日期與原因
 
-Both LangWatch and Langfuse have built-in prompt versioning. Use it.
+LangWatch 和 Langfuse 均有內建的提示版本控制功能，請善加利用。
 
-**With LangWatch:**
+**使用 LangWatch：**
 ```python
 import langwatch
 
@@ -3424,7 +3450,7 @@ langwatch.prompts.create(
 )
 ```
 
-**With Langfuse:**
+**使用 Langfuse：**
 ```python
 from langfuse import get_client
 
@@ -3438,13 +3464,12 @@ langfuse.create_prompt(
 ```
 
 ---
-
 <a name="appendix-f"></a>
-## Appendix F: Platform Methods Reference (LangWatch & Langfuse)
+## 附錄 F：平台方法參考（LangWatch 與 Langfuse）
 
 ### LangWatch
 
-#### Tracing
+#### 追蹤
 
 ```python
 import langwatch
@@ -3471,7 +3496,7 @@ def execute_query(sql):
     return db.execute(sql)
 ```
 
-#### Querying Spans
+#### 查詢 Span
 
 ```python
 import langwatch
@@ -3490,7 +3515,7 @@ spans_df = langwatch.get_spans(
 )
 ```
 
-#### Datasets
+#### 資料集
 
 ```python
 import pandas as pd
@@ -3507,7 +3532,7 @@ dataset = langwatch.datasets.create(
 )
 ```
 
-#### Evaluators
+#### 評估器
 
 ```python
 import langwatch
@@ -3535,7 +3560,7 @@ results = langwatch.evaluate.batch(
 )
 ```
 
-#### Experiments
+#### 實驗
 
 ```python
 import langwatch
@@ -3555,7 +3580,7 @@ results = langwatch.evaluate.batch(
 print(results.metrics)
 ```
 
-#### Prompt Management
+#### 提示詞管理
 
 ```python
 import langwatch
@@ -3582,7 +3607,7 @@ response = client.chat.completions.create(
 
 ### Langfuse
 
-#### Tracing
+#### 追蹤
 
 ```python
 from langfuse.openai import OpenAI  # Drop-in replacement
@@ -3601,7 +3626,7 @@ def generate_answer(question):
     return client.chat.completions.create(...)
 ```
 
-#### Querying Traces
+#### 查詢追蹤
 
 ```python
 from langfuse import get_client
@@ -3612,7 +3637,7 @@ traces = langfuse.api.trace.list(limit=100, tags=["production"])
 trace = langfuse.api.trace.get("trace_id")
 ```
 
-#### Datasets
+#### 資料集
 
 ```python
 from langfuse import get_client
@@ -3628,7 +3653,7 @@ langfuse.create_dataset_item(
 )
 ```
 
-#### Experiments
+#### 實驗
 
 ```python
 from langfuse import Evaluation
@@ -3650,7 +3675,7 @@ result = langfuse.run_experiment(
 print(result.format())
 ```
 
-#### Scores (Evaluation Results)
+#### 分數（評估結果）
 
 ```python
 from langfuse import get_client
@@ -3671,7 +3696,7 @@ with langfuse.start_as_current_observation(as_type="span", name="eval") as span:
     span.score(name="accuracy", value=0.95, data_type="NUMERIC")
 ```
 
-#### Prompt Management
+#### 提示詞管理
 
 ```python
 from langfuse import get_client
@@ -3695,205 +3720,205 @@ compiled = prompt.compile(role="chef", question="Best pasta recipe?")
 ---
 
 <a name="appendix-g"></a>
-## Appendix G: 30-Day Learning Path
+## 附錄 G：30 天學習路徑
 
-### Week 1: Foundations (Engineer, PM, or QA)
+### 第一週：基礎（工程師、PM 或 QA）
 
-| Day | Activity | Time | Role Focus |
+| 天 | 活動 | 時間 | 角色重點 |
 |-----|----------|------|------------|
-| 1 | Pick your platform (LangWatch or Langfuse), install it | 1h | All |
-| 2 | Instrument your app with auto-tracing | 2h | Engineer |
-| 2 | Browse the trace viewer UI, understand traces visually | 1h | PM/QA |
-| 3 | Create a test dataset with dimensional sampling | 2h | All |
-| 4 | Upload dataset to your platform, run first experiment | 1h | All |
-| 5 | Review 50 traces, take notes (open coding) | 1h | All |
-| 6 | Categorize errors using LLM (axial coding) | 1h | All |
-| 7 | Prioritize: frequency x severity matrix | 30m | All |
+| 1 | 選擇你的平台（LangWatch 或 Langfuse），安裝它 | 1 小時 | 全部 |
+| 2 | 為你的應用程式加入自動追蹤 | 2 小時 | 工程師 |
+| 2 | 瀏覽追蹤查看器 UI，以視覺方式理解追蹤 | 1 小時 | PM/QA |
+| 3 | 以維度取樣建立測試資料集 | 2 小時 | 全部 |
+| 4 | 將資料集上傳至平台，執行第一個實驗 | 1 小時 | 全部 |
+| 5 | 查看 50 筆追蹤，記錄筆記（開放式編碼） | 1 小時 | 全部 |
+| 6 | 使用 LLM 分類錯誤（軸向編碼） | 1 小時 | 全部 |
+| 7 | 優先排序：頻率 × 嚴重性矩陣 | 30 分鐘 | 全部 |
 
-### Week 2: Code-Based Evals
+### 第二週：程式碼型評估
 
-| Day | Activity | Time | Role Focus |
+| 天 | 活動 | 時間 | 角色重點 |
 |-----|----------|------|------------|
-| 8 | Build 2 code-based evals for your top issues | 2h | Engineer |
-| 8 | Define eval criteria in plain English | 1h | PM/QA |
-| 9 | Test evals with known good/bad cases | 1h | All |
-| 10 | Run evals on all traces, calculate failure rates | 1h | All |
-| 11-14 | Iterate based on results | 2h | All |
+| 8 | 針對你的主要問題建立 2 個程式碼型評估 | 2 小時 | 工程師 |
+| 8 | 以白話文定義評估標準 | 1 小時 | PM/QA |
+| 9 | 以已知好/壞案例測試評估 | 1 小時 | 全部 |
+| 10 | 對所有追蹤執行評估，計算失敗率 | 1 小時 | 全部 |
+| 11-14 | 根據結果迭代 | 2 小時 | 全部 |
 
-### Week 3: LLM Judge
+### 第三週：LLM 裁判
 
-| Day | Activity | Time | Role Focus |
+| 天 | 活動 | 時間 | 角色重點 |
 |-----|----------|------|------------|
-| 15 | Label 100-150 traces as ground truth | 3h | All |
-| 16 | Split into Train/Dev/Test | 30m | Engineer |
-| 17 | Write first judge prompt with few-shot examples | 2h | All |
-| 18 | Validate on Dev set, calculate TPR/TNR | 1h | All |
-| 19 | Iterate prompt until metrics > 80% | 2h | All |
-| 20 | Final test on Test set | 30m | All |
-| 21 | Run judge on all traces + correct with judgy | 1h | All |
+| 15 | 標記 100-150 筆追蹤作為基準真相 | 3 小時 | 全部 |
+| 16 | 分割為訓練/開發/測試集 | 30 分鐘 | 工程師 |
+| 17 | 撰寫第一個含少量示例的裁判提示詞 | 2 小時 | 全部 |
+| 18 | 在開發集上驗證，計算 TPR/TNR | 1 小時 | 全部 |
+| 19 | 迭代提示詞直到指標 > 80% | 2 小時 | 全部 |
+| 20 | 在測試集上進行最終測試 | 30 分鐘 | 全部 |
+| 21 | 對所有追蹤執行裁判 + 用 judgy 修正 | 1 小時 | 全部 |
 
-### Week 4: Advanced Topics & Production
+### 第四週：進階主題與生產環境
 
-| Day | Activity | Time | Role Focus |
+| 天 | 活動 | 時間 | 角色重點 |
 |-----|----------|------|------------|
-| 22 | RAG evaluation — retrieval metrics + answer quality (Ch. 6) | 2h | Engineer |
-| 23 | Multi-step pipeline evaluation (Ch. 7) | 2h | Engineer |
-| 24 | Multi-turn conversation evaluation (Ch. 8) | 2h | Engineer |
-| 25 | Safety evals — prompt injection, PII leakage (Ch. 9) | 2h | All |
-| 26 | Set up regression test suite (Ch. 11) | 2h | Engineer |
-| 27 | Human annotation calibration — measure inter-annotator agreement (Ch. 12) | 1h | All |
-| 28 | Optimize for cost — tiered evaluation, sampling strategy (Ch. 13) | 1h | All |
-| 29 | Create monitoring dashboard + automated eval runs | 2h | Engineer |
-| 30 | Document eval suite, present to stakeholders, plan maintenance | 2h | All |
+| 22 | RAG 評估——檢索指標 + 答案品質（第 6 章） | 2 小時 | 工程師 |
+| 23 | 多步驟管道評估（第 7 章） | 2 小時 | 工程師 |
+| 24 | 多輪對話評估（第 8 章） | 2 小時 | 工程師 |
+| 25 | 安全評估——提示詞注入、PII 洩漏（第 9 章） | 2 小時 | 全部 |
+| 26 | 建立回歸測試套件（第 11 章） | 2 小時 | 工程師 |
+| 27 | 人工標注校正——測量標注者間一致性（第 12 章） | 1 小時 | 全部 |
+| 28 | 成本優化——分層評估、取樣策略（第 13 章） | 1 小時 | 全部 |
+| 29 | 建立監控儀表板 + 自動化評估執行 | 2 小時 | 工程師 |
+| 30 | 記錄評估套件，向利害關係人呈現，規劃維護計畫 | 2 小時 | 全部 |
 
 ---
 
-## Lessons Learned
+## 學到的教訓
 
-Real lessons from implementing complete eval pipelines in production:
+在生產環境中實作完整評估管道的真實教訓：
 
-**On Building Judges (Chapters 4, 10)**
+**關於建立裁判（第 4、10 章）**
 
-1. **LLM-as-Judge is powerful but needs guardrails** - Without proper validation, a judge can confidently give wrong answers. Always validate against ground truth.
+1. **LLM 作為裁判功能強大，但需要防護機制** — 若缺乏適當驗證，裁判可能會自信地給出錯誤答案。請務必對照基準真相進行驗證。
 
-2. **You must test evaluators against ground truth** - A judge that seems reasonable but has TNR=22% is actively harmful — it misses most real failures.
+2. **你必須對照基準真相測試評估器** — 一個看起來合理但 TNR=22% 的裁判實際上是有害的——它會漏掉大多數真實失敗。
 
-3. **Train/Dev/Test splits enable confidence** - Without them, you're fooling yourself about your judge's quality. This is non-negotiable.
+3. **訓練/開發/測試集分割能建立信心** — 沒有它們，你就是在自欺欺人地評估裁判品質。這是不可妥協的。
 
-4. **Iterating on judge prompts is crucial** - The first prompt is never good enough. Plan for 3-5 iterations minimum. See Appendix E for techniques.
+4. **迭代裁判提示詞至關重要** — 第一個提示詞永遠不夠好。至少計劃進行 3-5 次迭代。技巧請參閱附錄 E。
 
-5. **Explanation-before-verdict is the #1 technique** - Asking the judge to reason before labeling improves accuracy more than any other single change.
+5. **先解釋後裁決是第一名技巧** — 要求裁判在標記前先推理，比任何其他單一改變都能提升更多準確性。
 
-**On Process & Methodology (Chapters 3, 11, 12)**
+**關於流程與方法論（第 3、11、12 章）**
 
-6. **Error analysis is the real work** - Fancy tools don't matter if you haven't sat down and looked at your failures. Open coding → axial coding → prioritization is the workflow that works.
+6. **錯誤分析才是真正的工作** — 若你沒有靜下心來檢視自己的失敗，再花俏的工具也無濟於事。開放式編碼 → 軸向編碼 → 優先排序，這是有效的工作流程。
 
-7. **Human annotators disagree more than you think** - Measure inter-annotator agreement (Cohen's kappa) before trusting your ground truth. If humans can't agree, the judge won't either.
+7. **人工標注者的分歧比你想像的多** — 在信任你的基準真相之前，先測量標注者間一致性（Cohen's kappa）。若人類無法達成共識，裁判也不會。
 
-8. **Closing the loop is what separates good teams from great ones** - Running evals is only half the job. The other half is systematically turning failures into improvements and preventing regressions.
+8. **閉環才是區分優秀團隊與卓越團隊的關鍵** — 執行評估只是工作的一半。另一半是系統性地將失敗轉化為改進，並防止回歸。
 
-**On Production & Scale (Chapters 9, 13)**
+**關於生產環境與規模化（第 9、13 章）**
 
-9. **Safety evals are not optional** - Prompt injection, PII leakage, and jailbreak detection should be running before you worry about quality evals.
+9. **安全評估不是可選的** — 提示詞注入、PII 洩漏和越獄偵測應在你擔心品質評估之前就開始運行。
 
-10. **Start expensive, then optimize** - Use GPT-4o/Claude Sonnet to establish your performance ceiling, then test whether a cheaper model can match it. Often it can.
+10. **先花費高昂，再優化** — 使用 GPT-4o/Claude Sonnet 建立你的性能上限，然後測試較便宜的模型是否能達到。通常可以。
 
-11. **Sampling beats exhaustive evaluation** - Evaluating 10% of traces with statistical rigor gives you a better answer than evaluating 100% with a bad judge.
+11. **取樣勝過窮舉評估** — 以嚴格的統計方法評估 10% 的追蹤，比用糟糕的裁判評估 100% 能給出更好的答案。
 
-12. **Good observability tools make the workflow 10x faster** - Integrated tracing, evaluation, datasets, and experiments in one platform (LangWatch, Langfuse, etc.) saves enormous time vs. stitching together custom scripts.
+12. **良好的可觀測性工具讓工作流程快 10 倍** — 在一個平台（LangWatch、Langfuse 等）中整合追蹤、評估、資料集和實驗，與拼湊自訂腳本相比，可節省大量時間。
 
-**On Platform Choice**
+**關於平台選擇**
 
-13. **LangWatch for speed, Langfuse for depth** - LangWatch gets you results in hours with built-in evaluators. Langfuse gives maximum control for complex custom logic. Many teams use both.
+13. **LangWatch 求速，Langfuse 求深** — LangWatch 透過內建評估器在數小時內給你結果。Langfuse 為複雜的自訂邏輯提供最大控制。許多團隊兩者都使用。
 
-14. **Built-in evaluators save weeks of dev time** - LangWatch's 40+ built-in evaluators cover most common use cases. If you're reinventing safety checks or RAG metrics, you're wasting time.
+14. **內建評估器節省數週的開發時間** — LangWatch 的 40+ 個內建評估器涵蓋了大多數常見使用案例。若你在重新發明安全檢查或 RAG 指標，你是在浪費時間。
 
-15. **Community matters for long-term success** - Langfuse's larger community means more integrations, more examples, more support. LangWatch's simpler API means faster onboarding.
-
----
-
-## Conclusion
-
-AI evals are not just "testing" — they're a product development methodology that touches engineering, product management, and quality assurance.
-
-**Key takeaways:**
-
-1. **Everyone needs evals** — Not just big companies. If your AI app touches users, you need systematic evaluation.
-2. **Start with error analysis** — Sit down and look at your failures before building anything automated (Chapter 3).
-3. **PMs and QAs must lead** — Error analysis and criteria definition are product/quality work, not just engineering tasks.
-4. **Build incrementally** — Start with code-based evals, then add LLM judges, then add safety evals. Don't try to do everything at once.
-5. **Measure what matters** — Application-specific criteria, not generic "helpfulness" scores.
-6. **Both TPR and TNR** — A judge that catches failures but also false-alarms is harmful. Measure both.
-7. **Split your data** — Train/Dev/Test is mandatory. Without it, you're overfitting your judge.
-8. **Correct for bias** — Use statistical correction (Chapter 10) for honest metrics.
-9. **Close the loop** — Evals that don't lead to improvements are wasted effort (Chapter 11).
-10. **Plan for scale** — Start with the best model, then optimize for cost (Chapter 13).
-
-**Your action plan (see Appendix G for details):**
-
-1. Week 1: Set up observability (LangWatch or Langfuse), do error analysis
-2. Week 2: Build 2-3 core code-based evals
-3. Week 3: Build and validate an LLM judge with proper train/dev/test splits
-4. Week 4: Advanced topics — RAG evals, multi-turn evals, safety evals, automation
-5. Ongoing: 30 minutes per week maintenance + regression testing
-
-**Platform decision:**
-- Choose **LangWatch** if you want to start fast (<30 min setup) and use built-in evaluators
-- Choose **Langfuse** if you need maximum flexibility and have complex custom workflows
-- Use **both** if you want the best of both worlds (many teams do this)
-
-**Remember:** The teams shipping the best AI products are the ones with the best evals. Not the fanciest models. Not the biggest teams. The ones who systematically measure and improve.
-
-Start today. Your future self will thank you.
+15. **社群對長期成功至關重要** — Langfuse 更大的社群意味著更多整合、更多範例、更多支援。LangWatch 更簡單的 API 意味著更快速的入門。
 
 ---
 
-## Learning Resources
+## 結論
 
-### Platform Documentation & Learning Hubs
+AI 評估不只是「測試」——它是一種涉及工程、產品管理和品質保證的產品開發方法論。
 
-- **LangWatch Docs**: [docs.langwatch.ai](https://docs.langwatch.ai)
-- **LangWatch GitHub**: [github.com/langwatch/langwatch](https://github.com/langwatch/langwatch)
-- **Langfuse Docs**: [langfuse.com/docs](https://langfuse.com/docs)
-- **Langfuse GitHub**: [github.com/langfuse/langfuse](https://github.com/langfuse/langfuse)
-- **Maven Course (AI Evals for Engineers & PMs)**: [maven.com/parlance-labs/evals](https://maven.com/parlance-labs/evals)
-- **HuggingFace Evaluation Guidebook**: [github.com/huggingface/evaluation-guidebook](https://github.com/huggingface/evaluation-guidebook)
+**重點摘要：**
 
-### Research & Thought Leadership
+1. **每個人都需要評估** — 不只是大公司。若你的 AI 應用程式接觸到用戶，你就需要系統性的評估。
+2. **從錯誤分析開始** — 在建立任何自動化之前，先靜下心來檢視你的失敗（第 3 章）。
+3. **PM 和 QA 必須主導** — 錯誤分析和標準定義是產品/品質工作，不只是工程任務。
+4. **逐步建立** — 從程式碼型評估開始，然後加入 LLM 裁判，再加入安全評估。不要試圖一次完成所有事情。
+5. **測量重要的事** — 應用程式特定標準，而非泛用的「有用性」分數。
+6. **TPR 和 TNR 兩者都要** — 一個能捕捉失敗但也會誤報的裁判是有害的。兩者都要測量。
+7. **分割你的資料** — 訓練/開發/測試集是必要的。沒有它，你的裁判會過度擬合。
+8. **修正偏差** — 使用統計修正（第 10 章）以獲得誠實的指標。
+9. **閉環** — 不導向改進的評估是浪費的努力（第 11 章）。
+10. **規劃規模化** — 從最好的模型開始，然後優化成本（第 13 章）。
 
-- **OpenAI Evals Platform**: [evals.openai.com](https://evals.openai.com/)
-- **OpenAI Cookbook** (practical examples & guides): [cookbook.openai.com](https://cookbook.openai.com/)
-- **OpenAI Research**: [openai.com/research](https://openai.com/research)
-- **OpenAI Docs (Evals)**: [platform.openai.com/docs/guides/evals](https://platform.openai.com/docs/guides/evals)
-- **Anthropic Research**: [anthropic.com/research](https://www.anthropic.com/research)
-- **METR** (Model Evaluation & Threat Research): [metr.org](https://metr.org/)
-- **Eugene Yan on eval process**: [eugeneyan.com/writing/eval-process](https://eugeneyan.com/writing/eval-process/)
+**你的行動計劃（詳見附錄 G）：**
 
-### Blogs That Shaped This Guide
+1. 第一週：設定可觀測性（LangWatch 或 Langfuse），進行錯誤分析
+2. 第二週：建立 2-3 個核心程式碼型評估
+3. 第三週：建立並驗證含適當訓練/開發/測試集分割的 LLM 裁判
+4. 第四週：進階主題——RAG 評估、多輪評估、安全評估、自動化
+5. 持續：每週 30 分鐘維護 + 回歸測試
 
-- **Hamel Husain's Blog**: [hamel.dev](https://hamel.dev/) — Applied AI engineering, LLM evals deep-dives
-- **Shreya Shankar's Site**: [sh-reya.com](https://www.sh-reya.com/) — LLM data systems research, eval methodology
-- **Maxim AI Articles**: [getmaxim.ai/articles](https://www.getmaxim.ai/articles) — Agentic evaluation patterns
+**平台決策：**
+- 若你想快速開始（設定 < 30 分鐘）並使用內建評估器，請選擇 **LangWatch**
+- 若你需要最大靈活性且有複雜的自訂工作流程，請選擇 **Langfuse**
+- 若你想兼得兩者的優勢，請**兩者都使用**（許多團隊這樣做）
 
-### Open-Source Tools & Libraries
+**記住：** 推出最佳 AI 產品的團隊是擁有最佳評估的團隊。不是最花俏的模型。不是最大的團隊。而是那些系統性地測量和改進的人。
 
-| Tool | Focus | License | Links |
+從今天開始。未來的你會感謝你。
+
+---
+
+## 學習資源
+
+### 平台文件與學習中心
+
+- **LangWatch 文件**：[docs.langwatch.ai](https://docs.langwatch.ai)
+- **LangWatch GitHub**：[github.com/langwatch/langwatch](https://github.com/langwatch/langwatch)
+- **Langfuse 文件**：[langfuse.com/docs](https://langfuse.com/docs)
+- **Langfuse GitHub**：[github.com/langfuse/langfuse](https://github.com/langfuse/langfuse)
+- **Maven 課程（AI Evals for Engineers & PMs）**：[maven.com/parlance-labs/evals](https://maven.com/parlance-labs/evals)
+- **HuggingFace 評估指南**：[github.com/huggingface/evaluation-guidebook](https://github.com/huggingface/evaluation-guidebook)
+
+### 研究與思想領導力
+
+- **OpenAI Evals 平台**：[evals.openai.com](https://evals.openai.com/)
+- **OpenAI Cookbook**（實務範例與指南）：[cookbook.openai.com](https://cookbook.openai.com/)
+- **OpenAI 研究**：[openai.com/research](https://openai.com/research)
+- **OpenAI 文件（評估）**：[platform.openai.com/docs/guides/evals](https://platform.openai.com/docs/guides/evals)
+- **Anthropic 研究**：[anthropic.com/research](https://www.anthropic.com/research)
+- **METR**（模型評估與威脅研究）：[metr.org](https://metr.org/)
+- **Eugene Yan 談評估流程**：[eugeneyan.com/writing/eval-process](https://eugeneyan.com/writing/eval-process/)
+
+### 塑造本指南的部落格
+
+- **Hamel Husain 的部落格**：[hamel.dev](https://hamel.dev/) — 應用 AI 工程、LLM 評估深度探討
+- **Shreya Shankar 的網站**：[sh-reya.com](https://www.sh-reya.com/) — LLM 資料系統研究、評估方法論
+- **Maxim AI 文章**：[getmaxim.ai/articles](https://www.getmaxim.ai/articles) — 代理評估模式
+
+### 開源工具與函式庫
+
+| 工具 | 重點 | 授權 | 連結 |
 |------|-------|---------|-------|
-| **LangWatch** | Observability & built-in evals | Apache 2.0 | [GitHub](https://github.com/langwatch/langwatch) · [Docs](https://docs.langwatch.ai) |
-| **Langfuse** | Custom pipelines & tracing | MIT | [GitHub](https://github.com/langfuse/langfuse) · [Docs](https://langfuse.com/docs) |
-| **RAGAS** | RAG-specific evaluation | Apache 2.0 | [GitHub](https://github.com/explodinggradients/ragas) · [Docs](https://docs.ragas.io/) |
-| **Comet Opik** | LLM tracing & evaluation | Apache 2.0 | [GitHub](https://github.com/comet-ml/opik) · [Site](https://www.comet.com/site/products/opik/) |
-| **judgy** | Statistical bias correction | Open | [GitHub](https://github.com/ai-evals-course/judgy) |
-| **Braintrust** | Experimentation & logging | Partial | [Docs](https://www.braintrust.dev/docs) |
-| **Galileo** | Hallucination detection | Proprietary | [Site](https://www.galileo.ai/) |
-| **Maxim** | Agentic system evaluation | Proprietary | [Site](https://www.getmaxim.ai/) |
+| **LangWatch** | 可觀測性與內建評估 | Apache 2.0 | [GitHub](https://github.com/langwatch/langwatch) · [文件](https://docs.langwatch.ai) |
+| **Langfuse** | 自訂管道與追蹤 | MIT | [GitHub](https://github.com/langfuse/langfuse) · [文件](https://langfuse.com/docs) |
+| **RAGAS** | RAG 專用評估 | Apache 2.0 | [GitHub](https://github.com/explodinggradients/ragas) · [文件](https://docs.ragas.io/) |
+| **Comet Opik** | LLM 追蹤與評估 | Apache 2.0 | [GitHub](https://github.com/comet-ml/opik) · [網站](https://www.comet.com/site/products/opik/) |
+| **judgy** | 統計偏差修正 | 開放 | [GitHub](https://github.com/ai-evals-course/judgy) |
+| **Braintrust** | 實驗與記錄 | 部分 | [文件](https://www.braintrust.dev/docs) |
+| **Galileo** | 幻覺偵測 | 專有 | [網站](https://www.galileo.ai/) |
+| **Maxim** | 代理系統評估 | 專有 | [網站](https://www.getmaxim.ai/) |
 
-### Strategy Comparison Matrix
+### 策略比較矩陣
 
-| Company | Focus | Open Source | Best For | Unique Strength |
+| 公司 | 重點 | 開源 | 最適合 | 獨特優勢 |
 |---------|-------|-------------|----------|-----------------|
-| **LangWatch** | Observability + Built-in Evals | Yes (Apache 2.0) | Fast setup, analytics | 40+ built-in evaluators, auto-analytics |
-| **Langfuse** | Custom Pipelines | Yes (MIT) | Data sovereignty, flexibility | Self-hostable, full control over data |
-| **Anthropic** | Safety / Red Teaming | Partial | Frontier risks | Constitutional classifiers, multi-attempt adversarial testing |
-| **OpenAI** | Preparedness / Business | Evals toolkit | Enterprise context | SME probing, contextual evals |
-| **RAGAS** | RAG-specific | Yes (Apache 2.0) | RAG pipelines | Reference-free metrics, synthetic test data generation |
-| **Maxim** | Agentic Systems | No | Multi-agent apps | Simulation framework, no-code evaluation |
-| **Braintrust** | Experimentation | Partial | Early-stage teams | Collaborative design, fast iteration |
-| **Galileo** | Hallucinations | No | Quality assurance | ChainPoll, real-time monitoring |
-| **Comet Opik** | LLM Tracing & Evals | Yes (Apache 2.0) | End-to-end observability | Framework integrations, online evaluation rules |
-| **METR** | Catastrophic Risk | Research | Policy guidance | Autonomous capability assessment |
+| **LangWatch** | 可觀測性 + 內建評估 | 是（Apache 2.0） | 快速設置、分析 | 40+ 個內建評估器、自動分析 |
+| **Langfuse** | 自訂管道 | 是（MIT） | 資料主權、靈活性 | 可自主託管，完全掌控資料 |
+| **Anthropic** | 安全性 / 紅隊測試 | 部分 | 前沿風險 | 憲法分類器、多次嘗試對抗性測試 |
+| **OpenAI** | 準備度 / 商業 | 評估工具包 | 企業情境 | 中小企業探測、情境評估 |
+| **RAGAS** | RAG 專用 | 是（Apache 2.0） | RAG 管道 | 無參考指標、合成測試資料生成 |
+| **Maxim** | 代理系統 | 否 | 多代理應用程式 | 模擬框架、無程式碼評估 |
+| **Braintrust** | 實驗 | 部分 | 早期團隊 | 協作設計、快速迭代 |
+| **Galileo** | 幻覺 | 否 | 品質保證 | ChainPoll、即時監控 |
+| **Comet Opik** | LLM 追蹤與評估 | 是（Apache 2.0） | 端到端可觀測性 | 框架整合、線上評估規則 |
+| **METR** | 災難性風險 | 研究 | 政策指導 | 自主能力評估 |
 
-### Contact Me
-- Om Bharatiya: [@ombharatiya](https://twitter.com/ombharatiya)
+### 聯絡我
+- Om Bharatiya：[@ombharatiya](https://twitter.com/ombharatiya)
 
-### Reference Work Credits
-This guide was built on the foundation of the following people's work and ideas. Their courses, blogs, and open-source contributions made this guide possible:
-- Hamel Husain: [@HamelHusain](https://x.com/HamelHusain) — [hamel.dev](https://hamel.dev/)
-- Shreya Shankar: [@sh_reya](https://x.com/sh_reya) — [sh-reya.com](https://www.sh-reya.com/)
-- Eugene Yan: [@eugeneyan](https://x.com/eugeneyan) — [eugeneyan.com](https://eugeneyan.com/)
+### 參考工作致謝
+本指南建立在以下人士的工作和想法之上。他們的課程、部落格和開源貢獻使本指南成為可能：
+- Hamel Husain：[@HamelHusain](https://x.com/HamelHusain) — [hamel.dev](https://hamel.dev/)
+- Shreya Shankar：[@sh_reya](https://x.com/sh_reya) — [sh-reya.com](https://www.sh-reya.com/)
+- Eugene Yan：[@eugeneyan](https://x.com/eugeneyan) — [eugeneyan.com](https://eugeneyan.com/)
 
 ---
 
-*This guide was inspired by and builds upon the AI Evals for Engineers & PMs course by Hamel Husain and Shreya Shankar, extended with additional research, production-ready code examples, and multi-platform guides covering LangWatch, Langfuse, and the broader eval tooling ecosystem.*
+*本指南受 Hamel Husain 和 Shreya Shankar 的 AI Evals for Engineers & PMs 課程啟發並在其基礎上構建，並延伸了額外研究、生產就緒的程式碼範例，以及涵蓋 LangWatch、Langfuse 和更廣泛評估工具生態系統的多平台指南。*
 
-*Author: Om Bharatiya | Created: February 2026*
+*作者：Om Bharatiya | 建立日期：2026 年 2 月*

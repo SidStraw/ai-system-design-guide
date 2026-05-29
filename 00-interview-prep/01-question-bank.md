@@ -323,10 +323,12 @@ flowchart LR
 **關鍵原則：** 先過濾再 retrieval，絕不能事後過濾
 
 ```python
+<a id="wrong-data-leaks-before-filtering"></a>
 # WRONG: Data leaks before filtering
 results = vector_db.search(query, top_k=100)
 filtered = [r for r in results if r.tenant_id == tenant]
 
+<a id="right-filter-at-database-query-level"></a>
 # RIGHT: Filter at database query level
 results = vector_db.search(
     query, 
@@ -355,6 +357,7 @@ results = vector_db.search(
 
 這是錯誤做法：
 ```python
+<a id="wrong---data-leaks-before-filtering"></a>
 # WRONG - data leaks before filtering
 results = vector_db.search(query, top_k=100)
 filtered = [r for r in results if r.tenant_id == current_tenant]
@@ -364,6 +367,7 @@ filtered = [r for r in results if r.tenant_id == current_tenant]
 
 正確做法是在 database query 層級就先過濾：
 ```python
+<a id="right---filter-in-the-database-query"></a>
 # RIGHT - filter in the database query
 results = vector_db.search(
     query,
@@ -816,12 +820,15 @@ def safe_tool_call(func, *args, **kwargs):
 ```python
 from langgraph.checkpoint import MemorySaver
 
+<a id="create-checkpointer"></a>
 # Create checkpointer
 checkpointer = MemorySaver()
 
+<a id="compile-graph-with-checkpointing"></a>
 # Compile graph with checkpointing
 app = graph.compile(checkpointer=checkpointer)
 
+<a id="resume-from-checkpoint"></a>
 # Resume from checkpoint
 config = {"configurable": {"thread_id": "task-123"}}
 result = app.invoke(input, config)
@@ -1428,6 +1435,7 @@ LLM-as-judge 不是完美方法，但經過妥善校準後，對快速迭代非�
 from ragas import evaluate
 from ragas.metrics import faithfulness, answer_relevancy
 
+<a id="prepare-dataset"></a>
 # Prepare dataset
 dataset = {
     "question": [...],
@@ -1436,6 +1444,7 @@ dataset = {
     "ground_truth": [...]  # Optional
 }
 
+<a id="run-evaluation"></a>
 # Run evaluation
 result = evaluate(dataset, metrics=[faithfulness, answer_relevancy])
 ```
@@ -2878,7 +2887,8 @@ API 型 embeddings（OpenAI、Cohere）適合想先快速取得高品質、又�
 
 ---
 
-### Q66: When would you use Claude 3.7's Extended Thinking mode vs. standard mode, and how do you control costs?
+<a id="q66-when-would-you-use-claude-37s-extended-thinking-mode-vs-standard-mode-and-how-do-you-control-costs"></a>
+### Q66：你會在什麼情況下使用 Claude 3.7 的 Extended Thinking mode，而不是 standard mode？又該如何控制成本？
 
 **面試官想看什麼：**
 - Practical knowledge of the Extended Thinking API
@@ -2919,7 +2929,8 @@ response = client.messages.create(
 
 ---
 
-### Q67: How does o3's reasoning effort setting work and when would you choose o3 over Claude 3.7?
+<a id="q67-how-does-o3s-reasoning-effort-setting-work-and-when-would-you-choose-o3-over-claude-37"></a>
+### Q67：o3 的 reasoning effort 設定是如何運作的？你又會在什麼情況下選 o3 而不是 Claude 3.7？
 
 **面試官想看什麼：**
 - Up-to-date knowledge of reasoning model distinctions  
@@ -2954,7 +2965,8 @@ response = client.messages.create(
 
 ---
 
-### Q68: Explain how you would design a system that uses Claude Code (or OpenHands) as a CI/CD component for automated bug fixing.
+<a id="q68-explain-how-you-would-design-a-system-that-uses-claude-code-or-openhands-as-a-cicd-component-for-automated-bug-fixing"></a>
+### Q68：請說明你會如何設計一個系統，把 Claude Code（或 OpenHands）當作 CI/CD 元件來自動修復 bugs。
 
 **面試官想看什麼：**
 - Practical agentic coding architecture knowledge
@@ -3001,7 +3013,8 @@ response = client.messages.create(
 
 ---
 
-### Q69: DeepSeek released frontier-quality open-weight models at dramatically lower cost. How does this change your production architecture decisions?
+<a id="q69-deepseek-released-frontier-quality-open-weight-models-at-dramatically-lower-cost-how-does-this-change-your-production-architecture-decisions"></a>
+### Q69：DeepSeek 以大幅更低成本發布了具 frontier 品質的 open-weight models。這會如何改變你的 production architecture 決策？
 
 **面試官想看什麼：**
 - Awareness of the DeepSeek cost shock
@@ -3035,7 +3048,8 @@ For fine-tuning: Open weights enable full fine-tuning on proprietary datasets. C
 
 ---
 
-### Q70: Explain provider-level prompt caching and how you would architect a system to maximize cache hit rate.
+<a id="q70-explain-provider-level-prompt-caching-and-how-you-would-architect-a-system-to-maximize-cache-hit-rate"></a>
+### Q70：說明 provider-level prompt caching，以及你會如何設計系統來最大化 cache hit rate。
 
 **面試官想看什麼：**
 - Understanding of server-side KV cache
@@ -3083,7 +3097,8 @@ If I reuse a 100K token context (e.g., an entire codebase) for > 2 requests, the
 
 ---
 
-### Q71: How do you build a production LLM evaluation pipeline using LLM-as-a-Judge? What are the failure modes?
+<a id="q71-how-do-you-build-a-production-llm-evaluation-pipeline-using-llm-as-a-judge-what-are-the-failure-modes"></a>
+### Q71：你要如何用 LLM-as-a-Judge 建立 production LLM evaluation pipeline？常見失效模式有哪些？
 
 **面試官想看什麼：**
 - Understanding of eval methodology beyond simple metrics
@@ -3136,7 +3151,8 @@ Even good judges have systematic biases (positivity bias, verbosity preference).
 
 ---
 
-### Q72: Explain MCP (Model Context Protocol) 2.0 and the security risks of running MCP servers in production.
+<a id="q72-explain-mcp-model-context-protocol-20-and-the-security-risks-of-running-mcp-servers-in-production"></a>
+### Q72：說明 MCP（Model Context Protocol）2.0，以及在 production 執行 MCP servers 的安全風險。
 
 **面試官想看什麼：**
 - Awareness of MCP 2.0 spec changes
@@ -3179,7 +3195,8 @@ MCP tool calls often contain sensitive parameters (user data, credentials). Miti
 
 ---
 
-### Q73: How would you design a semantic routing system that dynamically selects the cheapest model that can handle a query with acceptable quality?
+<a id="q73-how-would-you-design-a-semantic-routing-system-that-dynamically-selects-the-cheapest-model-that-can-handle-a-query-with-acceptable-quality"></a>
+### Q73：你會如何設計一個 semantic routing system，動態選出能以可接受品質處理 query 的最便宜模型？
 
 **面試官想看什麼：**
 - Cost optimization thinking
@@ -3226,7 +3243,8 @@ I've seen 40–60% cost reduction using semantic routing vs. always using the fr
 
 ---
 
-### Q74: A candidate claims their AI system achieves 95% accuracy. What questions do you ask to assess whether this is meaningful?
+<a id="q74-a-candidate-claims-their-ai-system-achieves-95-accuracy-what-questions-do-you-ask-to-assess-whether-this-is-meaningful"></a>
+### Q74：某位候選人宣稱他們的 AI system 達到 95% accuracy。你會問哪些問題來判斷這個數字是否有意義？
 
 **面試官想看什麼：**
 - Eval sophistication
@@ -3268,7 +3286,8 @@ I've seen 40–60% cost reduction using semantic routing vs. always using the fr
 
 ---
 
-### Q75: How do SWE-bench Verified and LiveCodeBench differ, and which matters more for evaluating a coding agent?
+<a id="q75-how-do-swe-bench-verified-and-livecodebench-differ-and-which-matters-more-for-evaluating-a-coding-agent"></a>
+### Q75：SWE-bench Verified 與 LiveCodeBench 有何不同？在評估 coding agent 時，哪一個更重要？
 
 **面試官想看什麼：**
 - Familiarity with coding benchmarks
@@ -3306,7 +3325,8 @@ For reasoning capability (math-heavy algorithms, competitive programming) use Li
 
 ---
 
-### Q76: Your production LLM application suddenly shows a 30% increase in hallucination rate after a model provider silently updated their model. How do you detect and respond?
+<a id="q76-your-production-llm-application-suddenly-shows-a-30-increase-in-hallucination-rate-after-a-model-provider-silently-updated-their-model-how-do-you-detect-and-respond"></a>
+### Q76：model provider 悄悄更新模型後，你的 production LLM application 的 hallucination rate 突然上升了 30%。你會如何偵測並應對？
 
 **面試官想看什麼：**
 - Production monitoring sophistication
@@ -3350,7 +3370,8 @@ For reasoning capability (math-heavy algorithms, competitive programming) use Li
 
 ---
 
-### Q77: How would you design a multi-provider LLM architecture for 99.9% availability?
+<a id="q77-how-would-you-design-a-multi-provider-llm-architecture-for-999-availability"></a>
+### Q77：你會如何設計一個 multi-provider LLM architecture，以達成 99.9% availability？
 
 **面試官想看什麼：**
 - Awareness that single-provider = SPOF
@@ -3397,7 +3418,8 @@ For truly critical systems, I maintain a warm self-hosted Llama 3.3 70B or DeepS
 
 ---
 
-### Q78: Someone on your team suggests replacing your entire RAG pipeline with a 1M-token context window and just loading all documents every request. How do you evaluate this idea?
+<a id="q78-someone-on-your-team-suggests-replacing-your-entire-rag-pipeline-with-a-1m-token-context-window-and-just-loading-all-documents-every-request-how-do-you-evaluate-this-idea"></a>
+### Q78：團隊有人建議用 1M-token context window 取代整條 RAG pipeline，每次 request 都直接載入所有文件。你會如何評估這個想法？
 
 **面試官想看什麼：**
 - Nuanced cost/quality analysis
@@ -3434,7 +3456,8 @@ For truly critical systems, I maintain a warm self-hosted Llama 3.3 70B or DeepS
 
 ---
 
-### Q79: How do you approach prompt injection defense in a multi-tenant agentic system where the agent reads external web pages or documents?
+<a id="q79-how-do-you-approach-prompt-injection-defense-in-a-multi-tenant-agentic-system-where-the-agent-reads-external-web-pages-or-documents"></a>
+### Q79：在 multi-tenant agentic system 中，如果 agent 會讀取外部網頁或文件，你要如何做 prompt injection 防禦？
 
 **面試官想看什麼：**
 - Security awareness specific to agent pipelines
@@ -3496,7 +3519,8 @@ Any destructive, irreversible, or externally-visible action (API write, email se
 
 ---
 
-### Q80: What is the difference between error analysis and automated evals, and when should you prioritize each?
+<a id="q80-what-is-the-difference-between-error-analysis-and-automated-evals-and-when-should-you-prioritize-each"></a>
+### Q80：error analysis 與 automated evals 有什麼差別？你應該在什麼情況下優先做哪一個？
 
 **面試官想看什麼：**
 - Eval methodology maturity
@@ -3544,6 +3568,7 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
+<a id="q81-pick-a-frontier-model-for-a-production-agentic-workload-in-may-2026-and-defend-the-choice-against-claude-opus-47-gpt-55-gemini-31-pro-and-deepseek-v4-pro"></a>
 ### Q81：為 2026 年 5 月的 production agentic workload 選擇一個 frontier model，並說明為何它比 Claude Opus 4.7、GPT-5.5、Gemini 3.1 Pro 與 DeepSeek V4 Pro 更適合。
 
 **面試官想看什麼：**
@@ -3571,7 +3596,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q82: DeepSeek V3.2 and V4 publish $0.28/$0.42 per 1M tokens with a 98% cache-hit discount and 50% off-peak pricing. Refactor a production LLM architecture to fully exploit these.
+<a id="q82-deepseek-v32-and-v4-publish-028042-per-1m-tokens-with-a-98-cache-hit-discount-and-50-off-peak-pricing-refactor-a-production-llm-architecture-to-fully-exploit-these"></a>
+### Q82：DeepSeek V3.2 與 V4 公布每 1M tokens 僅需 $0.28/$0.42，並提供 98% cache-hit discount 與 50% 離峰折扣。請重構一個 production LLM architecture 來充分利用這些條件。
 
 **面試官想看什麼：**
 - Practical understanding of provider-side caching (it's not just "use the API more")
@@ -3604,7 +3630,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q83: Llama 4 Scout claims a 10M-token context window, but Fiction.LiveBench scores it at 15.6% at 128K tokens. How would you advise a team that wants to "just dump everything into Scout's context"?
+<a id="q83-llama-4-scout-claims-a-10m-token-context-window-but-fictionlivebench-scores-it-at-156-at-128k-tokens-how-would-you-advise-a-team-that-wants-to-just-dump-everything-into-scouts-context"></a>
+### Q83：Llama 4 Scout 宣稱支援 10M-token context window，但 Fiction.LiveBench 顯示它在 128K tokens 時只有 15.6% 分數。你會如何建議一個想要「把所有東西都直接塞進 Scout context」的團隊？
 
 **面試官想看什麼：**
 - Familiarity with iRoPE (interleaved RoPE + NoPE) and effective-vs-claimed context
@@ -3629,7 +3656,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q84: Latent / continuous-space reasoning (recurrent-depth, Latent Thinking Optimization, ETD) reportedly beats token-space chain-of-thought on math benchmarks. When would you actually deploy a latent-reasoning model in production?
+<a id="q84-latent-continuous-space-reasoning-recurrent-depth-latent-thinking-optimization-etd-reportedly-beats-token-space-chain-of-thought-on-math-benchmarks-when-would-you-actually-deploy-a-latent-reasoning-model-in-production"></a>
+### Q84：據稱 latent／continuous-space reasoning（recurrent-depth、Latent Thinking Optimization、ETD）在數學 benchmarks 上優於 token-space chain-of-thought。你會在什麼情況下真的把 latent-reasoning model 部署到 production？
 
 **面試官想看什麼：**
 - Awareness of the latent-reasoning research wave (NeurIPS 2025, ICLR 2026)
@@ -3654,7 +3682,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q85: Memory architectures (Mem0, A-MEM, multi-layered memory frameworks) are getting hyped at ICLR 2026 as the "new bottleneck beyond context window." When does your agent actually need a memory layer beyond a long context window?
+<a id="q85-memory-architectures-mem0-a-mem-multi-layered-memory-frameworks-are-getting-hyped-at-iclr-2026-as-the-new-bottleneck-beyond-context-window-when-does-your-agent-actually-need-a-memory-layer-beyond-a-long-context-window"></a>
+### Q85：Memory architectures（Mem0、A-MEM、multi-layered memory frameworks）在 ICLR 2026 被炒作成「超越 context window 的新瓶頸」。你的 agent 什麼時候才真的需要長 context 之外的 memory layer？
 
 **面試官想看什麼：**
 - Understanding that memory ≠ context
@@ -3682,7 +3711,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q86: The standalone "Prompt Engineer" job title has effectively disappeared from major job boards in 2026. What replaced it, and what does that tell us about the field?
+<a id="q86-the-standalone-prompt-engineer-job-title-has-effectively-disappeared-from-major-job-boards-in-2026-what-replaced-it-and-what-does-that-tell-us-about-the-field"></a>
+### Q86：到 2026 年，獨立的「Prompt Engineer」職稱幾乎已從主要求職網站消失。它被什麼取代？這又反映了這個領域的什麼變化？
 
 **面試官想看什麼：**
 - Awareness of the role taxonomy shift in 2026
@@ -3710,7 +3740,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q87: Your production agent enters a runaway loop, calling a broken tool 400 times in five minutes. Walk through the architectural patterns that prevent this - at the orchestrator, the tool layer, and the cost-guard layer.
+<a id="q87-your-production-agent-enters-a-runaway-loop-calling-a-broken-tool-400-times-in-five-minutes-walk-through-the-architectural-patterns-that-prevent-this-at-the-orchestrator-the-tool-layer-and-the-cost-guard-layer"></a>
+### Q87：你的 production agent 進入 runaway loop，在五分鐘內呼叫壞掉的 tool 400 次。請說明如何在 orchestrator、tool layer 與 cost-guard layer 設計架構來防止這件事。
 
 **面試官想看什麼：**
 - Practical understanding of agent failure modes (the "100th tool call" problem)
@@ -3743,7 +3774,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q88: Agent-as-judge vs LLM-as-judge - when does the upgrade pay off, and what new failure modes does it introduce?
+<a id="q88-agent-as-judge-vs-llm-as-judge-when-does-the-upgrade-pay-off-and-what-new-failure-modes-does-it-introduce"></a>
+### Q88：Agent-as-judge 與 LLM-as-judge 相比，什麼時候升級值得？又會引入哪些新的失效模式？
 
 **面試官想看什麼：**
 - Familiarity with the eval evolution (LLM-as-judge → Agent-as-judge → Process Reward Models)
@@ -3778,7 +3810,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q89: Design a Process Reward Model (PRM) for a customer-support agent. What signals do you score, and how do you avoid degenerate reward?
+<a id="q89-design-a-process-reward-model-prm-for-a-customer-support-agent-what-signals-do-you-score-and-how-do-you-avoid-degenerate-reward"></a>
+### Q89：為 customer-support agent 設計一個 Process Reward Model（PRM）。你會評分哪些 signals？又如何避免 reward 被鑽漏洞？
 
 **面試官想看什麼：**
 - Understanding that PRMs score *steps*, not just final outcomes
@@ -3814,7 +3847,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q90: Google announced A2A protocol v1.0 GA at Cloud Next 2026 with 150+ org adoption. When do you use A2A vs MCP, and how do they compose?
+<a id="q90-google-announced-a2a-protocol-v10-ga-at-cloud-next-2026-with-150-org-adoption-when-do-you-use-a2a-vs-mcp-and-how-do-they-compose"></a>
+### Q90：Google 在 Cloud Next 2026 宣布 A2A protocol v1.0 GA，且已有 150+ 組織採用。你會在什麼情況下使用 A2A 而不是 MCP？兩者又如何組合？
 
 **面試官想看什麼：**
 - Clear distinction: MCP is agent-to-tool; A2A is agent-to-agent
@@ -3848,7 +3882,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q91: A CVSS 9.8 STDIO transport vulnerability was disclosed in MCP in May 2026. Walk through the architectural fix for a production MCP deployment.
+<a id="q91-a-cvss-98-stdio-transport-vulnerability-was-disclosed-in-mcp-in-may-2026-walk-through-the-architectural-fix-for-a-production-mcp-deployment"></a>
+### Q91：2026 年 5 月，MCP 曝出一個 CVSS 9.8 的 STDIO transport 漏洞。請說明 production MCP deployment 的架構修補方式。
 
 **面試官想看什麼：**
 - Current-awareness signal (you read the May 2026 advisories)
@@ -3881,7 +3916,8 @@ Error analysis is discovery. Automated evals are measurement. Discovery must pre
 
 ---
 
-### Q92: On May 11, 2026, Google's threat intelligence team disclosed the first AI-built zero-day used in the wild - a 2FA-bypass exploit targeting an open-source sysadmin tool. What changes about your threat model?
+<a id="q92-on-may-11-2026-googles-threat-intelligence-team-disclosed-the-first-ai-built-zero-day-used-in-the-wild-a-2fa-bypass-exploit-targeting-an-open-source-sysadmin-tool-what-changes-about-your-threat-model"></a>
+### Q92：在 2026 年 5 月 11 日，Google 的 threat intelligence team 公布了第一個已在野外使用、由 AI 建構的 zero-day：一個針對開源 sysadmin tool 的 2FA-bypass exploit。這會如何改變你的 threat model？
 
 **面試官想看什麼：**
 - Current-awareness - this was a defining May 2026 event
@@ -3910,7 +3946,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q93: EU AI Act enforcement powers begin August 2, 2026. You're building a multi-tenant AI product sold into Germany and France. Walk through your FRIA/DPIA dual-assessment workflow.
+<a id="q93-eu-ai-act-enforcement-powers-begin-august-2-2026-youre-building-a-multi-tenant-ai-product-sold-into-germany-and-france-walk-through-your-friadpia-dual-assessment-workflow"></a>
+### Q93：EU AI Act 的執法權將於 2026 年 8 月 2 日生效。你正在打造一個銷往德國與法國的 multi-tenant AI product。請說明你的 FRIA/DPIA 雙重評估流程。
 
 **面試官想看什麼：**
 - Knowledge of AI Act enforcement timeline (Aug 2, 2026 GPAI obligations active)
@@ -3946,7 +3983,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q94: You're building a computer-use agent (Claude Cowork, OpenAI Operator-class) that can fill forms, click buttons, and read screen content. Design the sandbox, network policy, and human-confirmation pattern.
+<a id="q94-youre-building-a-computer-use-agent-claude-cowork-openai-operator-class-that-can-fill-forms-click-buttons-and-read-screen-content-design-the-sandbox-network-policy-and-human-confirmation-pattern"></a>
+### Q94：你正在打造一個 computer-use agent（如 Claude Cowork、OpenAI Operator-class），它能填表、點擊按鈕並讀取螢幕內容。請設計 sandbox、network policy 與 human-confirmation pattern。
 
 **面試官想看什麼：**
 - Defense-in-depth for autonomous action
@@ -3988,7 +4026,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q95: You're integrating a third-party fine-tuned model into your production stack. The vendor publishes weights but not training data. Walk through your supply-chain trust process - what does Sigstore / OpenSSF Model Signing buy you, and what gaps remain?
+<a id="q95-youre-integrating-a-third-party-fine-tuned-model-into-your-production-stack-the-vendor-publishes-weights-but-not-training-data-walk-through-your-supply-chain-trust-process-what-does-sigstore-openssf-model-signing-buy-you-and-what-gaps-remain"></a>
+### Q95：你要把第三方 fine-tuned model 整合進 production stack。供應商公開了 weights，但沒有公開 training data。請說明你的 supply-chain trust 流程：Sigstore／OpenSSF Model Signing 能帶來什麼？還剩哪些缺口？
 
 **面試官想看什麼：**
 - Familiarity with model supply-chain attacks (poisoning, backdoors)
@@ -4027,7 +4066,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q96: Indirect prompt injection (IPI) attacks rose 32% from Nov 2025 to Feb 2026 per Google. Your RAG agent reads web pages and documents from untrusted sources. Design a layered defense.
+<a id="q96-indirect-prompt-injection-ipi-attacks-rose-32-from-nov-2025-to-feb-2026-per-google-your-rag-agent-reads-web-pages-and-documents-from-untrusted-sources-design-a-layered-defense"></a>
+### Q96：根據 Google 的資料，間接 prompt injection（IPI）攻擊在 2025 年 11 月到 2026 年 2 月間成長了 32%。你的 RAG agent 會讀取來自不可信來源的網頁與文件。請設計分層防禦。
 
 **面試官想看什麼：**
 - Awareness that direct prompt injection defense ≠ indirect PI defense
@@ -4065,7 +4105,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q97: Llama 4 Maverick (sparse MoE, 17B active / 128 experts) and DeepSeek V4 Pro (1.6T total / 49B active) require MoE-aware system design. Walk through what changes in your inference serving.
+<a id="q97-llama-4-maverick-sparse-moe-17b-active-128-experts-and-deepseek-v4-pro-16t-total-49b-active-require-moe-aware-system-design-walk-through-what-changes-in-your-inference-serving"></a>
+### Q97：Llama 4 Maverick（sparse MoE，17B active／128 experts）與 DeepSeek V4 Pro（1.6T total／49B active）要求採用 MoE-aware system design。請說明你的 inference serving 需要做哪些改變。
 
 **面試官想看什麼：**
 - Understanding of MoE compute vs memory profile
@@ -4102,7 +4143,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q98: A customer wants to reduce their $50K/month frontier-model spend by distilling a custom model for their workload. Quote a distillation project as a budgeted line item - costs, payback, re-distillation cadence.
+<a id="q98-a-customer-wants-to-reduce-their-50kmonth-frontier-model-spend-by-distilling-a-custom-model-for-their-workload-quote-a-distillation-project-as-a-budgeted-line-item-costs-payback-re-distillation-cadence"></a>
+### Q98：某位客戶想把每月 $50K 的 frontier-model 支出，透過為其 workload 蒸餾自訂模型來降低。請把蒸餾專案當成有預算的 line item 來報價：成本、回本期與再蒸餾節奏。
 
 **面試官想看什麼：**
 - Distillation as a real production discipline, not academic exercise
@@ -4148,7 +4190,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q99: You're deploying a high-throughput inference service for an open-weight model. Pick between vLLM, SGLang, and TensorRT-LLM for a specific workload and defend the choice.
+<a id="q99-youre-deploying-a-high-throughput-inference-service-for-an-open-weight-model-pick-between-vllm-sglang-and-tensorrt-llm-for-a-specific-workload-and-defend-the-choice"></a>
+### Q99：你要為 open-weight model 部署高吞吐 inference service。請在 vLLM、SGLang 與 TensorRT-LLM 之間，針對特定 workload 做選擇並說明理由。
 
 **面試官想看什麼：**
 - Current understanding of inference engine landscape (May 2026)
@@ -4191,7 +4234,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q100: It's May 2026. You're sizing a fleet for a 6-month-horizon inference workload. Walk through the AI accelerator landscape - NVIDIA Blackwell Ultra (B300), AMD MI400, AWS Trainium3, Google TPU v6, Cerebras WSE-3 - and pick a strategy.
+<a id="q100-its-may-2026-youre-sizing-a-fleet-for-a-6-month-horizon-inference-workload-walk-through-the-ai-accelerator-landscape-nvidia-blackwell-ultra-b300-amd-mi400-aws-trainium3-google-tpu-v6-cerebras-wse-3-and-pick-a-strategy"></a>
+### Q100：現在是 2026 年 5 月。你正在為未來 6 個月的 inference workload 規劃 fleet 規模。請說明 AI accelerator landscape——NVIDIA Blackwell Ultra（B300）、AMD MI400、AWS Trainium3、Google TPU v6、Cerebras WSE-3——並選出一個策略。
 
 **面試官想看什麼：**
 - Current hardware roadmap awareness
@@ -4231,7 +4275,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q101: Multi-tenant RAG isolation - you're choosing between Pinecone namespaces, Weaviate per-tenant shards, and pgvector with Row-Level Security. Which fails first under noisy-neighbor pressure, and which fails first under an audit?
+<a id="q101-multi-tenant-rag-isolation-youre-choosing-between-pinecone-namespaces-weaviate-per-tenant-shards-and-pgvector-with-row-level-security-which-fails-first-under-noisy-neighbor-pressure-and-which-fails-first-under-an-audit"></a>
+### Q101：Multi-tenant RAG isolation：你要在 Pinecone namespaces、Weaviate per-tenant shards，以及搭配 Row-Level Security 的 pgvector 之間做選擇。哪一個會先在 noisy-neighbor 壓力下失效？哪一個又會先在稽核下出問題？
 
 **面試官想看什麼：**
 - Beyond "use namespaces" - actual understanding of isolation failure modes
@@ -4274,7 +4319,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q102: Forward Deployed Engineer (FDE) is the breakout role of 2026 - OpenAI, Anthropic, and Google are all hiring hundreds. When does your company need to hire FDEs vs growing your customer-success or solutions-engineering function?
+<a id="q102-forward-deployed-engineer-fde-is-the-breakout-role-of-2026-openai-anthropic-and-google-are-all-hiring-hundreds-when-does-your-company-need-to-hire-fdes-vs-growing-your-customer-success-or-solutions-engineering-function"></a>
+### Q102：Forward Deployed Engineer（FDE）成為 2026 年的熱門職位——OpenAI、Anthropic 與 Google 都在大量招聘。你的公司應該在什麼情況下聘 FDE，而不是擴編 customer-success 或 solutions-engineering 團隊？
 
 **面試官想看什麼：**
 - Strategic clarity on when FDE is the right model
@@ -4313,7 +4359,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q103: In April 2026 Anthropic temporarily blocked Claude Pro/Max subscriptions from powering third-party agents (the OpenClaw incident). They reversed it shortly after with an "Agent SDK credit" system. What does this tell you about vendor lock-in risk in your AI architecture?
+<a id="q103-in-april-2026-anthropic-temporarily-blocked-claude-promax-subscriptions-from-powering-third-party-agents-the-openclaw-incident-they-reversed-it-shortly-after-with-an-agent-sdk-credit-system-what-does-this-tell-you-about-vendor-lock-in-risk-in-your-ai-architecture"></a>
+### Q103：2026 年 4 月，Anthropic 曾暫時禁止 Claude Pro/Max 訂閱為第三方 agents 提供能力（OpenClaw 事件），之後又很快以「Agent SDK credit」機制撤回。這對你的 AI architecture 中的 vendor lock-in 風險透露了什麼？
 
 **面試官想看什麼：**
 - Specific awareness of the OpenClaw saga (it was a defining 2026 event)
@@ -4354,7 +4401,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q104: Anthropic's Project Vend Phase 2 ran Claude as an autonomous shop manager for an extended period. What does the experiment teach about LLM agency limits, and how does it shape your production agent design?
+<a id="q104-anthropics-project-vend-phase-2-ran-claude-as-an-autonomous-shop-manager-for-an-extended-period-what-does-the-experiment-teach-about-llm-agency-limits-and-how-does-it-shape-your-production-agent-design"></a>
+### Q104：Anthropic 的 Project Vend Phase 2 長時間讓 Claude 擔任 autonomous shop manager。這個實驗讓你學到哪些關於 LLM agency 極限的事？又會如何影響你的 production agent design？
 
 **面試官想看什麼：**
 - Awareness of Project Vend findings (canonical 2026 reference)
@@ -4392,7 +4440,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q105: Meta launched the closed-weight Muse Spark model in April 2026 - its first proprietary model since the original Llama. Meanwhile Llama 4 Behemoth's release was paused amid 'capability concerns.' What does this mean for your open-source strategy?
+<a id="q105-meta-launched-the-closed-weight-muse-spark-model-in-april-2026-its-first-proprietary-model-since-the-original-llama-meanwhile-llama-4-behemoths-release-was-paused-amid-capability-concerns-what-does-this-mean-for-your-open-source-strategy"></a>
+### Q105：Meta 在 2026 年 4 月推出 closed-weight 的 Muse Spark model——這是自最初 Llama 以來的第一個專有模型。與此同時，Llama 4 Behemoth 的發布則因「capability concerns」而暫停。這對你的 open-source strategy 代表什麼？
 
 **面試官想看什麼：**
 - Strategic awareness of the open vs closed shift
@@ -4430,7 +4479,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q106: You're an Engineering Manager standing up the AI eval culture on a team. How do you set up evals so they actually drive better decisions, without engineers gaming the metrics?
+<a id="q106-youre-an-engineering-manager-standing-up-the-ai-eval-culture-on-a-team-how-do-you-set-up-evals-so-they-actually-drive-better-decisions-without-engineers-gaming-the-metrics"></a>
+### Q106：你是一位 Engineering Manager，正要在團隊中建立 AI eval culture。你要如何設計 evals，讓它們真的能驅動更好的決策，而不是被工程師拿來刷指標？
 
 **面試官想看什麼：**
 - EM-level strategic framing
@@ -4477,7 +4527,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q107: You're an AI Product Manager. Write the structure of a PRD for a generative AI feature that includes hallucination policy, fallback behavior, and an eval methodology section.
+<a id="q107-youre-an-ai-product-manager-write-the-structure-of-a-prd-for-a-generative-ai-feature-that-includes-hallucination-policy-fallback-behavior-and-an-eval-methodology-section"></a>
+### Q107：你是一位 AI Product Manager。請寫出一份 generative AI feature 的 PRD 結構，其中需包含 hallucination policy、fallback behavior 與 eval methodology 章節。
 
 **面試官想看什麼：**
 - PM-level framing (eval-as-PRD)
@@ -4542,7 +4593,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q108: Design a real-time fraud detection system with a hard p99 < 500ms latency requirement, using both ML rules and an LLM-RAG layer. Walk through the latency budget breakdown.
+<a id="q108-design-a-real-time-fraud-detection-system-with-a-hard-p99-500ms-latency-requirement-using-both-ml-rules-and-an-llm-rag-layer-walk-through-the-latency-budget-breakdown"></a>
+### Q108：設計一個即時 fraud detection system，硬性要求 p99 < 500ms，並同時使用 ML rules 與 LLM-RAG layer。請說明 latency budget 的拆分。
 
 **面試官想看什麼：**
 - Strict latency engineering at the system level
@@ -4585,7 +4637,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q109: Cursor 3 launched in April 2026 with an "Agent-First" interface, and Cursor's CEO has stated that >50% of internal PRs at Anysphere come from cloud agents. How do you design code review processes for a world where a majority of PRs are agent-generated?
+<a id="q109-cursor-3-launched-in-april-2026-with-an-agent-first-interface-and-cursors-ceo-has-stated-that-50-of-internal-prs-at-anysphere-come-from-cloud-agents-how-do-you-design-code-review-processes-for-a-world-where-a-majority-of-prs-are-agent-generated"></a>
+### Q109：Cursor 3 在 2026 年 4 月以「Agent-First」介面推出，而 Cursor 的 CEO 表示 Anysphere 內部超過 50% 的 PR 來自 cloud agents。面對一個多數 PR 都由 agents 產生的世界，你要如何設計 code review process？
 
 **面試官想看什麼：**
 - Current awareness of agent-generated PR reality
@@ -4627,7 +4680,8 @@ Implication: code review for AI-generated patches must include adversarial testi
 
 ---
 
-### Q110: A regulator asks why your AI legal-research tool fabricated a citation in a brief. The actual incident: Sullivan & Cromwell apologized in Q1 2026 for a similar issue, and $145K in court sanctions have been levied across cases. Walk through your incident-response and disclosure policy.
+<a id="q110-a-regulator-asks-why-your-ai-legal-research-tool-fabricated-a-citation-in-a-brief-the-actual-incident-sullivan-cromwell-apologized-in-q1-2026-for-a-similar-issue-and-145k-in-court-sanctions-have-been-levied-across-cases-walk-through-your-incident-response-and-disclosure-policy"></a>
+### Q110：監管機構詢問，為何你的 AI 法律研究工具在法律文件中捏造了引文。真實世界中，Sullivan & Cromwell 在 2026 年 Q1 就曾因類似事件致歉，而相關案件累計已被處以 $145K 的法院制裁。請說明你的 incident-response 與 disclosure policy。
 
 **面試官想看什麼：**
 - AI hallucination as a regulated incident, not a "model quirk"
