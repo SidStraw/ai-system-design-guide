@@ -437,23 +437,23 @@ OpenClaw 透過其 channel adapter 架構支援 20+ 個訊息平台：
 
 | 平台 | 函式庫 | 狀態 | 備註 |
 |----------|---------|--------|-------|
-| WhatsApp | Baileys | Stable | 非官方 API；需要個人帳號 |
-| Telegram | grammY | Stable | 官方 Bot API；最可靠的 channel |
-| Slack | Bolt | Stable | 需要安裝 workspace app |
-| Discord | discord.js | Stable | 需要 bot token |
-| Signal | signal-cli | Stable | 需要已連結裝置 |
-| iMessage | BlueBubbles | Stable | 僅限 macOS；需要 BlueBubbles server |
-| Google Chat | Chat API | Stable | 需要 workspace 管理員核准 |
-| Microsoft Teams | Bot Framework | Beta | 2026 Q2 正式完整發布 |
-| IRC | irc-framework | Stable | 傳統協定支援 |
-| Matrix | matrix-js-sdk | Stable | 聯邦式、對 self-hosted 友善 |
-| Mattermost | API | Stable | self-hosted 的 Slack 替代方案 |
-| LINE | Messaging API | Stable | 在日本／東南亞很流行 |
-| Feishu (Lark) | Open API | Stable | 在中國很流行 |
-| Twitch | TMI.js | Stable | 僅聊天 |
-| WeChat | -- | Beta | 需要自訂 bridge |
-| Nostr | -- | Beta | 去中心化協定 |
-| WebChat | Built-in | Stable | 瀏覽器型 fallback |
+| WhatsApp | Baileys | 穩定 | 非官方 API；需要個人帳號 |
+| Telegram | grammY | 穩定 | 官方 Bot API；最可靠的通道 |
+| Slack | Bolt | 穩定 | 需要安裝工作區應用程式 |
+| Discord | discord.js | 穩定 | 需要 bot 權杖 |
+| Signal | signal-cli | 穩定 | 需要已連結裝置 |
+| iMessage | BlueBubbles | 穩定 | 僅限 macOS；需要 BlueBubbles 伺服器 |
+| Google Chat | Chat API | 穩定 | 需要工作區管理員核准 |
+| Microsoft Teams | Bot Framework | 測試中 | 2026 Q2 正式完整發布 |
+| IRC | irc-framework | 穩定 | 傳統協定支援 |
+| Matrix | matrix-js-sdk | 穩定 | 聯邦式、對自行託管友善 |
+| Mattermost | API | 穩定 | 自行託管的 Slack 替代方案 |
+| LINE | Messaging API | 穩定 | 在日本／東南亞很流行 |
+| Feishu (Lark) | Open API | 穩定 | 在中國很流行 |
+| Twitch | TMI.js | 穩定 | 僅聊天 |
+| WeChat | -- | 測試中 | 需要自訂橋接程式 |
+| Nostr | -- | 測試中 | 去中心化協定 |
+| WebChat | 內建 | 穩定 | 瀏覽器型備援 |
 
 <a id="unified-context-across-channels"></a>
 ### 跨 Channel 的統一 Context
@@ -607,12 +607,12 @@ docker logs -f openclaw-gateway  # Watch logs
 <a id="option-3-cloud-vps-always-on"></a>
 ### 選項 3：雲端 VPS（常駐執行）
 
-OpenClaw 很輕量——任何擁有 512MB RAM 與 1 個 CPU core 的機器都足夠。每月 4–6 美元的 VPS 就能運作。
+OpenClaw 很輕量——任何擁有 512MB RAM 與 1 個 CPU 核心的機器都足夠。每月 4–6 美元的 VPS 就能運作。
 
 **快速部署選項：**
-- **DigitalOcean**：內建安全強化的 1-Click App
+- **DigitalOcean**：內建安全強化的一鍵應用程式
 - **Railway**：從 GitHub README 一鍵部署（約 5 分鐘）
-- **Contabo**：VPS 方案提供免費 1-click OpenClaw 外掛
+- **Contabo**：VPS 方案提供免費的一鍵 OpenClaw 外掛
 - **AWS Lightsail**：每月 $3.50 的實例也能輕鬆執行
 - **Raspberry Pi**：在配備 4GB RAM 的 Pi 4 上運作良好
 
@@ -1002,7 +1002,7 @@ docker logs openclaw-gateway --tail 50
 <a id="prompt-design-a-personal-ai-assistant-platform-like-openclaw"></a>
 ### 題目：「設計一個像 OpenClaw 的個人 AI 助理平台」
 
-這是一個很出色的 system design 題目，因為它涵蓋了訊息系統、agent orchestration、安全性、多租戶，以及即時通訊。
+這是一個很出色的系統設計題目，因為它涵蓋了訊息系統、agent 協調、安全性、多租戶，以及即時通訊。
 
 <a id="requirements-gathering"></a>
 ### 需求蒐集

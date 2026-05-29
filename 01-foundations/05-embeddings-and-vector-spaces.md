@@ -318,6 +318,7 @@ response = client.embeddings.create(
 
 ---
 
+<a id="late-chunking-and-interaction"></a>
 <a id="late-chunking-the-2025-shift"></a>
 ### Late Chunking（2025 年的轉變）
 

@@ -1,9 +1,9 @@
-<a name="case-study-enterprise-rag-system"></a>
+<a id="case-study-enterprise-rag-system"></a>
 # 案例研究：企業級 RAG 系統
 
 本案例研究詳細介紹如何為企業文件搜尋設計生產級 RAG 系統，涵蓋需求收集、架構決策與實作細節。
 
-<a name="table-of-contents"></a>
+<a id="table-of-contents"></a>
 ## 目錄
 
 - [問題陳述](#problem-statement)
@@ -17,10 +17,10 @@
 
 ---
 
-<a name="problem-statement"></a>
+<a id="problem-statement"></a>
 ## 問題陳述
 
-<a name="scenario"></a>
+<a id="scenario"></a>
 ### 情境
 
 一家金融服務公司希望為其內部文件建立 AI 驅動的搜尋系統：
@@ -30,7 +30,7 @@
 - 嚴格的合規與稽核要求
 - 需要以附引用來源的方式回答問題
 
-<a name="current-pain-points"></a>
+<a id="current-pain-points"></a>
 ### 現有痛點
 
 - 員工每天花費 2 小時以上搜尋資訊
@@ -40,10 +40,10 @@
 
 ---
 
-<a name="requirements-analysis"></a>
+<a id="requirements-analysis"></a>
 ## 需求分析
 
-<a name="functional-requirements"></a>
+<a id="functional-requirements"></a>
 ### 功能需求
 
 | 需求 | 優先級 | 備註 |
@@ -54,7 +54,7 @@
 | 追問問題 | P1 | 對話上下文 |
 | 文件摘要 | P2 | 長文件快速概覽 |
 
-<a name="non-functional-requirements"></a>
+<a id="non-functional-requirements"></a>
 ### 非功能需求
 
 | 需求 | 目標 | 理由 |
@@ -65,7 +65,7 @@
 | 同時線上使用者 | 500 | 尖峰使用量 |
 | 文件新鮮度 | < 1 小時 | 政策更新 |
 
-<a name="security-requirements"></a>
+<a id="security-requirements"></a>
 ### 安全需求
 
 - 角色型存取控制（RBAC）
@@ -75,10 +75,10 @@
 
 ---
 
-<a name="system-architecture"></a>
+<a id="system-architecture"></a>
 ## 系統架構
 
-<a name="high-level-architecture"></a>
+<a id="high-level-architecture"></a>
 ### 高層架構
 
 ```
@@ -162,7 +162,7 @@ flowchart TD
     GS --> UI
 ```
 
-<a name="technology-choices-dec-2025-update"></a>
+<a id="technology-choices-dec-2025-update"></a>
 ### 技術選型（2025 年 12 月更新）
 
 | 元件 | 選擇 | 理由 |
@@ -179,10 +179,10 @@ flowchart TD
 
 ---
 
-<a name="component-deep-dives"></a>
+<a id="component-deep-dives"></a>
 ## 元件深度解析
 
-<a name="document-ingestion-pipeline"></a>
+<a id="document-ingestion-pipeline"></a>
 ### 文件攝取管道
 
 ```python
@@ -268,7 +268,7 @@ sequenceDiagram
     Note over V,M: Document is queryable only<br/>after all four writes commit
 ```
 
-<a name="query-processing"></a>
+<a id="query-processing"></a>
 ### 查詢處理
 
 ```python
@@ -344,7 +344,7 @@ class QueryService:
         }
 ```
 
-<a name="hybrid-retrieval"></a>
+<a id="hybrid-retrieval"></a>
 ### 混合式檢索
 
 ```python
@@ -431,7 +431,7 @@ flowchart LR
     CTX --> LLM[Generation<br/>Gemini 3 Pro 2.5M ctx]
 ```
 
-<a name="generation-with-massive-context-dec-2025"></a>
+<a id="generation-with-massive-context-dec-2025"></a>
 ### 大規模上下文生成（2025 年 12 月）
 
 ```python
@@ -474,10 +474,10 @@ class GeminiGenerator:
 
 ---
 
-<a name="scaling-considerations"></a>
+<a id="scaling-considerations"></a>
 ## 擴展考量
 
-<a name="handling-500k-documents"></a>
+<a id="handling-500k-documents"></a>
 ### 處理 50 萬份文件
 
 ```python
@@ -496,7 +496,7 @@ qdrant_config = {
 }
 ```
 
-<a name="handling-500-concurrent-users"></a>
+<a id="handling-500-concurrent-users"></a>
 ### 處理 500 位同時線上使用者
 
 ```
@@ -512,7 +512,7 @@ Load Balancer
             └──► Elasticsearch (3-node cluster)
 ```
 
-<a name="caching-strategy"></a>
+<a id="caching-strategy"></a>
 ### 快取策略
 
 ```python
@@ -545,10 +545,10 @@ class QueryCache:
 
 ---
 
-<a name="cost-analysis"></a>
+<a id="cost-analysis"></a>
 ## 成本分析
 
-<a name="monthly-cost-estimate-500-users-100-queriesuserday"></a>
+<a id="monthly-cost-estimate-500-users-100-queriesuserday"></a>
 ### 每月成本估算（500 位使用者，每人每天 100 次查詢）
 
 | 元件 | 計算方式 | 每月成本 |
@@ -561,7 +561,7 @@ class QueryCache:
 | 運算（查詢服務） | 4 個執行個體 | ~$1,000 |
 | **合計** | | **~$25,000/月** |
 
-<a name="cost-optimization-opportunities"></a>
+<a id="cost-optimization-opportunities"></a>
 ### 成本最佳化機會
 
 1. **快取**：30% 快取命中率 → LLM 節省 $6K
@@ -571,10 +571,10 @@ class QueryCache:
 
 ---
 
-<a name="lessons-learned"></a>
+<a id="lessons-learned"></a>
 ## 學到的經驗
 
-<a name="what-worked-well"></a>
+<a id="what-worked-well"></a>
 ### 成效良好之處
 
 1. **混合式搜尋**：結合語意 + 關鍵字顯著提升召回率
@@ -582,7 +582,7 @@ class QueryCache:
 3. **清晰的引用**：建立使用者信任
 4. **在檢索時進行權限過濾**：無需事後過濾
 
-<a name="challenges-encountered"></a>
+<a id="challenges-encountered"></a>
 ### 遭遇的挑戰
 
 1. **表格擷取**：含複雜表格的 PDF 需要自訂解析
@@ -590,7 +590,7 @@ class QueryCache:
 3. **新鮮度**：1 小時的新鮮度要求需要串流攝取
 4. **長文件**：超過 100 頁的文件需要層次化分塊
 
-<a name="what-we-would-do-differently"></a>
+<a id="what-we-would-do-differently"></a>
 ### 如果重來會有哪些不同
 
 1. 更早建立更好的文件解析
@@ -600,10 +600,10 @@ class QueryCache:
 
 ---
 
-<a name="interview-walkthrough"></a>
+<a id="interview-walkthrough"></a>
 ## 面試演練
 
-<a name="how-to-present-this-in-an-interview"></a>
+<a id="how-to-present-this-in-an-interview"></a>
 ### 如何在面試中呈現
 
 **開場（2 分鐘）：**

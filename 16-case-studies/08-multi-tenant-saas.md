@@ -1,7 +1,7 @@
-<a name="case-study-multi-tenant-ai-saas-platform"></a>
+<a id="case-study-multi-tenant-ai-saas-platform"></a>
 # 案例研究：多租戶 AI SaaS 平台
 
-<a name="the-problem"></a>
+<a id="the-problem"></a>
 ## 問題描述
 
 一家 B2B 新創公司正在打造一個 **AI 驅動的文件分析平台**，每位客戶可上傳自己的合約，並由 AI 回答相關問題。客戶群中包含競爭對手，彼此的資料絕對不能互相洩漏。
@@ -15,14 +15,14 @@
 
 ---
 
-<a name="the-interview-question"></a>
+<a id="the-interview-question"></a>
 ## 面試題目
 
 > 「設計一個多租戶 RAG 系統，讓可口可樂與百事可樂都能成為客戶，且跨租戶資料洩漏的風險為零。」
 
 ---
 
-<a name="solution-architecture"></a>
+<a id="solution-architecture"></a>
 ## 解決方案架構
 
 ```mermaid
@@ -54,10 +54,10 @@ flowchart TB
 
 ---
 
-<a name="key-design-decisions"></a>
+<a id="key-design-decisions"></a>
 ## 關鍵設計決策
 
-<a name="1-hybrid-isolation-namespace-vs-physical"></a>
+<a id="1-hybrid-isolation-namespace-vs-physical"></a>
 ### 1. 混合隔離：命名空間隔離 vs 實體隔離
 
 **解答：** 純實體隔離（每個租戶一個資料庫）成本極高。純命名空間隔離（共用資料庫加 tenant_id 過濾）若發生過濾器漏洞則有洩漏風險。我們採用**分層方式**：
@@ -68,7 +68,7 @@ flowchart TB
 | 進階 | 文件數 50K–500K | 專屬 Qdrant Collection | 效能隔離 |
 | 企業 | 文件數 > 500K | 專屬 Qdrant Pod | 實體隔離 + 法規遵循 |
 
-<a name="2-defense-in-depth-for-data-isolation"></a>
+<a id="2-defense-in-depth-for-data-isolation"></a>
 ### 2. 資料隔離的縱深防禦
 
 **解答：** 我們絕不依賴單一層級。我們的隔離堆疊：
@@ -79,14 +79,14 @@ flowchart TB
 4. **LLM 層**：系統提示明確說明「您正在為租戶 X 提供答覆」
 5. **輸出層**：生成後過濾器掃描任何不屬於該租戶的文件 ID
 
-<a name="3-why-not-one-vector-db-per-tenant"></a>
+<a id="3-why-not-one-vector-db-per-tenant"></a>
 ### 3. 為何不為每個租戶建立獨立的 Vector DB？
 
 **解答：** 500 個租戶 × 每個託管實例 $100/月 = 僅資料庫就需 $50,000/月。透過對 80% 的租戶採用命名空間隔離，可將此成本降至 $8,000/月。其餘 20% 使用專屬基礎架構，支付進階方案費用。
 
 ---
 
-<a name="the-data-ingestion-pipeline"></a>
+<a id="the-data-ingestion-pipeline"></a>
 ## 資料攝取管線
 
 ```mermaid
@@ -113,10 +113,10 @@ flowchart LR
 
 ---
 
-<a name="handling-the-compliance-requirements"></a>
+<a id="handling-the-compliance-requirements"></a>
 ## 處理合規要求
 
-<a name="soc-2-type-ii"></a>
+<a id="soc-2-type-ii"></a>
 ### SOC 2 Type II
 
 | 控制項 | 實作方式 |
@@ -126,7 +126,7 @@ flowchart LR
 | 傳輸加密 | 全面採用 TLS 1.3 |
 | 存取審查 | 從稽核日誌自動產生季度報告 |
 
-<a name="gdpr-right-to-deletion"></a>
+<a id="gdpr-right-to-deletion"></a>
 ### GDPR 刪除權
 
 ```python
@@ -146,7 +146,7 @@ async def delete_tenant_data(tenant_id: str):
 
 ---
 
-<a name="cost-analysis-500-tenants"></a>
+<a id="cost-analysis-500-tenants"></a>
 ## 成本分析（500 個租戶）
 
 | 元件 | 每月費用 |
@@ -161,7 +161,7 @@ async def delete_tenant_data(tenant_id: str):
 
 ---
 
-<a name="interview-follow-up-questions"></a>
+<a id="interview-follow-up-questions"></a>
 ## 面試追問問題
 
 **問：如果 ORM 中的漏洞繞過了租戶過濾器怎麼辦？**
@@ -178,7 +178,7 @@ async def delete_tenant_data(tenant_id: str):
 
 ---
 
-<a name="key-takeaways-for-interviews"></a>
+<a id="key-takeaways-for-interviews"></a>
 ## 面試重點整理
 
 1. **多租戶依靠層級架構**：絕不依賴單一隔離機制

@@ -267,9 +267,7 @@ for i in range(max_tokens):
 可自訂用來終止生成的字串：
 
 ```python
-stop_sequences = ["###", "
-
-", "Human:"]
+stop_sequences = ["###", "\n\n", "Human:"]
 
 for seq in stop_sequences:
     if output.endswith(seq):
@@ -277,6 +275,7 @@ for seq in stop_sequences:
         break
 ```
 
+<a id="speculative-decoding"></a>
 <a id="latent-optimization-speculative-decoding"></a>
 ## 潛在優化：Speculative Decoding
 

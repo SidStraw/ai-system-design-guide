@@ -1,7 +1,7 @@
 <a id="context-engineering"></a>
-# Context Engineering
+# 上下文工程
 
-Context engineering 是一門科學：在 LLM 有限的「工作記憶」中，放入最有價值的 token。隨著 context window 已擴展到 1M+ tokens（Claude Sonnet 4.6、Gemini 3.1 Pro、GPT-5.5），且模型獲得了 Extended Thinking，焦點已從「把資料塞進去」轉向「排序相關性」與「管理計算預算」。
+上下文工程是一門科學：在 LLM 有限的「工作記憶」中，放入最有價值的 token。隨著 context window 已擴展到 1M+ tokens（Claude Sonnet 4.6、Gemini 3.1 Pro、GPT-5.5），且模型獲得了 Extended Thinking，焦點已從「把資料塞進去」轉向「排序相關性」與「管理計算預算」。
 
 <a id="table-of-contents"></a>
 ## 目錄
@@ -179,4 +179,4 @@ def smart_generate(query: str) -> str:
 
 ---
 
-*下一篇：[Structured Generation](06-structured-generation.md)*
+*下一篇：[結構化生成](06-structured-generation.md)*

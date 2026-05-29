@@ -1,7 +1,7 @@
 <a id="evaluating-agentic-systems"></a>
-# 評估 Agentic Systems
+# 評估代理式系統
 
-評估 agent 與評估 RAG 有根本上的不同。RAG 著重於「Accuracy」，而 Agents 著重的是 **「Reliability」、「Efficiency」與「Safety」**。生產環境中的 agent eval 依賴 **Trajectory Benchmarks** 與 **LLM-as-Judge** 來檢驗多步推理，而 Langfuse、LangWatch、Braintrust 與 Arize Phoenix 等工具則提供原生的 trace-level scoring。
+agent 與 RAG 的評估本質上不同。RAG 著重於「準確性」，而 agent 更重視 **「可靠性」、「效率」與「安全性」**。生產環境中的 agent 評估，會依賴 **Trajectory Benchmarks** 與 **LLM-as-Judge** 來檢驗多步推理，而 Langfuse、LangWatch、Braintrust 與 Arize Phoenix 等工具則提供原生的 trace-level scoring。
 
 > [!NOTE]
 > 關於標準 RAG 評估（Retrieval 與 Generation metrics），請參閱 [06-retrieval-systems/09-advanced-retrieval-patterns.md](../06-retrieval-systems/09-advanced-retrieval-patterns.md) 與第 14 節。本章特別聚焦於 agent 的*執行路徑*。
@@ -13,7 +13,7 @@
 - [Trajectory Benchmarks（黃金標準）](#benchmarks)
 - [關鍵指標：成功、成本與時間](#metrics)
 - [用於步驟品質的 LLM-as-Judge](#judge)
-- [生產環境評估（A/B Testing Agents）](#production)
+- [生產環境評估（A/B 測試代理）](#production)
 - [面試問題](#interview-questions)
 - [參考資料](#references)
 
@@ -23,7 +23,7 @@
 <a id="the-evaluation-shift"></a>
 ## 評估轉向
 
-| 指標 | RAG App | Agentic App |
+| 指標 | RAG 應用 | 代理式應用 |
 |--------|---------|-------------|
 | **評估單位** | 單一回應 | **Trajectory**（所有步驟） |
 | **成功標準**| Groundedness/Faithfulness | 任務完成 / 邏輯健全性 |
@@ -35,12 +35,12 @@
 <a id="trajectory-benchmarks"></a>
 ## Trajectory Benchmarks
 
-現代 eval 會為 **「通往結果的路徑」**打分。
+現代評估會為 **「通往結果的路徑」**打分。
 1. **最佳路徑**：解決任務所需的最短工具序列。
 2. **Agent 路徑**：實際採取的步驟。
 3. **分數**：`Efficiency = (Optimal Steps / Agent Steps)`。分數為 `0.2` 代表 agent 走了很多冤枉路，或陷入過度迴圈。
 
-**常見 Benchmark**：
+**常見基準測試**：
 - **SWE-bench**：修復 GitHub issue（Code Agency）。
 - **WebArena**：導覽選單與表單（Browser Agency）。
 - **GAIA**：一般工具使用任務（Assistant Agency）。
@@ -55,7 +55,7 @@
 ### 1. 任務成功率（TSR）
 最終狀態正確的任務比例。
 > [!IMPORTANT]
-> 在資深 production 場景中，透過「錯誤路徑」得到「正確答案」，分數仍然是 0。
+> 在資深生產場景中，透過「錯誤路徑」得到「正確答案」，分數仍然是 0。
 
 <a id="2-action-success-rate-asr"></a>
 ### 2. 動作成功率（ASR）

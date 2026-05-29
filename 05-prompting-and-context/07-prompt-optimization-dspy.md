@@ -1,5 +1,5 @@
 <a id="prompt-optimization-dspy"></a>
-# Prompt Optimization（DSPy）
+# 提示最佳化（DSPy）
 
 提示工程正從「手動微調」時代走向「程式化」時代。**DSPy（Declarative Self-improving Language Programs）** 是 2025 年業界建立穩健 LLM pipeline 的標準做法之一：提示由演算法自動最佳化。
 

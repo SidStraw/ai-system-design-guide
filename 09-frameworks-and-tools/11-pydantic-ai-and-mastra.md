@@ -102,7 +102,7 @@ assert isinstance(result.output, RefundDecision)
 <a id="mastra-typescript-first-agents"></a>
 ## Mastra：以 TypeScript 為優先的 Agents
 
-<a id="current-state-1"></a>
+<a id="current-state"></a>
 ### 目前狀態
 
 [Mastra](https://mastra.ai/) 由 Gatsby 團隊創立，並於 2025 年 10 月宣布獲得 **1300 萬美元種子輪**，由 Lightspeed 領投（[TechCrunch coverage](https://techcrunch.com/2025/10/16/mastra-typescript-agent-framework-seed/)）。到了 2026 年 5 月，GitHub repository 已超過 **22K stars**（[mastra-ai/mastra](https://github.com/mastra-ai/mastra)）。Mastra 以 Elastic License v2 授權開源。
@@ -115,7 +115,7 @@ assert isinstance(result.output, RefundDecision)
 - 內建 memory 與 RAG，並提供 `libsql` / `pgvector` adapters。
 - 可用單一命令部署到 **Mastra Cloud**、Vercel、Cloudflare Workers 或 Node server。
 
-<a id="why-teams-pick-it-1"></a>
+<a id="why-teams-pick-it"></a>
 ### 團隊為什麼選它
 
 ```typescript
@@ -156,7 +156,7 @@ export const refundAgent = new Agent({
 - Streaming UI 很重要，而且你想依賴 AI SDK 的 `useChat` 與 `streamText` primitives。
 - 你想要內建接好 human approval steps 的 **suspend / resume workflows**。
 
-<a id="when-it-is-not-1"></a>
+<a id="when-it-is-not"></a>
 ### 什麼時候它不適合
 
 - 你需要**大量現成 agent** 或社群整合。與 LangChain 相比，其生態仍然偏小。

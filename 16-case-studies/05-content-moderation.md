@@ -1,9 +1,9 @@
-<a name="case-study-content-moderation-at-scale"></a>
+<a id="case-study-content-moderation-at-scale"></a>
 # 案例研究：大規模內容審核
 
 本案例研究涵蓋如何為每日處理數百萬則貼文的社交平台設計 AI 驅動的內容審核系統。
 
-<a name="table-of-contents"></a>
+<a id="table-of-contents"></a>
 ## 目錄
 
 - [問題陳述](#problem-statement)
@@ -17,7 +17,7 @@
 
 ---
 
-<a name="problem-statement"></a>
+<a id="problem-statement"></a>
 ## 問題陳述
 
 **公司：** 每日活躍用戶 5000 萬的社交媒體平台
@@ -37,10 +37,10 @@
 
 ---
 
-<a name="requirements-analysis"></a>
+<a id="requirements-analysis"></a>
 ## 需求分析
 
-<a name="content-categories"></a>
+<a id="content-categories"></a>
 ### 內容類別
 
 | 類別 | 嚴重程度 | 處置方式 | 延遲 |
@@ -53,7 +53,7 @@
 | 錯誤資訊 | 中 | 標記 + 審核 | < 1 小時 |
 | 成人內容 | 低 | 年齡限制 | < 1 小時 |
 
-<a name="accuracy-requirements"></a>
+<a id="accuracy-requirements"></a>
 ### 準確性需求
 
 | 指標 | 目標 | 理由 |
@@ -65,10 +65,10 @@
 
 ---
 
-<a name="architecture-design"></a>
+<a id="architecture-design"></a>
 ## 架構設計
 
-<a name="high-level-architecture"></a>
+<a id="high-level-architecture"></a>
 ### 高層架構
 
 ```
@@ -136,7 +136,7 @@ flowchart TD
     T3 -->|uncertain: 2%| HR[Human Review<br/>minutes, $0.50]
 ```
 
-<a name="processing-tiers"></a>
+<a id="processing-tiers"></a>
 ### 處理層級
 
 | 層級 | 方法 | 延遲 | 費用 | 覆蓋率 |
@@ -148,10 +148,10 @@ flowchart TD
 
 ---
 
-<a name="classification-pipeline"></a>
+<a id="classification-pipeline"></a>
 ## 分類管線
 
-<a name="tier-1-fast-filters"></a>
+<a id="tier-1-fast-filters"></a>
 ### 第一層：快速過濾器
 
 ```python
@@ -202,7 +202,7 @@ class FastFilters:
         return FilterResult(action="continue", tier=1)
 ```
 
-<a name="tier-2-ml-classification"></a>
+<a id="tier-2-ml-classification"></a>
 ### 第二層：ML 分類
 
 ```python
@@ -224,7 +224,7 @@ class MultimodalSafety:
         return response
 ```
 
-<a name="tier-3-nuanced-llm-review-gpt-52-mini"></a>
+<a id="tier-3-nuanced-llm-review-gpt-52-mini"></a>
 ### 第三層：細緻 LLM 審核（GPT-5.2-mini）
 
 ```python
@@ -248,10 +248,10 @@ class NuanceReviewer:
 
 ---
 
-<a name="human-in-the-loop"></a>
+<a id="human-in-the-loop"></a>
 ## 人機協作
 
-<a name="review-queue-management"></a>
+<a id="review-queue-management"></a>
 ### 審核佇列管理
 
 每則內容都會經歷從提交到終態的生命週期。以狀態機呈現的生命週期讓 SLO 更加具體：每個優先級通道有不同的目標處理時間，申訴可使狀態轉回待處理：
@@ -327,7 +327,7 @@ class ReviewQueueManager:
         return priority
 ```
 
-<a name="moderator-interface"></a>
+<a id="moderator-interface"></a>
 ### 審核員介面
 
 ```python
@@ -364,10 +364,10 @@ class ModeratorDecision:
 
 ---
 
-<a name="adversarial-robustness"></a>
+<a id="adversarial-robustness"></a>
 ## 對抗性魯棒性
 
-<a name="evasion-techniques-and-defenses"></a>
+<a id="evasion-techniques-and-defenses"></a>
 ### 逃避技術與防禦措施
 
 | 逃避技術 | 防禦措施 |
@@ -379,7 +379,7 @@ class ModeratorDecision:
 | 編碼內容 | 解碼管線 |
 | 對抗性圖片 | 強健視覺模型 |
 
-<a name="defensive-pipeline"></a>
+<a id="defensive-pipeline"></a>
 ### 防禦管線
 
 ```python
@@ -424,10 +424,10 @@ class AdversarialDefense:
 
 ---
 
-<a name="results-and-metrics"></a>
+<a id="results-and-metrics"></a>
 ## 成果與指標
 
-<a name="performance-comparison"></a>
+<a id="performance-comparison"></a>
 ### 效能比較
 
 | 指標 | 改善前 | 改善後 | 改進幅度 |
@@ -437,7 +437,7 @@ class AdversarialDefense:
 | 假陽性率 | 15% | 4.2% | 降低 72% |
 | 審核員效率 | 50 則/天 | 200 則/天 | 提升 4 倍 |
 
-<a name="cost-analysis-dec-2025"></a>
+<a id="cost-analysis-dec-2025"></a>
 ### 成本分析（2025 年 12 月）
 
 | 元件 | 每 1000 萬則貼文 | 備注 |
@@ -455,7 +455,7 @@ class AdversarialDefense:
 
 ---
 
-<a name="interview-walkthrough"></a>
+<a id="interview-walkthrough"></a>
 ## 面試解題流程
 
 **面試官：**「設計一個社交媒體平台的內容審核系統。」
@@ -496,7 +496,7 @@ class AdversarialDefense:
 
 ---
 
-<a name="references"></a>
+<a id="references"></a>
 ## 參考資料
 
 - Meta Content Moderation: https://transparency.fb.com/

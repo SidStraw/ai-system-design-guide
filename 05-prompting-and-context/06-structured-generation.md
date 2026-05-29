@@ -1,7 +1,7 @@
 <a id="structured-generation"></a>
-# Structured Generation
+# 結構化生成
 
-Structured Generation 是強制 LLM 以機器可讀格式（JSON、YAML、CSV）輸出，並達成 100% 可靠性的過程。這門技術已從「基於提示的請求」演進為「引擎層級的約束」。
+結構化生成是強制 LLM 以機器可讀格式（JSON、YAML、CSV）輸出，並達成 100% 可靠性的過程。這門技術已從「基於提示的請求」演進為「引擎層級的約束」。
 
 <a id="table-of-contents"></a>
 ## 目錄
@@ -106,4 +106,4 @@ generator = outlines.generate.regex(model, r"(\d{3})-\d{3}-\d{4}")
 
 ---
 
-*下一篇：[Prompt Optimization（DSPy）](07-prompt-optimization-dspy.md)*
+*下一篇：[提示最佳化（DSPy）](07-prompt-optimization-dspy.md)*

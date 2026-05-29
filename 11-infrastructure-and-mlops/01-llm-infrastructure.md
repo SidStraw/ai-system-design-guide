@@ -480,7 +480,7 @@ class GracefulDegradation:
 
 在 2026 年 1 月到 5 月之間，硬體局勢的變化速度比 AI 基礎建設歷來任何時刻都更快。各項產能公告累計已超過 **一兆美元的已承諾雲端支出**，供應鏈也不再是單一供應商主導。本節提供的是 2026 年 5 月高階架構師在容量規劃討論中應掌握的快照。
 
-<a id="nvidia-blackwell-ultra-b300--gb300-nvl72"></a>
+<a id="nvidia-blackwell-ultra-b300-gb300-nvl72"></a>
 ### NVIDIA Blackwell Ultra（B300 / GB300 NVL72）
 
 旗艦產品是 **B300**（「Blackwell Ultra」），自 2026 年 1 月起已開始大量出貨（[NVIDIA newsroom announcement](https://nvidianews.nvidia.com/news/nvidia-blackwell-ultra-ai-factory-platform-paves-way-for-age-of-ai-reasoning)）。

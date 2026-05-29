@@ -16,9 +16,10 @@
 ---
 
 <a id="the-framework-landscape"></a><a id="landscape"></a>
+<a id="the-framework-landscape"></a>
 ## 框架生態版圖
 
-<a id="orchestration--agent-frameworks"></a>
+<a id="orchestration-agent-frameworks"></a>
 ### 編排與 Agent 框架
 
 | 框架 | 層級 | 主要價值 | 關鍵弱點 |
@@ -52,6 +53,7 @@
 ---
 
 <a id="the-decision-matrix"></a><a id="matrix"></a>
+<a id="the-decision-matrix"></a>
 ## 決策矩陣
 
 **請用以下邏輯來選擇你的技術堆疊：**
@@ -71,7 +73,7 @@
 8. **在 Google Cloud / Gemini 上建構 agents？** → **Google ADK**（原生 A2A、Vertex AI 部署、多語言）。
 9. **需要跨供應商的 agent 通訊？** → 在上述任一框架之上使用 **A2A protocol**。
 
-<a id="coding-agents-1"></a>
+<a id="coding-agents"></a>
 ### Coding Agents
 10. **你是否在進行自主式、檔案系統層級的 coding 任務？** → **Claude Code**（CLI）或 **Cline**（VS Code）。
 11. **需要可搭配任何 LLM 的開源 coding agent？** → **OpenHands**（Docker）。
@@ -80,6 +82,7 @@
 ---
 
 <a id="build-vs-buy-vs-framework"></a><a id="build-vs-buy"></a>
+<a id="build-vs-buy-vs-framework"></a>
 ## 自建、採購還是使用框架
 
 作為 Staff Engineer，你必須抵抗 **Framework Bloat**。
@@ -90,6 +93,7 @@
 ---
 
 <a id="anti-patterns-to-avoid"></a><a id="anti-patterns"></a>
+<a id="anti-patterns-to-avoid"></a>
 ## 應避免的反模式
 
 1. **Framework Tunnelling**：試圖把複雜邏輯流程硬塞進不支援它的框架中（例如用純 RAG 函式庫來做 coding agent）。
@@ -99,6 +103,7 @@
 ---
 
 <a id="staff-level-recommendation"></a><a id="recommendation"></a>
+<a id="staff-level-recommendation"></a>
 ## Staff 級建議
 
 對於現代、正式等級的 agentic system：

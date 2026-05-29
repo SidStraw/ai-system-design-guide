@@ -1,9 +1,9 @@
-<a name="case-study-customer-support-conversational-agent"></a>
+<a id="case-study-customer-support-conversational-agent"></a>
 # 案例研究：客戶支援對話式代理人
 
 本案例研究詳細介紹如何為一家 B2B SaaS 公司設計生產級客戶支援代理人。
 
-<a name="table-of-contents"></a>
+<a id="table-of-contents"></a>
 ## 目錄
 
 - [問題陳述](#problem-statement)
@@ -18,7 +18,7 @@
 
 ---
 
-<a name="problem-statement"></a>
+<a id="problem-statement"></a>
 ## 問題陳述
 
 **公司：** 擁有 5 萬個企業客戶的 B2B SaaS 平台
@@ -37,10 +37,10 @@
 
 ---
 
-<a name="requirements-analysis"></a>
+<a id="requirements-analysis"></a>
 ## 需求分析
 
-<a name="functional-requirements"></a>
+<a id="functional-requirements"></a>
 ### 功能需求
 
 | 需求 | 說明 | 優先級 |
@@ -54,7 +54,7 @@
 | 人工升級 | 需要時無縫交接 | P0 |
 | 帳單查詢 | 處理敏感財務資料 | P1 |
 
-<a name="non-functional-requirements"></a>
+<a id="non-functional-requirements"></a>
 ### 非功能需求
 
 | 需求 | 目標 | 理由 |
@@ -66,7 +66,7 @@
 | 升級率 | < 40% | 成本效率 |
 | CSAT | > 85% | 業務目標 |
 
-<a name="security-requirements"></a>
+<a id="security-requirements"></a>
 ### 安全需求
 
 - 日誌中不得有 PII
@@ -76,10 +76,10 @@
 
 ---
 
-<a name="architecture-design"></a>
+<a id="architecture-design"></a>
 ## 架構設計
 
-<a name="high-level-architecture"></a>
+<a id="high-level-architecture"></a>
 ### 高層架構
 
 ```
@@ -136,7 +136,7 @@ flowchart TD
     AT --> RG
 ```
 
-<a name="conversation-flow"></a>
+<a id="conversation-flow"></a>
 ### 對話流程
 
 ```
@@ -206,10 +206,10 @@ stateDiagram-v2
 
 ---
 
-<a name="component-deep-dives"></a>
+<a id="component-deep-dives"></a>
 ## 元件深度解析
 
-<a name="intent-classification-dec-2025"></a>
+<a id="intent-classification-dec-2025"></a>
 ### 意圖分類（2025 年 12 月）
 
 ```python
@@ -224,7 +224,7 @@ class IntentClassifier:
         return json.loads(result.choices[0].message.content)
 ```
 
-<a name="knowledge-base-gemini-3-flash-rag"></a>
+<a id="knowledge-base-gemini-3-flash-rag"></a>
 ### 知識庫（Gemini 3 Flash RAG）
 
 ```python
@@ -236,7 +236,7 @@ class SupportKnowledgeBase:
         return results
 ```
 
-<a name="response-generation-claude-sonnet-46"></a>
+<a id="response-generation-claude-sonnet-46"></a>
 ### 回應生成（Claude Sonnet 4.6）
 
 ```python
@@ -259,10 +259,10 @@ class ResponseGenerator:
 
 ---
 
-<a name="reliability-patterns"></a>
+<a id="reliability-patterns"></a>
 ## 可靠性模式
 
-<a name="confidence-based-escalation"></a>
+<a id="confidence-based-escalation"></a>
 ### 基於信心值的升級
 
 ```python
@@ -325,7 +325,7 @@ flowchart TD
     E --> H[Queue for Human Agent<br/>with context bundle]
 ```
 
-<a name="multi-turn-memory"></a>
+<a id="multi-turn-memory"></a>
 ### 多輪對話記憶
 
 ```python
@@ -365,10 +365,10 @@ class ConversationMemory:
 
 ---
 
-<a name="evaluation-and-monitoring"></a>
+<a id="evaluation-and-monitoring"></a>
 ## 評估與監控
 
-<a name="quality-metrics"></a>
+<a id="quality-metrics"></a>
 ### 品質指標
 
 ```python
@@ -398,7 +398,7 @@ class QualityMonitor:
             metrics.record(f"quality_{criterion}", score)
 ```
 
-<a name="dashboard-metrics"></a>
+<a id="dashboard-metrics"></a>
 ### 儀表板指標
 
 | 指標 | 目標 | 實際 |
@@ -412,10 +412,10 @@ class QualityMonitor:
 
 ---
 
-<a name="cost-analysis"></a>
+<a id="cost-analysis"></a>
 ## 成本分析
 
-<a name="per-conversation-cost-breakdown-dec-2025"></a>
+<a id="per-conversation-cost-breakdown-dec-2025"></a>
 ### 每次對話成本細分（2025 年 12 月）
 
 | 元件 | 成本 | 備註 |
@@ -427,7 +427,7 @@ class QualityMonitor:
 | 品質抽樣 | $0.0001 | 5% 抽樣率（GPT-5.5） |
 | **合計** | **~$0.0083** | **每次對話（比 2024 年減少 62%）** |
 
-<a name="monthly-cost-projection"></a>
+<a id="monthly-cost-projection"></a>
 ### 每月成本預測
 
 | 項目 | 計算方式 | 成本 |
@@ -440,10 +440,10 @@ class QualityMonitor:
 
 ---
 
-<a name="lessons-learned"></a>
+<a id="lessons-learned"></a>
 ## 學到的經驗
 
-<a name="what-worked"></a>
+<a id="what-worked"></a>
 ### 成效良好之處
 
 1. **基於意圖的路由**：透過聚焦於相關來源的檢索，減少了延遲
@@ -451,14 +451,14 @@ class QualityMonitor:
 3. **帳戶上下文**：使回應更個人化且準確
 4. **較低溫度（0.3）**：改善了支援回應的一致性
 
-<a name="what-did-not-work-initially"></a>
+<a id="what-did-not-work-initially"></a>
 ### 最初不成效之處
 
 1. **對所有任務使用單一模型**：將不同任務路由至不同模型後，品質改善
 2. **升級閾值設定太高**：初始信心值設為 0.9，導致升級次數過多
 3. **完整對話歷史**：超出上下文限制，改用摘要方式處理
 
-<a name="recommendations"></a>
+<a id="recommendations"></a>
 ### 建議
 
 1. 從較高的升級率開始，隨著信心提升逐步降低
@@ -468,7 +468,7 @@ class QualityMonitor:
 
 ---
 
-<a name="interview-walkthrough"></a>
+<a id="interview-walkthrough"></a>
 ## 面試演練
 
 **面試官：**「為一家 SaaS 公司設計 AI 客戶支援系統。」
@@ -498,7 +498,7 @@ class QualityMonitor:
 
 ---
 
-<a name="references"></a>
+<a id="references"></a>
 ## 參考資料
 
 - Anthropic Customer Support Best Practices: https://docs.anthropic.com/claude/docs/customer-service

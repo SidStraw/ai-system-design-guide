@@ -1,9 +1,9 @@
-<a name="case-study-financial-analysis-with-ensemble-verification"></a>
+<a id="case-study-financial-analysis-with-ensemble-verification"></a>
 # 案例研究：使用集成驗證的金融分析
 
 本案例研究涵蓋如何設計一個高可靠性的 AI 系統，用於生成股票研究報告，其中準確性至關重要。
 
-<a name="table-of-contents"></a>
+<a id="table-of-contents"></a>
 ## 目錄
 
 - [問題陳述](#problem-statement)
@@ -17,7 +17,7 @@
 
 ---
 
-<a name="problem-statement"></a>
+<a id="problem-statement"></a>
 ## 問題陳述
 
 **公司：** 生成股票研究報告的投資公司
@@ -36,10 +36,10 @@
 
 ---
 
-<a name="requirements-analysis"></a>
+<a id="requirements-analysis"></a>
 ## 需求分析
 
-<a name="accuracy-requirements"></a>
+<a id="accuracy-requirements"></a>
 ### 準確性需求
 
 | 資料類型 | 容忍度 | 驗證方法 |
@@ -50,7 +50,7 @@
 | 公司名稱 | 100% 準確 | 實體比對 |
 | 分析師引言 | 逐字或標記 | 引言擷取 |
 
-<a name="compliance-requirements"></a>
+<a id="compliance-requirements"></a>
 ### 合規需求
 
 - 所有主張必須引用來源文件
@@ -61,10 +61,10 @@
 
 ---
 
-<a name="architecture-design"></a>
+<a id="architecture-design"></a>
 ## 架構設計
 
-<a name="high-level-pipeline"></a>
+<a id="high-level-pipeline"></a>
 ### 高層管線
 
 ```
@@ -102,7 +102,7 @@ flowchart LR
     D -->|no| H[Human Review Queue]
 ```
 
-<a name="data-flow"></a>
+<a id="data-flow"></a>
 ### 資料流
 
 ```
@@ -175,10 +175,10 @@ flowchart TD
 
 ---
 
-<a name="ensemble-pipeline"></a>
+<a id="ensemble-pipeline"></a>
 ## 集成管線
 
-<a name="stage-1-multimodal-data-extraction-gemini-3-pro"></a>
+<a id="stage-1-multimodal-data-extraction-gemini-3-pro"></a>
 ### 第一階段：多模態資料擷取（Gemini 3 Pro）
 
 ```python
@@ -194,7 +194,7 @@ class FinancialDataExtractor:
         return json.loads(response.text)
 ```
 
-<a name="stage-2-analysis-generation-claude-45-opus"></a>
+<a id="stage-2-analysis-generation-claude-45-opus"></a>
 ### 第二階段：分析生成（Claude 4.5 Opus）
 
 ```python
@@ -210,7 +210,7 @@ class AnalysisEngine:
         )
 ```
 
-<a name="stage-3-audit--verification-o3-reasoning-model"></a>
+<a id="stage-3-audit--verification-o3-reasoning-model"></a>
 ### 第三階段：稽核與驗證（o3 推理模型）
 
 ```python
@@ -229,8 +229,8 @@ class AuditorAgent:
         return self.parse_audit(response)
 ```
 
-<a name="fact-verification"></a>
-<a name="stage-3-fact-verification-with-multi-agent-debate"></a>
+<a id="fact-verification"></a>
+<a id="stage-3-fact-verification-with-multi-agent-debate"></a>
 ### 第三階段：使用多智能體辯論進行事實驗證
 
 辯論階段能夠捕捉單一模型所遺漏的細微幻覺。三個獨立辯論者同時並行驗證每個主張；共識獲勝，異議則將主張標記供人工審核：
@@ -331,10 +331,10 @@ Provide your verdict with evidence.
 
 ---
 
-<a name="quality-gates"></a>
+<a id="quality-gates"></a>
 ## 品質閘門
 
-<a name="automated-quality-checks"></a>
+<a id="automated-quality-checks"></a>
 ### 自動化品質檢查
 
 ```python
@@ -384,7 +384,7 @@ class QualityGate:
         }
 ```
 
-<a name="human-review-interface"></a>
+<a id="human-review-interface"></a>
 ### 人工審核介面
 
 ```python
@@ -408,10 +408,10 @@ class HumanReviewQueue:
 
 ---
 
-<a name="results-and-metrics"></a>
+<a id="results-and-metrics"></a>
 ## 成果與指標
 
-<a name="performance-comparison"></a>
+<a id="performance-comparison"></a>
 ### 效能比較
 
 | 指標 | 人工流程 | AI 管線 | 改進幅度 |
@@ -421,7 +421,7 @@ class HumanReviewQueue:
 | 事實錯誤率 | 2.1% | 0.4% | 降低 81% |
 | 人工審核量 | 100% | 28% | 降低 72% |
 
-<a name="quality-metrics"></a>
+<a id="quality-metrics"></a>
 ### 品質指標
 
 | 品質維度 | 目標 | 達成 |
@@ -431,7 +431,7 @@ class HumanReviewQueue:
 | 面板品質分數 | 4.0/5.0 | 4.2/5.0 |
 | 法規合規性 | 100% | 100% |
 
-<a name="cost-breakdown-dec-2025"></a>
+<a id="cost-breakdown-dec-2025"></a>
 ### 成本分解（2025 年 12 月）
 
 | 元件 | 費用 | 百分比 |
@@ -446,7 +446,7 @@ class HumanReviewQueue:
 
 ---
 
-<a name="interview-walkthrough"></a>
+<a id="interview-walkthrough"></a>
 ## 面試解題流程
 
 **面試官：**「設計一個具有極高準確性需求的 AI 金融研究報告生成系統。」
@@ -486,7 +486,7 @@ class HumanReviewQueue:
 
 ---
 
-<a name="key-learnings"></a>
+<a id="key-learnings"></a>
 ## 關鍵學習
 
 1. **自一致性單獨不足以**用於數值資料擷取。應要求一致同意（k/k 票）。
@@ -501,7 +501,7 @@ class HumanReviewQueue:
 
 ---
 
-<a name="references"></a>
+<a id="references"></a>
 ## 參考資料
 
 - Verga et al. "Replacing Judges with Juries: Evaluating LLM Generations with a Panel of Diverse Models" (2024)

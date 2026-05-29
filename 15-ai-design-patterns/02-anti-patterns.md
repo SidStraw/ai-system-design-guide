@@ -1,9 +1,9 @@
-<a name="ai-anti-patterns"></a>
+<a id="ai-anti-patterns"></a>
 # AI 反模式
 
 認識「不該做什麼」與了解最佳實踐同樣重要。本章整理了 AI 系統設計中的常見錯誤。
 
-<a name="table-of-contents"></a>
+<a id="table-of-contents"></a>
 ## 目錄
 
 - [架構反模式](#architecture-anti-patterns)
@@ -16,10 +16,10 @@
 
 ---
 
-<a name="architecture-anti-patterns"></a>
+<a id="architecture-anti-patterns"></a>
 ## 架構反模式
 
-<a name="the-god-prompt"></a>
+<a id="the-god-prompt"></a>
 ### 神級提示（God Prompt）
 
 **問題：** 單一巨大提示試圖處理所有事情。
@@ -58,7 +58,7 @@ class QueryRouter:
 
 ---
 
-<a name="single-provider-dependency"></a>
+<a id="single-provider-dependency"></a>
 ### 單一供應商依賴
 
 **問題：** 整個系統依賴單一 LLM 供應商。
@@ -93,7 +93,7 @@ class LLMClient:
 
 ---
 
-<a name="premature-fine-tuning"></a>
+<a id="premature-fine-tuning"></a>
 ### 過早微調
 
 **問題：** 在窮盡更簡單的方法之前就進行微調。
@@ -117,10 +117,10 @@ class LLMClient:
 
 ---
 
-<a name="rag-anti-patterns"></a>
+<a id="rag-anti-patterns"></a>
 ## RAG 反模式
 
-<a name="retrieve-everything"></a>
+<a id="retrieve-everything"></a>
 ### 檢索所有內容
 
 **問題：** 不論相關性，一律檢索大量文件。
@@ -147,7 +147,7 @@ context = "\n".join([r.text for r in reranked[:5] if r.score > 0.7])
 
 ---
 
-<a name="no-chunking-strategy"></a>
+<a id="no-chunking-strategy"></a>
 ### 缺乏分塊策略
 
 **問題：** 對文件進行任意或無策略的分塊。
@@ -176,7 +176,7 @@ chunks = semantic_chunker.chunk(
 
 ---
 
-<a name="ignoring-metadata"></a>
+<a id="ignoring-metadata"></a>
 ### 忽略元資料
 
 **問題：** 將所有文件視為純文字一視同仁。
@@ -214,10 +214,10 @@ results = vector_db.search(
 
 ---
 
-<a name="agent-anti-patterns"></a>
+<a id="agent-anti-patterns"></a>
 ## 代理人反模式
 
-<a name="infinite-loop-risk"></a>
+<a id="infinite-loop-risk"></a>
 ### 無限迴圈風險
 
 **問題：** 代理人沒有終止條件。
@@ -260,7 +260,7 @@ return "Step limit reached"
 
 ---
 
-<a name="unsafe-tool-access"></a>
+<a id="unsafe-tool-access"></a>
 ### 不安全的工具存取
 
 **問題：** 賦予代理人不受限制的工具存取權。
@@ -294,7 +294,7 @@ tools = [
 
 ---
 
-<a name="agent-without-memory"></a>
+<a id="agent-without-memory"></a>
 ### 沒有記憶的代理人
 
 **問題：** 代理人每輪對話都從零開始。
@@ -323,10 +323,10 @@ async def handle_message(session_id: str, message: str) -> str:
 
 ---
 
-<a name="prompting-anti-patterns"></a>
+<a id="prompting-anti-patterns"></a>
 ## 提示工程反模式
 
-<a name="vague-instructions"></a>
+<a id="vague-instructions"></a>
 ### 模糊指令
 
 **問題：** 模糊的提示卻期待特定行為。
@@ -367,7 +367,7 @@ Do NOT:
 
 ---
 
-<a name="no-output-format"></a>
+<a id="no-output-format"></a>
 ### 沒有輸出格式
 
 **問題：** 期待結構化輸出卻未指定格式。
@@ -399,10 +399,10 @@ response = await llm.generate(prompt, response_format={"type": "json_object"})
 
 ---
 
-<a name="evaluation-anti-patterns"></a>
+<a id="evaluation-anti-patterns"></a>
 ## 評估反模式
 
-<a name="vibes-based-evaluation"></a>
+<a id="vibes-based-evaluation"></a>
 ### 感覺式評估
 
 **問題：** 以「看起來不錯」作為評估方法。
@@ -440,7 +440,7 @@ metrics = {
 
 ---
 
-<a name="training-on-test-set"></a>
+<a id="training-on-test-set"></a>
 ### 在測試集上訓練
 
 **問題：** 將評估資料用於開發決策。
@@ -474,10 +474,10 @@ final_accuracy = evaluate(test_set)
 
 ---
 
-<a name="production-anti-patterns"></a>
+<a id="production-anti-patterns"></a>
 ## 生產環境反模式
 
-<a name="no-rate-limiting"></a>
+<a id="no-rate-limiting"></a>
 ### 沒有速率限制
 
 **問題：** 不限制每位使用者的 LLM 呼叫次數。
@@ -507,7 +507,7 @@ async def generate():
 
 ---
 
-<a name="no-caching"></a>
+<a id="no-caching"></a>
 ### 沒有快取
 
 **問題：** 每個相同的請求都打到 LLM。
@@ -538,10 +538,10 @@ async def answer_faq(question: str) -> str:
 
 ---
 
-<a name="interview-questions"></a>
+<a id="interview-questions"></a>
 ## 面試題目
 
-<a name="q-what-is-the-biggest-anti-pattern-you-see-in-llm-applications"></a>
+<a id="q-what-is-the-biggest-anti-pattern-you-see-in-llm-applications"></a>
 ### 問：您認為 LLM 應用中最大的反模式是什麼？
 
 **優質回答範例：**
@@ -560,7 +560,7 @@ async def answer_faq(question: str) -> str:
 
 這個原則不只適用於提示。通用原則是：將複雜性分解為專門的元件，而非將一切塞入單一巨型系統。」
 
-<a name="q-how-do-you-avoid-agent-runaway-costs"></a>
+<a id="q-how-do-you-avoid-agent-runaway-costs"></a>
 ### 問：如何避免代理人失控的成本？
 
 **優質回答範例：**

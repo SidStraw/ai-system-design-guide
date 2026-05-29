@@ -1,16 +1,16 @@
 <a id="agent-fundamentals"></a>
-# Agent 基礎
+# 代理基礎
 
 代理是由 LLM 驅動、從「聊天」進一步走向「自主解題」的系統。這個定義已從簡單的 ReAct 迴圈，轉向使用內建「System 2」思考的 **Closed-Loop Reasoning Systems**（Claude Opus 4.7 extended thinking、GPT-5.5 reasoning、DeepSeek-R2、Gemini 3.1 Pro Deep Think）。
 
 <a id="table-of-contents"></a>
 ## 目錄
 
-- [Agent 公式](#formula)
-- [System 1（LLM）vs. System 2（Reasoning Model）](#systems)
-- [代理層級（Autonomous Spectrum）](#levels)
+- [代理公式](#formula)
+- [System 1（LLM）vs. System 2（推理模型）](#systems)
+- [代理層級（自主光譜）](#levels)
 - [核心元件](#components)
-- [Agent 生命週期](#lifecycle)
+- [代理生命週期](#lifecycle)
 - [面試問題](#interview-questions)
 - [參考資料](#references)
 
@@ -18,9 +18,9 @@
 
 <a id="formula"></a>
 <a id="the-agent-formula"></a>
-## Agent 公式
+## 代理公式
 
-現代的 agency 常被描述為：
+現代的 agent 常被描述為：
 `Agent = Reasoning Model + Tool Use + Persistent Memory + Environment Feedback`
 
 **細節補充**：在 2023 年，agents 多半只是包在 chat model 外層的「wrappers」。如今的 agents 越來越 **Integrated**。前沿模型（Claude Opus 4.7、具 reasoning 的 GPT-5.5、DeepSeek-R2）已把「Thinking」流程融入 pre-training，讓 agent loop 更穩定，也更不容易「卡住」。

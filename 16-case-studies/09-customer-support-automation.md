@@ -1,7 +1,7 @@
-<a name="case-study-ai-powered-customer-support"></a>
+<a id="case-study-ai-powered-customer-support"></a>
 # 案例研究：AI 驅動的客戶支援
 
-<a name="the-problem"></a>
+<a id="the-problem"></a>
 ## 問題描述
 
 一家電商公司每月處理 **200 萬張支援工單**。他們希望打造一套 AI 系統，能在無需人工介入的情況下自動解決 60% 的工單，同時將複雜問題無縫升級至人工客服。
@@ -15,14 +15,14 @@
 
 ---
 
-<a name="the-interview-question"></a>
+<a id="the-interview-question"></a>
 ## 面試題目
 
 > 「設計一個客戶支援 AI，能自動處理『我的訂單在哪裡？』，但在遇到『我要控告你們詐欺』時知道應升級至人工處理。」
 
 ---
 
-<a name="solution-architecture"></a>
+<a id="solution-architecture"></a>
 ## 解決方案架構
 
 ```mermaid
@@ -58,10 +58,10 @@ flowchart TB
 
 ---
 
-<a name="key-design-decisions"></a>
+<a id="key-design-decisions"></a>
 ## 關鍵設計決策
 
-<a name="1-three-tier-routing-auto--hybrid--escalate"></a>
+<a id="1-three-tier-routing-auto--hybrid--escalate"></a>
 ### 1. 三層路由（自動 / 混合 / 升級）
 
 **解答：** 並非所有工單都一樣。我們將其分類為三條路徑：
@@ -72,7 +72,7 @@ flowchart TB
 | **混合** | 中等信心或中等風險 | 「我要退款」 | 審核 AI 草稿 |
 | **升級** | 法律、威脅、VIP、低信心 | 「這是詐欺」 | 全程人工處理 |
 
-<a name="2-tool-based-resolution-not-pure-generation"></a>
+<a id="2-tool-based-resolution-not-pure-generation"></a>
 ### 2. 以工具為基礎的解決方式，而非純生成
 
 **解答：** AI 並不「知道」訂單在哪裡——它呼叫 Order API 工具。這對準確性至關重要：
@@ -92,7 +92,7 @@ def get_order_status(order_id: str) -> dict:
 
 LLM 協調工具的呼叫，但絕不捏造資料。
 
-<a name="3-why-safety-check-before-send"></a>
+<a id="3-why-safety-check-before-send"></a>
 ### 3. 為何在發送前進行安全性檢查？
 
 **解答：** 即使是自動解決的工單，也需通過安全性過濾器：
@@ -104,7 +104,7 @@ LLM 協調工具的呼叫，但絕不捏造資料。
 
 ---
 
-<a name="the-escalation-intelligence"></a>
+<a id="the-escalation-intelligence"></a>
 ## 升級智能
 
 最困難的部分是知道**何時**升級。我們使用帶有多重訊號的信心分數：
@@ -128,7 +128,7 @@ flowchart LR
 
 ---
 
-<a name="multilingual-support"></a>
+<a id="multilingual-support"></a>
 ## 多語言支援
 
 12 種語言，無需 12 個獨立模型：
@@ -148,7 +148,7 @@ flowchart LR
 
 ---
 
-<a name="human-takeover-mid-conversation"></a>
+<a id="human-takeover-mid-conversation"></a>
 ## 人工接管（對話中途）
 
 當人工客服接手時，需要完整的上下文：
@@ -180,7 +180,7 @@ def handoff_to_human(conversation_id: str, agent_id: str):
 
 ---
 
-<a name="cost-analysis"></a>
+<a id="cost-analysis"></a>
 ## 成本分析
 
 | 元件 | 每張工單費用 |
@@ -196,7 +196,7 @@ def handoff_to_human(conversation_id: str, agent_id: str):
 
 ---
 
-<a name="interview-follow-up-questions"></a>
+<a id="interview-follow-up-questions"></a>
 ## 面試追問問題
 
 **問：如果 AI 一直道歉卻從未真正解決問題怎麼辦？**
@@ -213,7 +213,7 @@ def handoff_to_human(conversation_id: str, agent_id: str):
 
 ---
 
-<a name="key-takeaways-for-interviews"></a>
+<a id="key-takeaways-for-interviews"></a>
 ## 面試重點整理
 
 1. **分層路由在自動化與風險之間取得平衡**：並非每張工單都應自動解決

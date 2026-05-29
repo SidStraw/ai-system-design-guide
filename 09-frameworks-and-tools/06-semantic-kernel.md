@@ -47,7 +47,7 @@ Semantic Kernel 使用 **Connectors** 來抽象化底層基礎設施。
 ---
 
 <a id="multi-language"></a>
-<a id="multi-language-support-c-vs-python"></a>
+<a id="multi-language-support"></a>
 ## 多語言支援
 
 SK 是少數將 C# 與 Python 視為對等公民的主流框架之一。

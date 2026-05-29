@@ -1,9 +1,9 @@
-<a name="ai-design-patterns"></a>
+<a id="ai-design-patterns"></a>
 # AI 設計模式
 
 本章整理了建構 AI 系統的常見模式，類似於軟體工程中的設計模式。每種模式均包含使用時機、實作指南與取捨說明。
 
-<a name="table-of-contents"></a>
+<a id="table-of-contents"></a>
 ## 目錄
 
 - [RAG 模式](#rag-patterns)
@@ -16,10 +16,10 @@
 
 ---
 
-<a name="rag-patterns"></a>
+<a id="rag-patterns"></a>
 ## RAG 模式
 
-<a name="pattern-naive-rag"></a>
+<a id="pattern-naive-rag"></a>
 ### 模式：樸素 RAG
 
 最簡單的 RAG 實作：
@@ -40,7 +40,7 @@ Query → Embed → Search → Top K → Stuff into prompt → Generate
 
 ---
 
-<a name="pattern-advanced-rag"></a>
+<a id="pattern-advanced-rag"></a>
 ### 模式：進階 RAG
 
 具有多個階段的強化管道：
@@ -77,7 +77,7 @@ class AdvancedRAG:
 
 ---
 
-<a name="pattern-parent-child-retrieval"></a>
+<a id="pattern-parent-child-retrieval"></a>
 ### 模式：父子檢索
 
 檢索小型區塊，回傳較大的父區塊：
@@ -118,7 +118,7 @@ class ParentChildRetriever:
 
 ---
 
-<a name="pattern-self-rag"></a>
+<a id="pattern-self-rag"></a>
 ### 模式：Self-RAG
 
 模型自行決定何時及要檢索什麼：
@@ -156,7 +156,7 @@ class SelfRAG:
 
 ---
 
-<a name="pattern-corrective-rag-crag"></a>
+<a id="pattern-corrective-rag-crag"></a>
 ### 模式：修正式 RAG（CRAG）
 
 評估並修正檢索品質：
@@ -199,10 +199,10 @@ class CorrectiveRAG:
 
 ---
 
-<a name="agent-patterns"></a>
+<a id="agent-patterns"></a>
 ## 代理人模式
 
-<a name="pattern-react"></a>
+<a id="pattern-react"></a>
 ### 模式：ReAct
 
 交錯式推理與行動：
@@ -220,7 +220,7 @@ Thought → Action → Observation → Thought → Action → Observation → An
 
 ---
 
-<a name="pattern-plan-and-execute"></a>
+<a id="pattern-plan-and-execute"></a>
 ### 模式：計畫與執行
 
 先建立計畫，再逐步執行：
@@ -266,7 +266,7 @@ class PlanAndExecuteAgent:
 
 ---
 
-<a name="pattern-criticverifier"></a>
+<a id="pattern-criticverifier"></a>
 ### 模式：評論者／驗證者
 
 一個代理人負責生成，另一個負責評論：
@@ -300,7 +300,7 @@ class CriticPattern:
 
 ---
 
-<a name="pattern-hierarchical-agents"></a>
+<a id="pattern-hierarchical-agents"></a>
 ### 模式：階層式代理人
 
 管理者將任務委派給專業工作者：
@@ -335,10 +335,10 @@ class ManagerAgent:
 
 ---
 
-<a name="optimization-patterns"></a>
+<a id="optimization-patterns"></a>
 ## 最佳化模式
 
-<a name="pattern-cascading-models"></a>
+<a id="pattern-cascading-models"></a>
 ### 模式：層疊模型
 
 路由至成本最低且足夠勝任的模型：
@@ -371,7 +371,7 @@ class ModelCascade:
 
 ---
 
-<a name="pattern-speculative-execution"></a>
+<a id="pattern-speculative-execution"></a>
 ### 模式：推測性執行
 
 以小型模型起草，再以大型模型驗證：
@@ -410,7 +410,7 @@ class SpeculativeExecution:
 
 ---
 
-<a name="pattern-caching-layers"></a>
+<a id="pattern-caching-layers"></a>
 ### 模式：快取層
 
 多層快取策略：
@@ -449,10 +449,10 @@ class CachingLLM:
 
 ---
 
-<a name="reliability-patterns"></a>
+<a id="reliability-patterns"></a>
 ## 可靠性模式
 
-<a name="pattern-retry-with-fallback"></a>
+<a id="pattern-retry-with-fallback"></a>
 ### 模式：重試並備援
 
 ```python
@@ -478,7 +478,7 @@ class RetryWithFallback:
 
 ---
 
-<a name="pattern-circuit-breaker"></a>
+<a id="pattern-circuit-breaker"></a>
 ### 模式：斷路器
 
 ```python
@@ -512,7 +512,7 @@ class CircuitBreaker:
 
 ---
 
-<a name="pattern-bulkhead"></a>
+<a id="pattern-bulkhead"></a>
 ### 模式：隔艙
 
 隔離元件之間的故障：
@@ -533,10 +533,10 @@ agent_bulkhead = BulkheadExecutor(max_concurrent=5)
 
 ---
 
-<a name="cost-patterns"></a>
+<a id="cost-patterns"></a>
 ## 成本模式
 
-<a name="pattern-token-budget"></a>
+<a id="pattern-token-budget"></a>
 ### 模式：Token 預算
 
 ```python
@@ -561,7 +561,7 @@ class TokenBudget:
 
 ---
 
-<a name="pattern-cost-tracking-decorator"></a>
+<a id="pattern-cost-tracking-decorator"></a>
 ### 模式：成本追蹤裝飾器
 
 ```python
@@ -586,10 +586,10 @@ async def generate_response(query: str):
 
 ---
 
-<a name="interview-questions"></a>
+<a id="interview-questions"></a>
 ## 面試題目
 
-<a name="q-describe-three-rag-patterns-and-when-to-use-each"></a>
+<a id="q-describe-three-rag-patterns-and-when-to-use-each"></a>
 ### 問：描述三種 RAG 模式及各自的使用時機。
 
 **優質回答範例：**
@@ -604,7 +604,7 @@ async def generate_response(query: str):
 
 我選擇哪種模式取決於精確度要求、延遲預算與文件特性。我通常從樸素 RAG 建立基準，再迭代至進階 RAG。」
 
-<a name="q-what-reliability-patterns-would-you-use-for-a-production-llm-system"></a>
+<a id="q-what-reliability-patterns-would-you-use-for-a-production-llm-system"></a>
 ### 問：在生產 LLM 系統中，您會採用哪些可靠性模式？
 
 **優質回答範例：**
@@ -627,7 +627,7 @@ async def generate_response(query: str):
 
 ---
 
-<a name="references"></a>
+<a id="references"></a>
 ## 參考資料
 
 - Gao et al. "Retrieval-Augmented Generation for Large Language Models: A Survey" (2024)

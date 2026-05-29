@@ -1,9 +1,9 @@
-<a name="case-study-ai-code-assistant"></a>
+<a id="case-study-ai-code-assistant"></a>
 # 案例研究：AI 程式碼助手
 
 本案例研究涵蓋如何設計一個生產級程式碼助手，提供即時建議、程式碼生成與除錯協助。
 
-<a name="table-of-contents"></a>
+<a id="table-of-contents"></a>
 ## 目錄
 
 - [問題陳述](#problem-statement)
@@ -17,7 +17,7 @@
 
 ---
 
-<a name="problem-statement"></a>
+<a id="problem-statement"></a>
 ## 問題陳述
 
 **公司：** 開發 IDE 擴充功能的開發者工具公司
@@ -36,10 +36,10 @@
 
 ---
 
-<a name="requirements-analysis"></a>
+<a id="requirements-analysis"></a>
 ## 需求分析
 
-<a name="functional-requirements"></a>
+<a id="functional-requirements"></a>
 ### 功能需求
 
 | 功能 | 說明 | 延遲目標 |
@@ -51,7 +51,7 @@
 | 重構 | 建議改進方案 | < 5s |
 | 文件 | 生成 docstring | < 2s |
 
-<a name="quality-requirements"></a>
+<a id="quality-requirements"></a>
 ### 品質需求
 
 | 維度 | 目標 | 衡量方式 |
@@ -63,10 +63,10 @@
 
 ---
 
-<a name="architecture-design"></a>
+<a id="architecture-design"></a>
 ## 架構設計
 
-<a name="high-level-architecture"></a>
+<a id="high-level-architecture"></a>
 ### 高層架構
 
 ```
@@ -128,7 +128,7 @@ flowchart TD
     ES --> ML
 ```
 
-<a name="context-assembly"></a>
+<a id="context-assembly"></a>
 ### 上下文組裝
 
 ```python
@@ -221,10 +221,10 @@ flowchart TD
 
 ---
 
-<a name="code-generation-pipeline"></a>
+<a id="code-generation-pipeline"></a>
 ## 程式碼生成管線
 
-<a name="completion-service-dec-2025"></a>
+<a id="completion-service-dec-2025"></a>
 ### 補全服務（2025 年 12 月）
 
 ```python
@@ -246,7 +246,7 @@ class DeepCompletion:
         )
 ```
 
-<a name="generation-service-the-claude-code-era"></a>
+<a id="generation-service-the-claude-code-era"></a>
 ### 生成服務（Claude Code 時代）
 
 ```python
@@ -270,10 +270,10 @@ class AgenticGeneration:
 
 ---
 
-<a name="quality-assurance"></a>
+<a id="quality-assurance"></a>
 ## 品質保證
 
-<a name="multi-stage-verification"></a>
+<a id="multi-stage-verification"></a>
 ### 多階段驗證
 
 驗證器是一個快速失敗的關卡。便宜的檢查（語法）先執行且強制阻擋；昂貴的檢查（測試執行）最後執行，且僅在上下文允許時進行。任何阻擋性失敗都會短路後續流程：
@@ -358,7 +358,7 @@ class CodeVerifier:
         return result
 ```
 
-<a name="acceptance-optimization"></a>
+<a id="acceptance-optimization"></a>
 ### 採納率優化
 
 ```python
@@ -407,10 +407,10 @@ class AcceptanceOptimizer:
 
 ---
 
-<a name="performance-optimization"></a>
+<a id="performance-optimization"></a>
 ## 效能優化
 
-<a name="latency-optimization"></a>
+<a id="latency-optimization"></a>
 ### 延遲優化
 
 | 技術 | 效益 | 實作方式 |
@@ -421,7 +421,7 @@ class AcceptanceOptimizer:
 | 推測性解碼 | -40% | 草稿模型 + 驗證 |
 | 邊緣快取 | -80ms | CDN 快取常見模式 |
 
-<a name="caching-strategy"></a>
+<a id="caching-strategy"></a>
 ### 快取策略
 
 ```python
@@ -469,10 +469,10 @@ class CompletionCache:
 
 ---
 
-<a name="results-and-metrics"></a>
+<a id="results-and-metrics"></a>
 ## 成果與指標
 
-<a name="performance-results"></a>
+<a id="performance-results"></a>
 ### 效能成果
 
 | 指標 | 目標 | 達成 |
@@ -484,7 +484,7 @@ class CompletionCache:
 | 安全性（0 個高嚴重性）| 100% | 99.8% |
 | 採納率 | > 30% | 34% |
 
-<a name="cost-analysis-dec-2025"></a>
+<a id="cost-analysis-dec-2025"></a>
 ### 成本分析（2025 年 12 月）
 
 | 元件 | 每百萬次建議成本 | 備注 |
@@ -499,7 +499,7 @@ class CompletionCache:
 
 ---
 
-<a name="interview-walkthrough"></a>
+<a id="interview-walkthrough"></a>
 ## 面試解題流程
 
 **面試官：**「設計一個 IDE 的 AI 程式碼助手。」
@@ -536,7 +536,7 @@ class CompletionCache:
 
 ---
 
-<a name="references"></a>
+<a id="references"></a>
 ## 參考資料
 
 - GitHub Copilot Architecture: https://github.blog/

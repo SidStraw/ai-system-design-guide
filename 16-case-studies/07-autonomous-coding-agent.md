@@ -1,7 +1,7 @@
-<a name="case-study-autonomous-coding-agent"></a>
+<a id="case-study-autonomous-coding-agent"></a>
 # 案例研究：自主程式碼代理
 
-<a name="the-problem"></a>
+<a id="the-problem"></a>
 ## 問題描述
 
 一家開發者工具公司希望打造一款 **AI 程式碼助理**，能夠自主完成跨多檔案的任務，例如：「為這個 Express API 新增身份驗證」或「將此模組重構為使用依賴注入」。
@@ -14,14 +14,14 @@
 
 ---
 
-<a name="the-interview-question"></a>
+<a id="the-interview-question"></a>
 ## 面試題目
 
 > 「設計一個程式碼代理，能夠接受『為所有 API 端點新增速率限制』這類任務，並產出可運作、已測試的 Pull Request。」
 
 ---
 
-<a name="solution-architecture"></a>
+<a id="solution-architecture"></a>
 ## 解決方案架構
 
 ```mermaid
@@ -50,27 +50,27 @@ flowchart LR
 
 ---
 
-<a name="key-design-decisions"></a>
+<a id="key-design-decisions"></a>
 ## 關鍵設計決策
 
-<a name="1-why-separate-planner-and-coder-agents"></a>
+<a id="1-why-separate-planner-and-coder-agents"></a>
 ### 1. 為何要將規劃者與程式碼代理分開？
 
 **解答：** 規劃任務需要**對整個程式碼庫進行推理**（需觸碰哪些檔案、存在哪些依賴關係）。程式碼生成任務則需要**精確的語法輸出**。透過分離這兩者，我們可以在規劃時使用延伸思考模式，在程式碼生成時使用快速生成模式。這也讓我們能在規劃完成後設置檢查點，由人類在執行前審核整體方向。
 
-<a name="2-why-e2b-sandbox-instead-of-local-execution"></a>
+<a id="2-why-e2b-sandbox-instead-of-local-execution"></a>
 ### 2. 為何使用 E2B Sandbox 而非本機執行？
 
 **解答：** 安全性。代理會生成並執行程式碼。在本機執行會暴露主機系統。E2B 提供隔離的容器，每次會話結束後重置。若代理生成 `rm -rf /`，也只會毀掉沙盒本身。
 
-<a name="3-why-claude-sonnet-46-for-both"></a>
+<a id="3-why-claude-sonnet-46-for-both"></a>
 ### 3. 為何兩者都使用 Claude Sonnet 4.6？
 
 **解答：** Claude Opus 4.7 在 SWE-bench Pro 以 64.3% 位居榜首，而 Claude Sonnet 4.6 能以約 40% 的費用提供其約 90% 的品質，是每任務需多輪執行的代理的最佳平衡點。我們僅在除錯迴圈中啟用「Extended Thinking」，而非在初始生成階段啟用，以控制成本。
 
 ---
 
-<a name="the-codebase-understanding-problem"></a>
+<a id="the-codebase-understanding-problem"></a>
 ## 程式碼庫理解問題
 
 代理無法將 1,000 個檔案全部放入上下文。我們透過**分層檢索**來解決這個問題：
@@ -102,7 +102,7 @@ flowchart TB
 
 ---
 
-<a name="the-self-correction-loop"></a>
+<a id="the-self-correction-loop"></a>
 ## 自我修正迴圈
 
 代理會發生失敗。可靠性的關鍵在於**結構化的自我修正**：
@@ -137,7 +137,7 @@ async def execute_with_retry(task: str, max_attempts: int = 3):
 
 ---
 
-<a name="cost-breakdown"></a>
+<a id="cost-breakdown"></a>
 ## 成本明細
 
 | 階段 | 模型 | Token 數（平均） | 費用 |
@@ -152,7 +152,7 @@ async def execute_with_retry(task: str, max_attempts: int = 3):
 
 ---
 
-<a name="interview-follow-up-questions"></a>
+<a id="interview-follow-up-questions"></a>
 ## 面試追問問題
 
 **問：如何處理需要跨 20 個以上檔案進行變更的任務？**
@@ -169,7 +169,7 @@ async def execute_with_retry(task: str, max_attempts: int = 3):
 
 ---
 
-<a name="key-takeaways-for-interviews"></a>
+<a id="key-takeaways-for-interviews"></a>
 ## 面試重點整理
 
 1. **將規劃與執行分離**，以便設置檢查點並控制成本

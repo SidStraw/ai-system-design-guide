@@ -1,7 +1,7 @@
-<a name="case-study-document-intelligence-pipeline"></a>
+<a id="case-study-document-intelligence-pipeline"></a>
 # 案例研究：文件智能管線
 
-<a name="the-problem"></a>
+<a id="the-problem"></a>
 ## 問題描述
 
 一家法律科技公司每月需處理 **50,000 份合約**，擷取關鍵條款（當事人、日期、義務、終止條款），並將其載入可搜尋的資料庫。
@@ -15,14 +15,14 @@
 
 ---
 
-<a name="the-interview-question"></a>
+<a id="the-interview-question"></a>
 ## 面試題目
 
 > 「設計一條管線，能夠讀取 100 頁的合約 PDF，並將當事人、生效日期、終止條件和付款條款等結構化資料擷取為 JSON。」
 
 ---
 
-<a name="solution-architecture"></a>
+<a id="solution-architecture"></a>
 ## 解決方案架構
 
 ```mermaid
@@ -59,10 +59,10 @@ flowchart TB
 
 ---
 
-<a name="key-design-decisions"></a>
+<a id="key-design-decisions"></a>
 ## 關鍵設計決策
 
-<a name="1-vision-llm-for-ocr-instead-of-traditional-ocr"></a>
+<a id="1-vision-llm-for-ocr-instead-of-traditional-ocr"></a>
 ### 1. 使用 Vision-LLM 進行 OCR 而非傳統 OCR
 
 **解答：** 掃描合約通常含有印章、手寫批注以及複雜版面（表格、多欄排列）。傳統 OCR（Tesseract）會產生混亂的輸出。Gemini 3 Flash 能「看懂」版面，並產出保留表格的乾淨 Markdown。成本較高，但準確率的提升物有所值。
@@ -73,7 +73,7 @@ flowchart TB
 | AWS Textract | 較佳，版面仍有困難 | 75% | $0.15 |
 | Gemini 3 Flash | 乾淨 Markdown，表格完整 | 92% | $0.35 |
 
-<a name="2-parallel-extractors-vs-single-pass"></a>
+<a id="2-parallel-extractors-vs-single-pass"></a>
 ### 2. 並行擷取器 vs 單次提取
 
 **解答：** 以單一提示要求所有欄位的效果，比使用專門擷取器更差。每個擷取器都有針對性的提示與 Schema：
@@ -102,7 +102,7 @@ async def extract_all(document: str):
     return merge_results(results)
 ```
 
-<a name="3-cross-field-validation"></a>
+<a id="3-cross-field-validation"></a>
 ### 3. 跨欄位驗證
 
 **解答：** 擷取錯誤往往會透過不一致性顯現出來：
@@ -112,7 +112,7 @@ async def extract_all(document: str):
 
 ---
 
-<a name="handling-200-page-documents"></a>
+<a id="handling-200-page-documents"></a>
 ## 處理 200 頁文件
 
 上下文視窗的挑戰：
@@ -142,7 +142,7 @@ flowchart LR
 
 ---
 
-<a name="multilingual-handling"></a>
+<a id="multilingual-handling"></a>
 ## 多語言處理
 
 德文合約使用與英文合約不同的結構。我們維護各語言專屬的擷取器：
@@ -164,7 +164,7 @@ EXTRACTORS = {
 
 ---
 
-<a name="cost-breakdown"></a>
+<a id="cost-breakdown"></a>
 ## 成本明細
 
 | 階段 | 每份 100 頁文件費用 |
@@ -180,7 +180,7 @@ EXTRACTORS = {
 
 ---
 
-<a name="interview-follow-up-questions"></a>
+<a id="interview-follow-up-questions"></a>
 ## 面試追問問題
 
 **問：如果擷取信心度較低怎麼辦？**
@@ -197,7 +197,7 @@ EXTRACTORS = {
 
 ---
 
-<a name="key-takeaways-for-interviews"></a>
+<a id="key-takeaways-for-interviews"></a>
 ## 面試重點整理
 
 1. **Vision-LLM 在複雜版面上勝過傳統 OCR**（表格、批注）

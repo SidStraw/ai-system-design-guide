@@ -60,6 +60,7 @@
 
 **為什麼後端是最好的起點：** 你已經理解 API、延遲、資料庫、分散式系統與正式環境可靠性。AI 應用全都需要這些能力。你的落差主要是領域知識，而不是工程基本功。
 
+<a id="target-roles"></a>
 #### 目標職位
 
 ```
@@ -71,6 +72,7 @@ Backend Engineer
       └──► RAG Architect                  (4–8 months)
 ```
 
+<a id="skill-gap-analysis"></a>
 #### 技能缺口分析
 
 | 你已具備 | 需要補上的缺口 | 優先級 |
@@ -88,6 +90,7 @@ Backend Engineer
 | N/A | Agent framework（LangGraph、CrewAI） | 🟢 較低 |
 | N/A | Fine-tuning 概念（LoRA、RLHF） | 🟢 較低 |
 
+<a id="your-90-day-plan"></a>
 #### 你的 90 天計畫
 
 **第 1 個月：LLM 整合**
@@ -110,6 +113,7 @@ Backend Engineer
 - 閱讀這個 repo：[07-agentic-systems](07-agentic-systems/)、[09-frameworks-and-tools](09-frameworks-and-tools/)、[14-evaluation-and-observability](14-evaluation-and-observability/)
 - 課程：*AI Agents in LangGraph*（DeepLearning.AI，免費）
 
+<a id="portfolio-project-ideas"></a>
 #### 作品集專案點子
 - 具備存取控制的多租戶文件問答服務
 - 會在 GitHub PR 發表評論的 agentic code reviewer
@@ -122,6 +126,7 @@ Backend Engineer
 
 **為什麼這條轉職路徑可行：** 前端工程師理解 UX、即時 UI 更新與使用者行為。AI 產品的成敗往往取決於 UX——串流回應、漸進式渲染、loading state、回饋蒐集。你的技能比你想像中更有價值。
 
+<a id="target-roles-1"></a>
 #### 目標職位
 
 ```
@@ -132,6 +137,7 @@ Frontend Engineer
       └──► Full-Stack LLM Engineer     (6–9 months, add backend LLM skills)
 ```
 
+<a id="skill-gap-analysis-1"></a>
 #### 技能缺口分析
 
 | 你已具備 | 需要補上的缺口 | 優先級 |
@@ -147,6 +153,7 @@ Frontend Engineer
 | N/A | 理解 context window | 🟡 中 |
 | N/A | 基本 RAG 概念（是什麼、為什麼要用） | 🟢 較低 |
 
+<a id="your-90-day-plan-1"></a>
 #### 你的 90 天計畫
 
 **第 1 個月：把 LLM 整合進 UI**
@@ -168,6 +175,7 @@ Frontend Engineer
 - 閱讀這個 repo：[14-evaluation-and-observability](14-evaluation-and-observability/)
 - 課程：*Evaluating and Debugging Generative AI*（DeepLearning.AI + W&B，免費）
 
+<a id="portfolio-project-ideas-1"></a>
 #### 作品集專案點子
 - 支援 AI 建議與行內引用的串流文件編輯器
 - 具持久化上下文的多步驟 AI 表單精靈
@@ -180,6 +188,7 @@ Frontend Engineer
 
 **為什麼 QA 是最被低估的路徑：** AI evaluation 本質上就是一種新的 QA。手動測試案例設計、邊界情境思維、避免回歸——這些正是 AI 系統最需要的能力。差別在於工具不同，而且你需要調整對非決定性輸出的思維方式。
 
+<a id="target-roles-2"></a>
 #### 目標職位
 
 ```
@@ -190,6 +199,7 @@ QA Engineer
       └──► Red Team Analyst            (6–9 months, security focus)
 ```
 
+<a id="skill-gap-analysis-2"></a>
 #### 技能缺口分析
 
 | 你已具備 | 需要補上的缺口 | 優先級 |
@@ -205,6 +215,7 @@ QA Engineer
 | N/A | 基本 prompt engineering | 🟢 較低 |
 | N/A | 用於 eval pipeline 的 Python scripting | 🟢 較低 |
 
+<a id="your-90-day-plan-2"></a>
 #### 你的 90 天計畫
 
 **第 1 個月：Error Analysis 基礎**
@@ -228,6 +239,7 @@ QA Engineer
 - 建立每週 eval report dashboard
 - 課程：*Evals for AI*（Maven，Hamel + Shreya——付費，但很值得拿來做職涯轉換）
 
+<a id="portfolio-project-ideas-2"></a>
 #### 作品集專案點子
 - 為公開 LLM 應用打造 open-source eval suite
 - 部落格文章：〈我是如何用 QA 方法論抓出 LLM 失敗模式〉
@@ -240,6 +252,7 @@ QA Engineer
 
 **為什麼 PM 有獨特優勢：** AI 產品失敗通常不是因為模型不好，而是因為產品決策錯了（問題定義錯、eval criteria 錯、success metrics 錯）。真正理解 AI failure modes 的 PM 非常稀缺，因此也非常搶手。
 
+<a id="target-roles-3"></a>
 #### 目標職位
 
 ```
@@ -250,6 +263,7 @@ Product Manager
       └──► Head of AI Product           (9–18 months, leadership path)
 ```
 
+<a id="skill-gap-analysis-3"></a>
 #### 技能缺口分析
 
 | 你已具備 | 需要補上的缺口 | 優先級 |
@@ -265,6 +279,7 @@ Product Manager
 | N/A | Tracing / observability 工具（Langfuse UI） | 🟡 中 |
 | N/A | Prompt engineering 基礎 | 🟢 較低 |
 
+<a id="your-90-day-plan-3"></a>
 #### 你的 90 天計畫
 
 **第 1 個月：建立技術詞彙**
@@ -287,6 +302,7 @@ Product Manager
 - 為下一季設定包含 AI quality gates 的成功指標（不只看使用者成長）
 - 課程：*Evals for AI*（Maven，Hamel + Shreya——明確為 PM 設計）
 
+<a id="skills-that-make-you-stand-out-as-an-ai-pm"></a>
 #### 讓你成為突出 AI PM 的技能
 - 你親自看過 traces（大多數 PM 會把這件事委派出去）
 - 你能用量化方式，而不只是定性方式，定義 failure modes
@@ -300,6 +316,7 @@ Product Manager
 
 **EM 的轉變在於領導力升級：** AI 技術素養是必要條件，但還不夠。真正的關鍵轉變，是管理非決定性系統、管理在沒有 ground truth 下仍要評估品質的團隊，以及面對一個每 3–6 個月就快速改變的領域。
 
+<a id="target-roles-4"></a>
 #### 目標職位
 
 ```
@@ -310,6 +327,7 @@ Engineering Manager
       └──► VP of AI / Head of AI        (18–36 months)
 ```
 
+<a id="what-changes-as-an-ai-em"></a>
 #### 成為 AI EM 之後有什麼不同
 
 | 傳統 EM | AI EM 新增的責任 |
@@ -321,6 +339,7 @@ Engineering Manager
 | 以 feature flags 規劃 roadmap | 以模型升級風險規劃 roadmap |
 | 以交付表現做績效評估 | 績效評估需納入 AI 品質 ownership |
 
+<a id="your-90-day-plan-4"></a>
 #### 你的 90 天計畫
 
 **第 1 個月：技術深度**
@@ -348,6 +367,7 @@ Engineering Manager
 
 **為什麼平台工程師在這裡會表現出色：** Kubernetes、CI/CD、observability、成本管理、SLA——這些你都做過。AI 特有的新加成是 GPU scheduling、model serving 與 LLMOps pipeline。
 
+<a id="target-roles-5"></a>
 #### 目標職位
 
 ```
@@ -358,6 +378,7 @@ DevOps / Platform Engineer
       └──► AI Platform Engineer         (9–12 months)
 ```
 
+<a id="skill-gap-analysis-4"></a>
 #### 技能缺口分析
 
 | 你已具備 | 需要補上的缺口 | 優先級 |
@@ -372,6 +393,7 @@ DevOps / Platform Engineer
 | N/A | Quantization 基礎（GPTQ、AWQ、GGUF） | 🟡 中 |
 | N/A | 為了理解你在服務什麼而需要的基本 prompt engineering | 🟢 較低 |
 
+<a id="your-90-day-plan-5"></a>
 #### 你的 90 天計畫
 
 **第 1 個月：LLM Serving**
@@ -400,6 +422,7 @@ DevOps / Platform Engineer
 
 **為什麼資料工程師至關重要：** 訓練資料才是 AI 系統的競爭護城河。資料 pipeline、品質與新鮮度，往往比模型架構更能決定表現。你的技能可以立刻派上用場。
 
+<a id="target-roles-6"></a>
 #### 目標職位
 
 ```
@@ -410,6 +433,7 @@ Data Engineer
       └──► Fine-tuning Data Specialist  (4–8 months)
 ```
 
+<a id="skill-gap-analysis-5"></a>
 #### 技能缺口分析
 
 | 你已具備 | 需要補上的缺口 | 優先級 |
@@ -424,6 +448,7 @@ Data Engineer
 | N/A | Fine-tuning annotation pipeline 設計 | 🟢 較低 |
 | N/A | RLHF preference data format | 🟢 較低 |
 
+<a id="your-90-day-plan-6"></a>
 #### 你的 90 天計畫
 
 **第 1 個月：RAG 資料 Pipeline**
