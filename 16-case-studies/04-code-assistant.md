@@ -1,65 +1,73 @@
-# Case Study: AI Code Assistant
+<a name="case-study-ai-code-assistant"></a>
+# 案例研究：AI 程式碼助手
 
-This case study covers designing a production code assistant that provides real-time suggestions, code generation, and debugging help.
+本案例研究涵蓋如何設計一個生產級程式碼助手，提供即時建議、程式碼生成與除錯協助。
 
-## Table of Contents
+<a name="table-of-contents"></a>
+## 目錄
 
-- [Problem Statement](#problem-statement)
-- [Requirements Analysis](#requirements-analysis)
-- [Architecture Design](#architecture-design)
-- [Code Generation Pipeline](#code-generation-pipeline)
-- [Quality Assurance](#quality-assurance)
-- [Performance Optimization](#performance-optimization)
-- [Results and Metrics](#results-and-metrics)
-- [Interview Walkthrough](#interview-walkthrough)
-
----
-
-## Problem Statement
-
-**Company:** Developer tools company building IDE extension
-
-**Goal:**
-- Real-time code completion as developers type
-- Multi-line code generation from natural language
-- Code explanation and debugging assistance
-- Support for 20+ programming languages
-
-**Constraints:**
-- Latency < 200ms for completions (typing flow)
-- Latency < 3s for generation (acceptable pause)
-- Security: no code leaves customer infrastructure (enterprise option)
-- Cost: sustainable at scale (millions of developers)
+- [問題陳述](#problem-statement)
+- [需求分析](#requirements-analysis)
+- [架構設計](#architecture-design)
+- [程式碼生成管線](#code-generation-pipeline)
+- [品質保證](#quality-assurance)
+- [效能優化](#performance-optimization)
+- [成果與指標](#results-and-metrics)
+- [面試解題流程](#interview-walkthrough)
 
 ---
 
-## Requirements Analysis
+<a name="problem-statement"></a>
+## 問題陳述
 
-### Functional Requirements
+**公司：** 開發 IDE 擴充功能的開發者工具公司
 
-| Feature | Description | Latency Target |
-|---------|-------------|----------------|
-| Inline completion | Complete current line/block | < 200ms |
-| Multi-line generation | Generate function/class from comment | < 3s |
-| Code explanation | Explain selected code | < 5s |
-| Error fixing | Suggest fixes for errors | < 2s |
-| Refactoring | Suggest improvements | < 5s |
-| Documentation | Generate docstrings | < 2s |
+**目標：**
+- 開發者輸入時即時補全程式碼
+- 從自然語言生成多行程式碼
+- 程式碼解說與除錯協助
+- 支援 20 種以上程式語言
 
-### Quality Requirements
-
-| Dimension | Target | Measurement |
-|-----------|--------|-------------|
-| Acceptance rate | > 30% | Suggestions accepted / shown |
-| Syntax correctness | > 99% | Compiles/parses successfully |
-| Security | 0 vulnerabilities | SAST scan pass rate |
-| Relevance | > 85% | User ratings |
+**限制：**
+- 補全的延遲 < 200ms（維持打字流暢度）
+- 生成的延遲 < 3s（可接受的停頓）
+- 安全性：程式碼不離開客戶基礎設施（企業選項）
+- 成本：在大規模下可持續（數百萬開發者）
 
 ---
 
-## Architecture Design
+<a name="requirements-analysis"></a>
+## 需求分析
 
-### High-Level Architecture
+<a name="functional-requirements"></a>
+### 功能需求
+
+| 功能 | 說明 | 延遲目標 |
+|-----|------|---------|
+| 行內補全 | 補全目前行/區塊 | < 200ms |
+| 多行生成 | 從註解生成函式/類別 | < 3s |
+| 程式碼解說 | 解說選取的程式碼 | < 5s |
+| 錯誤修正 | 建議錯誤的修正方案 | < 2s |
+| 重構 | 建議改進方案 | < 5s |
+| 文件 | 生成 docstring | < 2s |
+
+<a name="quality-requirements"></a>
+### 品質需求
+
+| 維度 | 目標 | 衡量方式 |
+|-----|------|---------|
+| 採納率 | > 30% | 被採納的建議 / 顯示的建議 |
+| 語法正確率 | > 99% | 成功編譯/解析 |
+| 安全性 | 0 個漏洞 | SAST 掃描通過率 |
+| 相關性 | > 85% | 使用者評分 |
+
+---
+
+<a name="architecture-design"></a>
+## 架構設計
+
+<a name="high-level-architecture"></a>
+### 高層架構
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -98,7 +106,7 @@ This case study covers designing a production code assistant that provides real-
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-The architecture as a flow. Three service tiers split by latency vs quality (completion is sub-200ms, generation and explanation are quality-prioritized) all share one model layer:
+整個架構以流程圖呈現。三個服務層依延遲與品質分層（補全需低於 200ms，生成與解說優先品質），共用同一個模型層：
 
 ```mermaid
 flowchart TD
@@ -120,7 +128,8 @@ flowchart TD
     ES --> ML
 ```
 
-### Context Assembly
+<a name="context-assembly"></a>
+### 上下文組裝
 
 ```python
 class CodeContextAssembler:
@@ -195,7 +204,7 @@ class CodeContextAssembler:
         return f"{before_text}\n<CURSOR>\n{after_text}"
 ```
 
-Context assembly is a priority-driven budget allocation. The model only sees what survives the 4000-token cap, so the order matters: immediate code first (always fits), then related definitions, then other open files only if budget remains:
+上下文組裝採用優先級驅動的預算分配機制。模型只能看到在 4000 token 上限內存活的內容，因此順序至關重要：首先是立即程式碼（一定放得下），其次是相關定義，最後在預算足夠時才加入其他開啟的檔案：
 
 ```mermaid
 flowchart TD
@@ -212,9 +221,11 @@ flowchart TD
 
 ---
 
-## Code Generation Pipeline
+<a name="code-generation-pipeline"></a>
+## 程式碼生成管線
 
-### Completion Service (Dec 2025)
+<a name="completion-service-dec-2025"></a>
+### 補全服務（2025 年 12 月）
 
 ```python
 class DeepCompletion:
@@ -235,7 +246,8 @@ class DeepCompletion:
         )
 ```
 
-### Generation Service (The 'Claude Code' Era)
+<a name="generation-service-the-claude-code-era"></a>
+### 生成服務（Claude Code 時代）
 
 ```python
 class AgenticGeneration:
@@ -254,15 +266,17 @@ class AgenticGeneration:
 ```
 
 > [!TIP]
-> **Production Choice:** While Claude Opus 4.7 is a coding beast, **Claude Sonnet 4.6** is the preferred production choice in Dec 2025 for IDEs due to its **Hybrid Reasoning**: developers can toggle "Thinking" for hard bugs and "Fast" for boilerplate.
+> **生產選擇：** 雖然 Claude Opus 4.7 是程式碼生成的強力選手，但在 2025 年 12 月，**Claude Sonnet 4.6** 是 IDE 的首選生產方案，因其具備**混合推理**能力：開發者可切換「思考」模式處理困難 bug，或切換「快速」模式處理樣板程式碼。
 
 ---
 
-## Quality Assurance
+<a name="quality-assurance"></a>
+## 品質保證
 
-### Multi-Stage Verification
+<a name="multi-stage-verification"></a>
+### 多階段驗證
 
-The verifier is a fail-fast gauntlet. Cheap checks (syntax) run first and block hard; expensive checks (test execution) run last and only when context allows. Any blocking failure short-circuits the rest:
+驗證器是一個快速失敗的關卡。便宜的檢查（語法）先執行且強制阻擋；昂貴的檢查（測試執行）最後執行，且僅在上下文允許時進行。任何阻擋性失敗都會短路後續流程：
 
 ```mermaid
 flowchart TD
@@ -344,7 +358,8 @@ class CodeVerifier:
         return result
 ```
 
-### Acceptance Optimization
+<a name="acceptance-optimization"></a>
+### 採納率優化
 
 ```python
 class AcceptanceOptimizer:
@@ -392,19 +407,22 @@ class AcceptanceOptimizer:
 
 ---
 
-## Performance Optimization
+<a name="performance-optimization"></a>
+## 效能優化
 
-### Latency Optimization
+<a name="latency-optimization"></a>
+### 延遲優化
 
-| Technique | Impact | Implementation |
-|-----------|--------|----------------|
-| Request debouncing | -50ms | 150ms debounce in IDE |
-| Connection pooling | -30ms | Persistent HTTP/2 |
-| Model warm-up | -100ms | Pre-loaded models |
-| Speculative decoding | -40% | Draft model + verify |
-| Edge caching | -80ms | CDN for common patterns |
+| 技術 | 效益 | 實作方式 |
+|-----|------|---------|
+| 請求防抖（Debounce）| -50ms | IDE 中 150ms 防抖 |
+| 連線池化 | -30ms | 持久化 HTTP/2 |
+| 模型預熱 | -100ms | 預先載入模型 |
+| 推測性解碼 | -40% | 草稿模型 + 驗證 |
+| 邊緣快取 | -80ms | CDN 快取常見模式 |
 
-### Caching Strategy
+<a name="caching-strategy"></a>
+### 快取策略
 
 ```python
 class CompletionCache:
@@ -451,70 +469,75 @@ class CompletionCache:
 
 ---
 
-## Results and Metrics
+<a name="results-and-metrics"></a>
+## 成果與指標
 
-### Performance Results
+<a name="performance-results"></a>
+### 效能成果
 
-| Metric | Target | Achieved |
-|--------|--------|----------|
-| Completion latency (p50) | < 200ms | 145ms |
-| Completion latency (p99) | < 500ms | 380ms |
-| Generation latency (p50) | < 3s | 2.1s |
-| Syntax correctness | > 99% | 99.5% |
-| Security (0 high severity) | 100% | 99.8% |
-| Acceptance rate | > 30% | 34% |
+| 指標 | 目標 | 達成 |
+|-----|------|------|
+| 補全延遲（p50）| < 200ms | 145ms |
+| 補全延遲（p99）| < 500ms | 380ms |
+| 生成延遲（p50）| < 3s | 2.1s |
+| 語法正確率 | > 99% | 99.5% |
+| 安全性（0 個高嚴重性）| 100% | 99.8% |
+| 採納率 | > 30% | 34% |
 
-### Cost Analysis (Dec 2025)
+<a name="cost-analysis-dec-2025"></a>
+### 成本分析（2025 年 12 月）
 
-| Component | Cost per 1M suggestions | Notes |
-|-----------|------------------------|-------|
-| **Completion (o4-mini)** | $0.20 | Extremely optimized for volume |
-| **Agentic Task (Claude Sonnet 4.6)** | $45.00 | Assuming 10k tokens + Thinking |
-| **Verification (Local)** | $0.00 | Shifted to on-device Nano |
-| **Infrastructure** | $15.00 | Managed GPU serving |
-| **Total (Blended)** | **~$12.00** | **90% reduction vs 2024** |
+| 元件 | 每百萬次建議成本 | 備注 |
+|-----|----------------|------|
+| **補全（o4-mini）** | $0.20 | 針對大量請求極致優化 |
+| **智能體任務（Claude Sonnet 4.6）** | $45.00 | 假設 10k tokens + 思考模式 |
+| **驗證（本地）** | $0.00 | 轉移至設備端 Nano |
+| **基礎設施** | $15.00 | 託管 GPU 服務 |
+| **總計（混合）** | **~$12.00** | **與 2024 年相比降低 90%** |
 
-*Blended cost assumes 98% completions, 2% high-value agentic refactors.*
-
----
-
-## Interview Walkthrough
-
-**Interviewer:** "Design an AI code assistant for an IDE."
-
-**Strong response:**
-
-1. **Clarify requirements** (1 min)
-   - "What's the target latency for completions vs generations?"
-   - "Enterprise deployment with on-prem option?"
-   - "What languages need support?"
-
-2. **Identify the key challenge** (1 min)
-   - "The core tension is latency vs quality. Completions need < 200ms for typing flow, but good code requires rich context and verification."
-
-3. **Two-tier architecture** (3 min)
-   - "I would separate completions (fast) from generations (quality):"
-   - "Completions: smaller model, minimal context, speculative decoding"
-   - "Generations: frontier model, best-of-N, syntax and security verification"
-
-4. **Context assembly** (2 min)
-   - "Context is critical. I prioritize: immediate code > imports/definitions > open files"
-   - "For completions, I cap at 2K tokens for speed"
-   - "For generations, I can use 8K+ tokens for better understanding"
-
-5. **Quality assurance** (2 min)
-   - "Every suggestion runs through: syntax check, security scan, optionally type check"
-   - "For generations, I use best-of-N with 8 candidates, filter invalid, score and select"
-   - "This catches security vulnerabilities before they reach the developer"
-
-6. **Latency optimization** (2 min)
-   - "Request debouncing in IDE, connection pooling, model warm-up"
-   - "Speculative decoding for 40% latency reduction"
-   - "Caching common patterns (imports, boilerplate)"
+*混合成本假設 98% 為補全請求，2% 為高價值智能體重構。*
 
 ---
 
-## References
+<a name="interview-walkthrough"></a>
+## 面試解題流程
+
+**面試官：**「設計一個 IDE 的 AI 程式碼助手。」
+
+**優秀回答：**
+
+1. **釐清需求**（1 分鐘）
+   - 「補全與生成的目標延遲分別是多少？」
+   - 「是否需要支援企業本地部署選項？」
+   - 「需要支援哪些程式語言？」
+
+2. **識別關鍵挑戰**（1 分鐘）
+   - 「核心矛盾在於延遲與品質之間的取捨。補全需要低於 200ms 以維持打字流暢度，但優質程式碼需要豐富的上下文與驗證。」
+
+3. **雙層架構**（3 分鐘）
+   - 「我會將補全（快速）與生成（品質）分開：」
+   - 「補全：較小的模型、最少的上下文、推測性解碼」
+   - 「生成：前沿模型、N 選最佳、語法與安全性驗證」
+
+4. **上下文組裝**（2 分鐘）
+   - 「上下文至關重要。優先順序：立即程式碼 > 匯入/定義 > 開啟的檔案」
+   - 「對於補全，我限制在 2K tokens 以確保速度」
+   - 「對於生成，我可使用 8K+ tokens 以獲得更好的理解」
+
+5. **品質保證**（2 分鐘）
+   - 「每個建議都要通過：語法檢查、安全掃描、選擇性型別檢查」
+   - 「對於生成，我使用 N 選最佳（8 個候選），過濾無效項，評分後選擇」
+   - 「這能在漏洞到達開發者之前就將其攔截」
+
+6. **延遲優化**（2 分鐘）
+   - 「IDE 中的請求防抖、連線池化、模型預熱」
+   - 「推測性解碼降低 40% 延遲」
+   - 「快取常見模式（匯入、樣板程式碼）」
+
+---
+
+<a name="references"></a>
+## 參考資料
 
 - GitHub Copilot Architecture: https://github.blog/
 - Codestral: https://mistral.ai/news/codestral/
@@ -522,4 +545,4 @@ class CompletionCache:
 
 ---
 
-*Next: [Content Moderation Case Study](04-content-moderation.md)*
+*下一篇：[內容審核案例研究](04-content-moderation.md)*
