@@ -1,25 +1,29 @@
-# Case Study: Multi-Tenant AI SaaS Platform
+<a name="case-study-multi-tenant-ai-saas-platform"></a>
+# 案例研究：多租戶 AI SaaS 平台
 
-## The Problem
+<a name="the-problem"></a>
+## 問題描述
 
-A B2B startup is building an **AI-powered document analysis platform** where each customer uploads their own contracts, and the AI answers questions about them. Customers include competitors who must never see each other's data.
+一家 B2B 新創公司正在打造一個 **AI 驅動的文件分析平台**，每位客戶可上傳自己的合約，並由 AI 回答相關問題。客戶群中包含競爭對手，彼此的資料絕對不能互相洩漏。
 
-**Constraints given in the interview:**
-- 500 enterprise customers, each with 10,000-100,000 documents
-- Absolute data isolation: Customer A's data cannot leak to Customer B
-- Shared infrastructure for cost efficiency
-- Compliance: SOC 2 Type II, GDPR
-- Query latency under 2 seconds
-
----
-
-## The Interview Question
-
-> "Design a multi-tenant RAG system where Coca-Cola and Pepsi can both be customers, and there is zero risk of cross-tenant data leakage."
+**面試中給定的限制：**
+- 500 家企業客戶，每家擁有 10,000 至 100,000 份文件
+- 絕對的資料隔離：客戶 A 的資料不得洩漏至客戶 B
+- 共用基礎架構以降低成本
+- 合規要求：SOC 2 Type II、GDPR
+- 查詢延遲低於 2 秒
 
 ---
 
-## Solution Architecture
+<a name="the-interview-question"></a>
+## 面試題目
+
+> 「設計一個多租戶 RAG 系統，讓可口可樂與百事可樂都能成為客戶，且跨租戶資料洩漏的風險為零。」
+
+---
+
+<a name="solution-architecture"></a>
+## 解決方案架構
 
 ```mermaid
 flowchart TB
@@ -50,35 +54,40 @@ flowchart TB
 
 ---
 
-## Key Design Decisions
+<a name="key-design-decisions"></a>
+## 關鍵設計決策
 
-### 1. Hybrid Isolation: Namespace vs Physical
+<a name="1-hybrid-isolation-namespace-vs-physical"></a>
+### 1. 混合隔離：命名空間隔離 vs 實體隔離
 
-**Answer:** Pure physical isolation (one database per tenant) is expensive. Pure namespace isolation (shared database with tenant_id filter) has leakage risk if a filter bug occurs. We use a **tiered approach**:
+**解答：** 純實體隔離（每個租戶一個資料庫）成本極高。純命名空間隔離（共用資料庫加 tenant_id 過濾）若發生過濾器漏洞則有洩漏風險。我們採用**分層方式**：
 
-| Tier | Tenant Size | Isolation Method | Why |
+| 層級 | 租戶規模 | 隔離方式 | 原因 |
 |------|-------------|------------------|-----|
-| Standard | <50K docs | Namespace in shared Qdrant | Cost efficient |
-| Premium | 50K-500K docs | Dedicated Qdrant collection | Performance isolation |
-| Enterprise | >500K docs | Dedicated Qdrant pod | Physical + regulatory |
+| 標準 | 文件數 < 50K | 共用 Qdrant 的命名空間隔離 | 成本效益 |
+| 進階 | 文件數 50K–500K | 專屬 Qdrant Collection | 效能隔離 |
+| 企業 | 文件數 > 500K | 專屬 Qdrant Pod | 實體隔離 + 法規遵循 |
 
-### 2. Defense in Depth for Data Isolation
+<a name="2-defense-in-depth-for-data-isolation"></a>
+### 2. 資料隔離的縱深防禦
 
-**Answer:** We never trust a single layer. Our isolation stack:
+**解答：** 我們絕不依賴單一層級。我們的隔離堆疊：
 
-1. **API Gateway**: Validates tenant_id from JWT, rejects cross-tenant requests
-2. **Database Layer**: Row-level security (RLS) enforces tenant_id filter at DB level
-3. **Application Layer**: ORM wrapper automatically injects tenant filter
-4. **LLM Layer**: System prompt explicitly states "You are answering for Tenant X only"
-5. **Output Layer**: Post-generation filter scans for any document IDs not belonging to tenant
+1. **API Gateway**：從 JWT 驗證 tenant_id，拒絕跨租戶請求
+2. **資料庫層**：資料列層級安全性（RLS）在資料庫層強制執行 tenant_id 過濾
+3. **應用層**：ORM 封裝器自動注入租戶過濾條件
+4. **LLM 層**：系統提示明確說明「您正在為租戶 X 提供答覆」
+5. **輸出層**：生成後過濾器掃描任何不屬於該租戶的文件 ID
 
-### 3. Why Not One Vector DB Per Tenant?
+<a name="3-why-not-one-vector-db-per-tenant"></a>
+### 3. 為何不為每個租戶建立獨立的 Vector DB？
 
-**Answer:** 500 tenants × $100/month per managed instance = $50K/month just for databases. By using namespace isolation for 80% of tenants, we reduce this to $8K/month. The remaining 20% on dedicated infrastructure pay a premium tier price.
+**解答：** 500 個租戶 × 每個託管實例 $100/月 = 僅資料庫就需 $50,000/月。透過對 80% 的租戶採用命名空間隔離，可將此成本降至 $8,000/月。其餘 20% 使用專屬基礎架構，支付進階方案費用。
 
 ---
 
-## The Data Ingestion Pipeline
+<a name="the-data-ingestion-pipeline"></a>
+## 資料攝取管線
 
 ```mermaid
 flowchart LR
@@ -100,22 +109,25 @@ flowchart LR
     end
 ```
 
-**Critical:** The tenant_id is attached at the **earliest possible point** (upload validation) and travels with the document through every stage. It is not derived or looked up later.
+**重要：** tenant_id 在**最早的可能時間點**（上傳驗證時）附加，並隨著文件流經每個處理階段。它不是在後續步驟中推導或查詢得到的。
 
 ---
 
-## Handling the Compliance Requirements
+<a name="handling-the-compliance-requirements"></a>
+## 處理合規要求
 
+<a name="soc-2-type-ii"></a>
 ### SOC 2 Type II
 
-| Control | Implementation |
+| 控制項 | 實作方式 |
 |---------|----------------|
-| Access logging | Every query logged with tenant_id, user_id, timestamp |
-| Encryption at rest | AES-256 for blob storage, database-native for vector DB |
-| Encryption in transit | TLS 1.3 everywhere |
-| Access reviews | Automated quarterly reports from audit logs |
+| 存取日誌 | 每次查詢均記錄 tenant_id、user_id、時間戳記 |
+| 靜態加密 | Blob 儲存使用 AES-256，Vector DB 使用原生資料庫加密 |
+| 傳輸加密 | 全面採用 TLS 1.3 |
+| 存取審查 | 從稽核日誌自動產生季度報告 |
 
-### GDPR Right to Deletion
+<a name="gdpr-right-to-deletion"></a>
+### GDPR 刪除權
 
 ```python
 async def delete_tenant_data(tenant_id: str):
@@ -134,43 +146,46 @@ async def delete_tenant_data(tenant_id: str):
 
 ---
 
-## Cost Analysis (500 Tenants)
+<a name="cost-analysis-500-tenants"></a>
+## 成本分析（500 個租戶）
 
-| Component | Monthly Cost |
+| 元件 | 每月費用 |
 |-----------|--------------|
-| Shared Vector DB (Qdrant Cloud) | $2,500 |
-| Dedicated pods (20 enterprise tenants) | $4,000 |
-| LLM costs (pooled, GPT-4o-mini) | $8,000 |
-| Blob storage (S3) | $1,500 |
-| Audit logging (CloudWatch) | $500 |
-| **Total** | **$16,500/month** |
-| **Per tenant average** | **$33/month** |
+| 共用 Vector DB（Qdrant Cloud） | $2,500 |
+| 專屬 Pod（20 個企業租戶） | $4,000 |
+| LLM 費用（共用池，GPT-4o-mini） | $8,000 |
+| Blob 儲存（S3） | $1,500 |
+| 稽核日誌（CloudWatch） | $500 |
+| **總計** | **$16,500/月** |
+| **每租戶平均** | **$33/月** |
 
 ---
 
-## Interview Follow-Up Questions
+<a name="interview-follow-up-questions"></a>
+## 面試追問問題
 
-**Q: What if a bug in your ORM bypasses the tenant filter?**
+**問：如果 ORM 中的漏洞繞過了租戶過濾器怎麼辦？**
 
-A: Defense in depth. Even if the ORM fails, the database enforces RLS (Row-Level Security). The query `SELECT * FROM documents` internally becomes `SELECT * FROM documents WHERE tenant_id = current_tenant()`. This is enforced at the Postgres level, not the application level.
+答：縱深防禦。即使 ORM 失效，資料庫仍會強制執行 RLS（資料列層級安全性）。查詢 `SELECT * FROM documents` 在內部會變成 `SELECT * FROM documents WHERE tenant_id = current_tenant()`，這是在 Postgres 層級強制執行的，而非應用程式層級。
 
-**Q: How do you handle a tenant who wants to export all their data?**
+**問：如何處理想匯出所有資料的租戶？**
 
-A: We provide a data portability API that streams all documents with their embeddings and metadata. The export is triggered by an admin, logged in the audit trail, and delivered to a customer-controlled S3 bucket (not our infrastructure).
+答：我們提供資料可攜性 API，以串流方式傳送所有文件及其嵌入向量和中繼資料。匯出由管理員觸發，記錄在稽核日誌中，並傳送至客戶自控的 S3 儲存桶（而非我們的基礎架構）。
 
-**Q: What if the LLM hallucinates information from its training data that matches a competitor's confidential info?**
+**問：如果 LLM 從訓練資料中幻覺出符合競爭對手機密資訊的內容怎麼辦？**
 
-A: This is a real risk. We mitigate by: (1) Using only retrieval-grounded generation (the LLM cannot answer without retrieved docs). (2) Filtering outputs for any content that does not trace back to the tenant's uploaded documents. (3) Offering a "private model" tier where we fine-tune a tenant-specific model on their data only.
-
----
-
-## Key Takeaways for Interviews
-
-1. **Multi-tenancy is about layers**: never rely on a single isolation mechanism
-2. **Tiered isolation balances cost and security**: not all tenants need dedicated infrastructure
-3. **Tenant ID must be immutable and early**: tag at upload, not at query time
-4. **Compliance is an architecture concern**: design for audit, deletion, and portability from day one
+答：這是真實存在的風險。我們的緩解措施：(1) 僅使用以檢索為基礎的生成（LLM 若無檢索到的文件則無法回答）。(2) 過濾輸出中任何無法追溯至租戶已上傳文件的內容。(3) 提供「私有模型」方案，僅針對租戶自身資料進行微調。
 
 ---
 
-*Related chapters: [Multi-Tenant RAG Isolation](../12-security-and-access/04-multi-tenant-rag-isolation.md), [RBAC for AI Systems](../12-security-and-access/02-rbac-for-ai-systems.md)*
+<a name="key-takeaways-for-interviews"></a>
+## 面試重點整理
+
+1. **多租戶依靠層級架構**：絕不依賴單一隔離機制
+2. **分層隔離平衡成本與安全性**：並非所有租戶都需要專屬基礎架構
+3. **租戶 ID 必須不可變且盡早附加**：在上傳時標記，而非查詢時
+4. **合規是架構關切事項**：從第一天起就為稽核、刪除和可攜性而設計
+
+---
+
+*相關章節：[多租戶 RAG 隔離](../12-security-and-access/04-multi-tenant-rag-isolation.md)、[AI 系統的 RBAC](../12-security-and-access/02-rbac-for-ai-systems.md)*

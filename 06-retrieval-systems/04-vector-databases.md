@@ -1,79 +1,88 @@
-# Vector Databases
+<a id="vector-databases"></a>
+# 向量資料庫
 
-Vector databases are purpose-built systems for storing, indexing, and searching high-dimensional embeddings. The market has split into **Managed Serverless** and **Specialized High-Performance** engines. We no longer ask "Does it support vector search?" (Postgres, Redis, and Mongo all do). We ask **"Does it scale to 100M+ vectors with sub-100ms P99 and full metadata filtering?"**
+向量資料庫是專門為儲存、索引與搜尋高維 embeddings 而設計的系統。市場已分化成 **Managed Serverless** 與 **Specialized High-Performance** 兩大類。我們不再問「它支援 vector search 嗎？」（Postgres、Redis、Mongo 都支援），而是問 **「它能在完整 metadata filtering 下，於 sub-100ms P99 規模化到 1 億以上向量嗎？」**
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [What Is a Vector Database](#what-is-a-vector-database)
-- [Vector Search Fundamentals](#vector-search-fundamentals)
-- [Indexing Algorithms](#indexing-algorithms)
-- [Competitive Landscape](#competitive-landscape)
-- [Detailed Database Comparison](#detailed-database-comparison)
+- [什麼是向量資料庫](#what-is-a-vector-database)
+- [向量搜尋基礎](#vector-search-fundamentals)
+- [索引演算法](#indexing-algorithms)
+- [競爭版圖](#competitive-landscape)
+- [資料庫詳細比較](#detailed-database-comparison)
 - [Metadata Filtering](#metadata-filtering)
-- [Query Patterns](#query-patterns)
-- [Production Operations](#production-operations)
-- [Managed vs Self-Hosted (TCO Analysis)](#managed-vs-self-hosted-tco-analysis)
-- [Selection Framework](#selection-framework)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [查詢模式](#query-patterns)
+- [正式環境營運](#production-operations)
+- [託管 vs 自架（TCO 分析）](#managed-vs-self-hosted-tco-analysis)
+- [選型框架](#selection-framework)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## What Is a Vector Database
+<a id="what-is-a-vector-database"></a>
+## 什麼是向量資料庫
 
-A vector database stores embeddings (dense vectors) and enables fast similarity search over them.
+向量資料庫用來儲存 embeddings（dense vectors），並支援對它們進行高速相似度搜尋。
 
 ```
 Traditional DB:      SELECT * FROM docs WHERE category = 'tech'
 Vector DB:           SELECT * FROM docs ORDER BY similarity(embedding, query_embedding) LIMIT 10
 ```
 
-### Core Capabilities
+<a id="core-capabilities"></a>
+### 核心能力
 
-| Capability | Purpose |
+| 能力 | 用途 |
 |------------|---------|
-| Vector storage | Persist high-dimensional embeddings |
-| Similarity search | Find nearest neighbors quickly |
-| Metadata filtering | Combine vector search with attribute filters |
-| CRUD operations | Update embeddings as data changes |
-| Scaling | Handle millions to billions of vectors |
+| 向量儲存 | 持久化高維 embeddings |
+| 相似度搜尋 | 快速找出最近鄰 |
+| Metadata filtering | 將向量搜尋與屬性篩選結合 |
+| CRUD 操作 | 隨資料變動更新 embeddings |
+| 擴充能力 | 處理數百萬到數十億向量 |
 
-### Why Not General Databases?
+<a id="why-not-general-databases"></a>
+### 為什麼不直接用通用資料庫？
 
-Traditional databases can store vectors but lack optimized search:
+傳統資料庫可以儲存向量，但缺乏最佳化搜尋能力：
 
-| Approach | Search Complexity | Practical at Scale |
+| 方法 | 搜尋複雜度 | 實務上可擴展 |
 |----------|-------------------|-------------------|
-| Brute force (PostgreSQL pgvector) | O(n * d) | OK to ~1M vectors |
-| ANN index (dedicated vector DB) | O(log n) or O(1) | Yes, billions |
+| Brute force（PostgreSQL pgvector） | O(n * d) | 約到 ~1M vectors 還可以 |
+| ANN index（專用 vector DB） | O(log n) 或 O(1) | 可以，到數十億 |
 
 ---
 
-## Vector Search Fundamentals
+<a id="vector-search-fundamentals"></a>
+## 向量搜尋基礎
 
-### Exact vs Approximate Search
+<a id="exact-vs-approximate-search"></a>
+### 精確搜尋 vs Approximate Search
 
-**Exact (brute force):**
-- Compare query to every stored vector
-- O(n * d) per query
-- Perfect accuracy
+**Exact（brute force）：**
+- 將 query 與每個已儲存向量逐一比較
+- 每次查詢複雜度為 O(n * d)
+- 準確率完美
 
-**Approximate Nearest Neighbor (ANN):**
-- Use index structure to prune search space
-- Sub-linear complexity
-- Slightly lower recall (typically 95-99%)
+**Approximate Nearest Neighbor (ANN)：**
+- 使用索引結構剪枝搜尋空間
+- 次線性複雜度
+- Recall 會略低一些（通常 95-99%）
 
-### Distance Metrics
+<a id="distance-metrics"></a>
+### 距離度量
 
-| Metric | Formula | Range | Best For |
+| Metric | 公式 | 範圍 | 最適用 |
 |--------|---------|-------|----------|
-| Cosine | 1 - (a . b) / (norm(a) * norm(b)) | [0, 2] | Text embeddings |
-| Euclidean (L2) | sqrt(sum((a - b)^2)) | [0, inf) | Image embeddings |
-| Dot product | a . b | (-inf, inf) | Already normalized |
+| Cosine | 1 - (a . b) / (norm(a) * norm(b)) | [0, 2] | 文字 embeddings |
+| Euclidean (L2) | sqrt(sum((a - b)^2)) | [0, inf) | 圖像 embeddings |
+| Dot product | a . b | (-inf, inf) | 已正規化向量 |
 
-**For text embeddings:** Use cosine similarity (or dot product if pre-normalized).
+**對文字 embeddings 而言：**使用 cosine similarity（若向量已預先 normalize，則可用 dot product）。
 
-### Recall vs Latency Tradeoff
+<a id="recall-vs-latency-tradeoff"></a>
+### Recall vs Latency 的取捨
 
 ```
                     ^ Recall
@@ -88,21 +97,23 @@ Traditional databases can store vectors but lack optimized search:
                        1ms      10ms
 ```
 
-ANN indices trade some accuracy for speed. Tune for your requirements.
+ANN 索引會用部分準確度換取速度。要依你的需求做 tuning。
 
 ---
 
-## Indexing Algorithms
+<a id="indexing-algorithms"></a>
+## 索引演算法
 
-### HNSW (Hierarchical Navigable Small World)
+<a id="hnsw-hierarchical-navigable-small-world"></a>
+### HNSW（Hierarchical Navigable Small World）
 
-The most popular algorithm for production **in-memory** vector search.
+這是正式環境中最常見的 **in-memory** 向量搜尋演算法。
 
-**How it works:**
-1. Build a graph where nodes are vectors
-2. Connect to nearby neighbors
-3. Multiple layers of abstraction (hierarchical)
-4. Search: navigate from top layer down, greedy nearest neighbor
+**運作方式：**
+1. 建立一個節點為向量的圖
+2. 連接到附近鄰居
+3. 建立多層抽象（hierarchical）
+4. 搜尋時：從上層往下導航，採用 greedy nearest neighbor
 
 ```
 Layer 2:   *--------*--------*
@@ -112,122 +123,132 @@ Layer 1:   *--*--*--*--*--*--*
 Layer 0:   ********************  (all vectors)
 ```
 
-**Pros:**
-- Excellent recall/latency tradeoff
-- No training required
-- Supports updates natively
+**優點：**
+- 卓越的 recall/latency 平衡
+- 不需要訓練
+- 原生支援更新
 
-**Cons:**
-- Memory-intensive (graph structure)
-- Index size: ~1.5-2x vector data
-- 10M vectors at 1536 dims require ~80GB of RAM
+**缺點：**
+- 很吃記憶體（圖結構）
+- 索引大小約為向量資料的 ~1.5-2 倍
+- 1536 維、1000 萬向量約需 ~80GB RAM
 
-**Key parameters:**
-- `M`: Max connections per node (16-64)
-- `ef_construction`: Build-time exploration (100-500)
-- `ef_search`: Query-time exploration (50-200)
+**關鍵參數：**
+- `M`：每個節點最大連線數（16-64）
+- `ef_construction`：建索引時的探索深度（100-500）
+- `ef_search`：查詢時的探索深度（50-200）
 
-### DiskANN (SSD-based)
+<a id="diskann-ssd-based"></a>
+### DiskANN（SSD-based）
 
-The industry standard for **petabyte-scale** search.
+這是 **PB 級搜尋** 的業界標準。
 
-**How it works:**
-- Keeps the graph on SSD (NVMe) and only a tiny index in RAM
-- Uses the Vamana algorithm for efficient disk-based graph traversal
+**運作方式：**
+- 將圖主要放在 SSD（NVMe）上，RAM 中只保留很小的索引
+- 使用 Vamana 演算法高效遍歷磁碟上的圖結構
 
-**Pros:**
-- 10x cheaper than HNSW for billion-scale datasets with <5ms latency penalty
-- 90-95% reduction in RAM requirements vs HNSW
+**優點：**
+- 在十億級資料集上，相較 HNSW 成本便宜 10 倍，延遲只多不到 5ms
+- 與 HNSW 相比，RAM 需求可降低 90-95%
 
-**Cons:**
-- Slightly higher latency than pure in-memory HNSW
-- Best suited for non-real-time search applications
+**缺點：**
+- 延遲仍略高於純 in-memory HNSW
+- 更適合非即時搜尋場景
 
-**Example:** A 100-million-vector index with 1536 dimensions would require nearly 1TB of RAM for HNSW. Using DiskANN, the RAM requirement drops by 90-95% while maintaining sub-10ms query times.
+**例子：**1536 維的 1 億向量索引若用 HNSW，幾乎需要 1TB RAM。使用 DiskANN，可在維持 sub-10ms query time 的同時，把 RAM 需求壓低 90-95%。
 
-### IVF (Inverted File Index)
+<a id="ivf-inverted-file-index"></a>
+### IVF（Inverted File Index）
 
-Partition vectors into clusters, search only relevant clusters.
+先將向量分群，只搜尋相關群集。
 
-**How it works:**
-1. Use k-means to create centroids
-2. Assign each vector to nearest centroid
-3. At query time: find nearest centroids, search those clusters
+**運作方式：**
+1. 使用 k-means 建立 centroids
+2. 將每個向量指派到最近 centroid
+3. 查詢時先找最近 centroids，再搜尋那些群集
 
-**Pros:**
-- Lower memory than HNSW
-- Can use quantization (IVF-PQ)
+**優點：**
+- 記憶體需求低於 HNSW
+- 可搭配 quantization（IVF-PQ）
 
-**Cons:**
-- Requires training
-- Updates need re-clustering or hybrid approach
+**缺點：**
+- 需要訓練
+- 更新通常要重分群，或採用混合策略
 
-**Key parameters:**
-- `nlist`: Number of clusters (sqrt(n) rule of thumb)
-- `nprobe`: Clusters to search at query time
+**關鍵參數：**
+- `nlist`：群集數（經驗法則為 sqrt(n)）
+- `nprobe`：查詢時要搜尋的群集數
 
+<a id="product-quantization-pq"></a>
 ### Product Quantization (PQ)
 
-Compress vectors to reduce memory and speed up comparison.
+透過壓縮向量來降低記憶體占用並加速比較。
 
-**How it works:**
-1. Split vector into subvectors
-2. Quantize each subvector to a codebook
-3. Store codes instead of full vectors
+**運作方式：**
+1. 將向量切成多個 subvector
+2. 各自量化到對應 codebook
+3. 儲存 codes 而非完整向量
 
-**Memory reduction:** 4-32x typical
+**記憶體縮減：**典型可達 4-32 倍
 
-**Tradeoff:** Lower accuracy due to quantization loss
+**取捨：**因量化損失而降低準確率
 
-### Flat Index (Brute Force)
+<a id="flat-index-brute-force"></a>
+### Flat Index（Brute Force）
 
-No approximation, exact search.
+不做近似，直接精確搜尋。
 
-**Use when:**
-- Less than 100K vectors
-- Accuracy is critical
-- Latency budget is generous
+**適用時機：**
+- 少於 100K 向量
+- 準確率極度重要
+- 可接受較寬鬆的延遲預算
 
-### Algorithm Comparison
+<a id="algorithm-comparison"></a>
+### 演算法比較
 
-| Algorithm | Memory | Build Time | Query Speed | Recall | Updates |
+| 演算法 | 記憶體 | 建置時間 | 查詢速度 | Recall | 更新 |
 |-----------|--------|------------|-------------|--------|---------|
-| HNSW | High | Medium | Very fast | 95-99% | Good |
-| DiskANN | Low (SSD) | Medium | Fast | 95-99% | Fair |
-| IVF | Medium | Fast | Fast | 90-98% | Fair |
-| IVF-PQ | Low | Fast | Fast | 85-95% | Fair |
-| Flat | Low | None | Slow | 100% | Instant |
+| HNSW | 高 | 中 | 非常快 | 95-99% | 好 |
+| DiskANN | 低（SSD） | 中 | 快 | 95-99% | 普通 |
+| IVF | 中 | 快 | 快 | 90-98% | 普通 |
+| IVF-PQ | 低 | 快 | 快 | 85-95% | 普通 |
+| Flat | 低 | 無 | 慢 | 100% | 即時 |
 
 ---
 
-## Competitive Landscape
+<a id="competitive-landscape"></a>
+## 競爭版圖
 
-### Vector-Native (Dedicated)
+<a id="vector-native-dedicated"></a>
+### Vector-Native（專用）
 
-| Database | Type | Best For | Pricing Model |
+| 資料庫 | 類型 | 最適合 | 計價模式 |
 |----------|------|----------|---------------|
-| **Pinecone** | Managed cloud (serverless standard) | Easy start, scale, managed SLAs | Per vector-hour |
-| **Qdrant** | Open source / Cloud (Rust, high-perf) | Self-hosted control, fastest open-source on common workloads (~12ms p99 at 10M vectors) | Per GB (cloud) or free |
-| **Weaviate** | Open source / Cloud | Native hybrid (BM25 + dense + metadata) in a single query, multimodal | Per dimension-hour |
-| **Milvus** | Open source / Cloud (Zilliz) | Distributed scale (50M+ vectors), heterogeneous node types, tiered storage | Free (self-host) or Zilliz Cloud |
-| **Chroma** | Open source | Prototyping, local dev, embedded use | Free |
+| **Pinecone** | 託管雲端（serverless standard） | 容易起步、易擴展、託管 SLA | Per vector-hour |
+| **Qdrant** | Open source / Cloud（Rust，高效能） | 自架控制、常見工作負載下最快的開源方案之一（10M vectors 約 12ms p99） | 雲端按 GB 或免費 |
+| **Weaviate** | Open source / Cloud | 單次查詢內建 hybrid（BM25 + dense + metadata）、multimodal | Per dimension-hour |
+| **Milvus** | Open source / Cloud（Zilliz） | 分散式擴展（50M+ vectors）、異質節點、分層儲存 | 自架免費或 Zilliz Cloud |
+| **Chroma** | Open source | 原型開發、本機開發、embedded 使用 | 免費 |
 
-### General-Purpose (Plugin/Extension)
+<a id="general-purpose-pluginextension"></a>
+### General-Purpose（Plugin／Extension）
 
-| Database | Type | Best For | Pricing Model |
+| 資料庫 | 類型 | 最適合 | 計價模式 |
 |----------|------|----------|---------------|
-| **pgvector (v0.8+)** | PostgreSQL extension | Small scale, existing PG (now supports HNSW + IVFFlat) | Compute only |
-| **Elasticsearch (v9.0)** | Search engine | Hybrid Search with cross-entropy fusion | License-based |
+| **pgvector (v0.8+)** | PostgreSQL extension | 小規模、已在用 PG（現已支援 HNSW + IVFFlat） | 只算 compute |
+| **Elasticsearch (v9.0)** | Search engine | 搭配 cross-entropy fusion 的 Hybrid Search | 授權制 |
 
 ---
 
-## Detailed Database Comparison
+<a id="detailed-database-comparison"></a>
+## 資料庫詳細比較
 
-### Feature Matrix
+<a id="feature-matrix"></a>
+### 功能矩陣
 
-| Feature | Pinecone | Qdrant | Weaviate | Milvus | pgvector |
+| 功能 | Pinecone | Qdrant | Weaviate | Milvus | pgvector |
 |---------|----------|--------|----------|--------|----------|
-| **Language** | Proprietary | Rust | Go | Go/C++ | C |
+| **語言** | Proprietary | Rust | Go | Go/C++ | C |
 | Hosted option | Yes | Yes | Yes | Yes (Zilliz) | Via cloud PG |
 | Self-hosted | No | Yes | Yes | Yes | Yes |
 | **Serverless** | Yes (Best) | Yes | Yes | Yes (Zilliz) | No |
@@ -239,9 +260,10 @@ No approximation, exact search.
 
 ---
 
+<a id="metadata-filtering"></a>
 ## Metadata Filtering
 
-Critical for multi-tenant and filtering use cases.
+對 multi-tenant 與篩選型使用情境來說，這是關鍵能力。
 
 ```python
 # Pinecone
@@ -265,17 +287,19 @@ results = client.search(
 )
 ```
 
-**Performance impact:** Filtering happens during search, not after. Pre-filtered indices are faster but less flexible.
+**效能影響：**Filtering 發生在搜尋過程中，而不是搜尋之後。預先過濾的索引較快，但彈性較低。
 
-**Why metadata filtering is often the bottleneck:** In naive vector search, we find the "Top K" nearest neighbors and THEN filter by metadata. If the filter is very restrictive, we might find 0 results after filtering. Specialized databases now use **Pre-Filtering with HNSW**, traversing the graph but only considering nodes that satisfy the boolean metadata constraint. This requires specialized bitmasks or hardware acceleration (SIMD) to keep latencies low.
+**為什麼 metadata filtering 常是瓶頸：**在樸素向量搜尋中，我們會先找出「Top K」最近鄰，**然後**再依 metadata 過濾。若 filter 很嚴格，最後可能變成 0 筆結果。專用資料庫現在會使用 **Pre-Filtering with HNSW**：在走訪圖的同時，只考慮符合布林 metadata 條件的節點。這需要專用 bitmasks 或硬體加速（SIMD），才能維持低延遲。
 
-**Disk-Native Metadata:** Modern DBs like **Qdrant** offload metadata to disk-mapped segments, allowing for complex filters (e.g., full-text + geo + vector) without saturating RAM.
+**Disk-Native Metadata：**像 **Qdrant** 這樣的現代 DB 會把 metadata 下放到 disk-mapped segments，讓複雜過濾（例如 full-text + geo + vector）不會把 RAM 壓爆。
 
 ---
 
-## Query Patterns
+<a id="query-patterns"></a>
+## 查詢模式
 
-### Pattern 1: Simple Semantic Search
+<a id="pattern-1-simple-semantic-search"></a>
+### Pattern 1：簡單語意搜尋
 
 ```python
 def semantic_search(query: str, top_k: int = 5) -> list[Document]:
@@ -284,7 +308,8 @@ def semantic_search(query: str, top_k: int = 5) -> list[Document]:
     return [Document(id=r.id, text=r.payload["text"], score=r.score) for r in results]
 ```
 
-### Pattern 2: Filtered Search
+<a id="pattern-2-filtered-search"></a>
+### Pattern 2：條件過濾搜尋
 
 ```python
 def filtered_search(query: str, filters: dict, top_k: int = 5) -> list[Document]:
@@ -297,7 +322,8 @@ def filtered_search(query: str, filters: dict, top_k: int = 5) -> list[Document]
     return results
 ```
 
-### Pattern 3: Hybrid Search (Dense + Sparse)
+<a id="pattern-3-hybrid-search-dense-sparse"></a>
+### Pattern 3：Hybrid Search（Dense + Sparse）
 
 ```python
 def hybrid_search(query: str, alpha: float = 0.5, top_k: int = 5) -> list[Document]:
@@ -317,7 +343,7 @@ def hybrid_search(query: str, alpha: float = 0.5, top_k: int = 5) -> list[Docume
     return combined[:top_k]
 ```
 
-Some databases (Weaviate, Qdrant, Pinecone) support hybrid search natively:
+有些資料庫（Weaviate、Qdrant、Pinecone）原生支援 hybrid search：
 
 ```python
 # Weaviate native hybrid
@@ -327,9 +353,10 @@ results = client.query.get("Document", ["text"]).with_hybrid(
 ).with_limit(5).do()
 ```
 
-### Pattern 4: Multi-Vector Query
+<a id="pattern-4-multi-vector-query"></a>
+### Pattern 4：Multi-Vector Query
 
-For parent-child or multi-aspect retrieval:
+適用於 parent-child 或 multi-aspect retrieval：
 
 ```python
 def multi_vector_search(queries: list[str], top_k: int = 5) -> list[Document]:
@@ -349,9 +376,11 @@ def multi_vector_search(queries: list[str], top_k: int = 5) -> list[Document]:
 
 ---
 
-## Production Operations
+<a id="production-operations"></a>
+## 正式環境營運
 
-### Capacity Planning
+<a id="capacity-planning"></a>
+### 容量規劃
 
 ```python
 def estimate_resources(
@@ -383,7 +412,8 @@ def estimate_resources(
     }
 ```
 
-### Index Maintenance
+<a id="index-maintenance"></a>
+### 索引維護
 
 ```python
 class VectorDBMaintenance:
@@ -419,7 +449,8 @@ class VectorDBMaintenance:
         )
 ```
 
-### High Availability
+<a id="high-availability"></a>
+### 高可用性
 
 ```
 +-------------------------------------------------------------+
@@ -440,12 +471,13 @@ class VectorDBMaintenance:
                                        +-----------+
 ```
 
-**Key patterns:**
-- Leader-follower for writes
-- Read replicas for query scaling
-- Async replication for HA
+**關鍵模式：**
+- 寫入採 leader-follower
+- 以 read replicas 擴展查詢能力
+- 以 async replication 達成 HA
 
-### Monitoring
+<a id="monitoring"></a>
+### 監控
 
 ```python
 VECTOR_DB_METRICS = [
@@ -478,27 +510,31 @@ def alert_rules():
 
 ---
 
-## Managed vs Self-Hosted (TCO Analysis)
+<a id="managed-vs-self-hosted-tco-analysis"></a>
+## 託管 vs 自架（TCO 分析）
 
-### Cost Comparison
+<a id="cost-comparison"></a>
+### 成本比較
 
-| Aspect | Pinecone (Serverless) | Self-Hosted (Qdrant/Milvus) |
+| 面向 | Pinecone（Serverless） | 自架（Qdrant/Milvus） |
 |--------|-----------------------|-----------------------------|
-| **Ops Overhead** | Zero | High (Requires K8s + SRE) |
-| **Scaling** | Instant (Scale to zero) | Manual (Node provisioning) |
-| **Cost (Small)** | $0 - $100/mo | $50/mo (Minimum instance) |
-| **Cost (Scale)** | High per token/vector | Low unit cost |
+| **維運負擔** | 幾乎為零 | 高（需要 K8s + SRE） |
+| **擴展能力** | 即時（可 scale to zero） | 手動（節點供應） |
+| **成本（小規模）** | $0 - $100/月 | $50/月（最低實例） |
+| **成本（大規模）** | 每 token/vector 單價高 | 單位成本低 |
 
-### Managed Service Pricing (indicative, always verify on provider pages)
+<a id="managed-service-pricing-indicative-always-verify-on-provider-pages"></a>
+### 託管服務定價（僅供參考，請務必以供應商頁面為準）
 
-| Provider | Model | Example: 10M vectors, 1536 dims |
+| 供應商 | 模式 | 範例：1000 萬向量、1536 維 |
 |----------|-------|--------------------------------|
-| Pinecone | Pod-based or Serverless | ~$70-150/month serverless |
-| Qdrant Cloud | Per GB | ~$50/month (20GB) |
-| Weaviate Cloud | Per dimensions | ~$100/month |
-| Zilliz (Milvus) | Per CU | ~$75/month |
+| Pinecone | Pod-based or Serverless | 約 ~$70-150/月 serverless |
+| Qdrant Cloud | Per GB | 約 ~$50/月（20GB） |
+| Weaviate Cloud | Per dimensions | 約 ~$100/月 |
+| Zilliz（Milvus） | Per CU | 約 ~$75/月 |
 
-### Self-Hosted Costs
+<a id="self-hosted-costs"></a>
+### 自架成本
 
 ```python
 def estimate_self_hosted_cost(
@@ -525,24 +561,27 @@ def estimate_self_hosted_cost(
     }
 ```
 
-### Decision: Managed vs Self-Hosted
+<a id="decision-managed-vs-self-hosted"></a>
+### 決策：託管 vs 自架
 
-| Factor | Managed | Self-Hosted |
+| 因素 | 託管 | 自架 |
 |--------|---------|-------------|
-| Ops overhead | Low | High |
-| Cost at small scale | Higher | Lower |
-| Cost at large scale | Variable | Often lower |
-| Control | Less | Full |
-| Compliance | Depends | Full control |
-| Vendor lock-in | Yes | No (if open source) |
+| 維運負擔 | 低 | 高 |
+| 小規模成本 | 較高 | 較低 |
+| 大規模成本 | 浮動 | 通常較低 |
+| 控制權 | 較少 | 完整 |
+| 合規 | 視供應商而定 | 完全掌控 |
+| Vendor lock-in | 有 | 無（若用開源） |
 
-**Verdict**: Start with Serverless. Only self-host if you have >500M vectors or strict **On-Prem/GPU-Local** requirements.
+**結論**：先從 Serverless 開始。只有在你有超過 5 億向量，或有嚴格的 **On-Prem/GPU-Local** 需求時，才值得自架。
 
 ---
 
-## Selection Framework
+<a id="selection-framework"></a>
+## 選型框架
 
-### Decision Tree
+<a id="decision-tree"></a>
+### 決策樹
 
 ```
 Need < 100K vectors?
@@ -559,135 +598,144 @@ Need < 100K vectors?
                     +-- No -> Qdrant or Weaviate self-hosted
 ```
 
-### Evaluation Criteria
+<a id="evaluation-criteria"></a>
+### 評估標準
 
-| Criterion | Weight | Questions to Ask |
+| 標準 | 權重 | 要問的問題 |
 |-----------|--------|------------------|
-| Scale | High | How many vectors now? In 1 year? |
-| Latency | High | What are p99 requirements? |
-| Ops capacity | High | Can we operate this? |
-| Cost | Medium | Budget constraints? |
-| Features | Medium | Hybrid search? Multimodal? |
-| Lock-in risk | Low-Medium | Open source preferred? |
+| 規模 | 高 | 現在多少向量？一年後多少？ |
+| 延遲 | 高 | p99 要求是多少？ |
+| 維運能力 | 高 | 團隊能運營它嗎？ |
+| 成本 | 中 | 預算限制？ |
+| 功能 | 中 | 是否需要 hybrid search？multimodal？ |
+| Lock-in 風險 | 中低 | 是否偏好開源？ |
 
-### Proof of Concept Checklist
+<a id="proof-of-concept-checklist"></a>
+### Proof of Concept 檢查清單
 
-Before committing to a vector database:
+在選定向量資料庫前：
 
-- [ ] Load representative data volume
-- [ ] Benchmark query latency at target QPS
-- [ ] Test metadata filtering performance
-- [ ] Verify update/delete performance
-- [ ] Test failure recovery
-- [ ] Evaluate monitoring and observability
-- [ ] Calculate total cost of ownership
+- [ ] 載入具代表性的資料量
+- [ ] 在目標 QPS 下 benchmark 查詢延遲
+- [ ] 測試 metadata filtering 效能
+- [ ] 驗證 update/delete 效能
+- [ ] 測試故障復原
+- [ ] 評估監控與 observability
+- [ ] 計算 total cost of ownership
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: How would you choose between Pinecone and a self-hosted solution?
+<a id="q-how-would-you-choose-between-pinecone-and-a-self-hosted-solution"></a>
+### Q：你會如何在 Pinecone 與自架方案之間做選擇？
 
-**Strong answer:**
-Decision depends on several factors:
+**強回答：**
+決策取決於幾個因素：
 
-**Choose Pinecone when:**
-- Team lacks ops capacity for stateful infrastructure
-- Need to move quickly (days not weeks)
-- Scale is moderate (under 100M vectors)
-- Budget allows managed service premium
-- Compliance allows cloud-vendor dependency
+**適合選 Pinecone 的情況：**
+- 團隊缺乏營運 stateful infrastructure 的能力
+- 需要快速上線（幾天而不是幾週）
+- 規模中等（低於 1 億向量）
+- 預算可接受託管服務溢價
+- 合規允許依賴雲端供應商
 
-**Choose self-hosted (Qdrant, Milvus) when:**
-- Have Kubernetes and ops expertise
-- Cost sensitivity at scale
-- Need full control over data
-- Specific compliance requirements
-- Want to avoid vendor lock-in
+**適合選自架（Qdrant、Milvus）的情況：**
+- 具備 Kubernetes 與維運能力
+- 在大規模下對成本很敏感
+- 需要完整掌控資料
+- 有特定合規要求
+- 想避免 vendor lock-in
 
-For most startups, I would start with Pinecone or Qdrant Cloud for velocity, then evaluate migration if costs become prohibitive at scale. The switching cost is moderate since vector DBs have similar APIs.
+對大多數新創來說，我會先用 Pinecone 或 Qdrant Cloud 追求速度，若未來在規模上成本變得難以接受，再評估遷移。切換成本屬中等，因為多數 vector DB 的 API 都相似。
 
-### Q: Explain how HNSW works and when you would not use it.
+<a id="q-explain-how-hnsw-works-and-when-you-would-not-use-it"></a>
+### Q：請解釋 HNSW 的運作方式，以及你什麼情況下不會使用它。
 
-**Strong answer:**
-HNSW builds a hierarchical graph of vectors:
+**強回答：**
+HNSW 會建立一個多層次的向量圖：
 
-**How it works:**
-1. Insert vectors as nodes in a multi-layer graph
-2. Higher layers have fewer nodes, larger jumps
-3. Search: start at top layer, greedily navigate to nearest neighbor
-4. Descend layers until bottom (all vectors)
+**運作方式：**
+1. 將向量作為節點插入多層圖中
+2. 越高層節點越少，但跳躍距離越大
+3. 搜尋時先從最高層開始，greedily 找最近鄰
+4. 一路往下走到最底層（包含所有向量）
 
-**Why it is good:**
-- O(log n) query complexity
-- No training required
-- Supports real-time updates
-- Excellent recall/latency tradeoff
+**它的優點：**
+- O(log n) 查詢複雜度
+- 不需訓練
+- 支援即時更新
+- recall/latency 表現非常均衡
 
-**When not to use:**
-- Very small datasets (<10K): brute force is fine
-- Extremely memory constrained: HNSW uses 1.5-2x vector size for graph
-- Need exact search: HNSW is approximate
-- Heavy update workload with tight latency: updates can cause temporary degradation
+**不適合使用的情況：**
+- 資料集很小（<10K）：brute force 就夠了
+- 記憶體非常受限：HNSW 的圖結構需要 1.5-2 倍向量大小
+- 需要 exact search：HNSW 是近似搜尋
+- 更新量很大且延遲要求嚴格：更新可能造成暫時性退化
 
-Alternatives:
-- IVF-PQ for memory constraints
-- DiskANN for billion-scale with cost efficiency
-- Flat index for exact search
-- LSH for very high-dimensional sparse vectors
+替代方案：
+- 記憶體受限時用 IVF-PQ
+- 十億級且追求成本效率時用 DiskANN
+- 要 exact search 時用 Flat index
+- 超高維 sparse vectors 可考慮 LSH
 
-### Q: When would you use a Disk-based index (like DiskANN) over a RAM-based index (HNSW)?
+<a id="q-when-would-you-use-a-disk-based-index-like-diskann-over-a-ram-based-index-hnsw"></a>
+### Q：什麼情況下你會用磁碟型索引（如 DiskANN），而不是記憶體型索引（HNSW）？
 
-**Strong answer:**
-I would use a Disk-based index when the memory cost of the index exceeds the budget or the capacity of a single high-memory node. For example, a 100-million-vector index with 1536 dimensions would require nearly 1TB of RAM for HNSW. Using DiskANN, I can store the majority of that 1TB on NVMe SSDs, reducing the RAM requirement by 90-95% while maintaining sub-10ms query times. This represents a massive TCO (Total Cost of Ownership) reduction for non-real-time search applications.
+**強回答：**
+當索引的記憶體成本超出預算，或超出單一高記憶體節點容量時，我就會選擇磁碟型索引。例如，1536 維的 1 億向量若採 HNSW，幾乎需要 1TB RAM。使用 DiskANN 後，我可以把那 1TB 的大部分資料放在 NVMe SSD 上，將 RAM 需求降低 90-95%，同時維持 sub-10ms query time。對非即時搜尋場景而言，這代表極大的 TCO（Total Cost of Ownership）下降。
 
-### Q: Why is metadata filtering often the bottleneck in vector databases?
+<a id="q-why-is-metadata-filtering-often-the-bottleneck-in-vector-databases"></a>
+### Q：為什麼 metadata filtering 常常是向量資料庫的瓶頸？
 
-**Strong answer:**
-In naive vector search, we find the "Top K" nearest neighbors and THEN filter them by metadata (e.g., "only documents from 2024"). If the filter is very restrictive, we might find 0 results after filtering. Specialized databases now use **Pre-Filtering with HNSW**, traversing the graph but only considering nodes that satisfy the boolean metadata constraint. This is computationally expensive because it breaks the "short-circuit" logic of HNSW, requiring specialized bitmasks or hardware acceleration (SIMD) to keep latencies low.
+**強回答：**
+在樸素向量搜尋中，我們會先找出「Top K」最近鄰，**然後**再依 metadata 過濾（例如「只要 2024 年的文件」）。若 filter 很嚴格，結果可能在過濾後變成 0。專用資料庫現在會用 **Pre-Filtering with HNSW**，在走訪圖時就只考慮符合布林 metadata 條件的節點。這在計算上很昂貴，因為它破壞了 HNSW 原有的「short-circuit」邏輯，需要仰賴專門的 bitmasks 或硬體加速（SIMD）才能維持低延遲。
 
-### Q: How do you handle multi-tenancy in a vector database?
+<a id="q-how-do-you-handle-multi-tenancy-in-a-vector-database"></a>
+### Q：你如何在向量資料庫中處理 multi-tenancy？
 
-**Strong answer:**
-Three main approaches:
+**強回答：**
+主要有三種方法：
 
-**1. Metadata filtering (most common):**
+**1. Metadata filtering（最常見）：**
 ```python
 results = db.search(
     vector=query,
     filter={"tenant_id": current_tenant}
 )
 ```
-- Pros: Simple, single index
-- Cons: All tenants share resources, potential for bugs exposing data
+- 優點：簡單、單一索引
+- 缺點：所有 tenant 共享資源，若有 bug 可能暴露資料
 
-**2. Collection per tenant:**
+**2. 每個 tenant 一個 collection：**
 ```python
 results = db.collection(f"tenant_{tenant_id}").search(vector=query)
 ```
-- Pros: Strong isolation, per-tenant scaling
-- Cons: Many collections, operational overhead
+- 優點：隔離性強，可按 tenant 擴展
+- 缺點：collection 太多，維運負擔高
 
-**3. Namespace per tenant (Pinecone):**
+**3. 每個 tenant 一個 namespace（Pinecone）：**
 ```python
 results = index.query(vector=query, namespace=tenant_id)
 ```
-- Pros: Isolation within single index
-- Cons: Vendor-specific
+- 優點：在單一索引內提供隔離
+- 缺點：供應商特定
 
-**I would choose:**
-- Metadata filtering for most cases (simple, cost-effective)
-- Separate collections for high-security requirements
-- Never post-filter (retrieve all, filter after) due to leakage risk
+**我會這樣選：**
+- 大多數情況用 metadata filtering（簡單、成本效益高）
+- 高安全需求用獨立 collections
+- 絕不做 post-filter（先取全部再過濾），避免資料洩漏風險
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
-- Malkov and Yashunin. "Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs" (HNSW, 2018)
-- Microsoft Research. "Vamana/DiskANN: A Disk-based Index for ANN Search" (2019/2023)
+- Malkov and Yashunin.「Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs」（HNSW, 2018）
+- Microsoft Research.「Vamana/DiskANN: A Disk-based Index for ANN Search」（2019/2023）
 - Pinecone Documentation: https://docs.pinecone.io/
-- Pinecone. "The Managed Architecture of Serverless Vector DBs" (2024)
+- Pinecone.「The Managed Architecture of Serverless Vector DBs」（2024）
 - Qdrant Documentation: https://qdrant.tech/documentation/
 - Weaviate Documentation: https://weaviate.io/developers/weaviate
 - Milvus Documentation: https://milvus.io/docs
@@ -695,4 +743,4 @@ results = index.query(vector=query, namespace=tenant_id)
 
 ---
 
-*Previous: [Embedding Models](03-embedding-models.md) | Next: [Hybrid Search](05-hybrid-search.md)*
+*上一篇：[嵌入模型](03-embedding-models.md) | 下一篇：[混合搜尋](05-hybrid-search.md)*

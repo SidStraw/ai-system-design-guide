@@ -1,84 +1,100 @@
-# Error Handling and Recovery
+<a id="error-handling-and-recovery"></a>
+# 錯誤處理與復原
 
-Agents fail in non-deterministic ways. Error handling has moved from "Try-Catch blocks" to **Agentic Self-Correction** and **Stateful Rollbacks**, with frameworks like LangGraph and Microsoft Agent Framework providing native checkpoint/resume primitives.
+Agent 會以非決定性的方式失敗。錯誤處理已從「Try-Catch 區塊」演進為 **Agentic Self-Correction** 與 **Stateful Rollbacks**，而 LangGraph 與 Microsoft Agent Framework 等框架也已原生提供 checkpoint/resume 原語。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [The Taxonomy of Agent Failures](#fail-types)
-- [Self-Correction Loops](#correction)
-- [Stateful Rollbacks (Checkpointing)](#rollbacks)
-- [The "Stuck in a Loop" Fix](#stuck)
-- [Graceful Degradation](#degradation)
-- [Interview Questions](#interview-questions)
-- [References](#references)
-
----
-
-## Taxonomy of Agent Failures
-
-1. **Hallucinated Tools**: Calling a tool that doesn't exist.
-2. **Schema Violation**: Passing the wrong arguments to a real tool.
-3. **Environment Error**: Tool exists, but the external API is down.
-4. **Logical Stall**: The agent performs the same failing action repeatedly (The ReAct Loop of Death).
+- [Agent 失敗的分類](#fail-types)
+- [自我修正迴圈](#correction)
+- [有狀態回滾（Checkpointing）](#rollbacks)
+- [修復「卡在迴圈中」的方法](#stuck)
+- [優雅降級](#degradation)
+- [面試問題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Self-Correction Loops
+<a id="fail-types"></a>
+<a id="taxonomy-of-agent-failures"></a>
+## Agent 失敗的分類
 
-Errors are now treated as **Tokens of Information**.
-
-- **Pattern**: When a tool fails, the error message is NOT just logged; it is fed back to the model as a prompt: *"Action failed with error: X. Reflect on why this happened and provide an alternative strategy."*
-- **Reasoning Models** (Claude Opus 4.7 extended thinking, GPT-5.5 reasoning, DeepSeek-R2): These models excel at this because they "internalize" the error during their hidden Chain-of-Thought, leading to a much higher one-shot recovery rate.
-
----
-
-## Stateful Rollbacks (Checkpointing)
-
-For long-running agents, an error in Step 9 shouldn't crash the whole project.
-
-- **Checkpoints**: High-reliability systems (using LangGraph or similar) save the "State Snapshot" to a DB after every successful tool call.
-- **The Rollback**: If the agent enters a logical stall, the supervisor agent can **Reset common-state** to Step 5—the last "Safe" state—and force a different path.
+1. **虛構工具**：呼叫不存在的工具。
+2. **Schema 違規**：把錯誤的參數傳給真實存在的工具。
+3. **環境錯誤**：工具存在，但外部 API 當機。
+4. **邏輯停滯**：Agent 重複執行同一個失敗動作（The ReAct Loop of Death）。
 
 ---
 
-## The "Stuck in a Loop" Fix
+<a id="correction"></a>
+<a id="self-correction-loops"></a>
+## 自我修正迴圈
 
-Infinite loops are the #1 cost-sink in agentic systems.
+錯誤現在被視為 **資訊 Token**。
 
-**Solution**: **Counter-Based Intervention**.
-1. If the same `(Tool, Args)` tuple is seen 3 times in one session, the orchestrator interrupts the model.
-2. It injects a mandatory **"Pivot Instruction"**: *"You have tried searching for 'X' three times. This path is dead. You MUST try a different tool or admit you are stuck."*
-
----
-
-## Graceful Degradation
-
-If the high-reasoning agent (Claude Opus 4.7, GPT-5.5 reasoning) keeps failing, we fall back to:
-- **Simplified Agent**: A smaller model with fewer, more reliable tools.
-- **RAG-only Mode**: Disable actions and just provide a conceptual answer based on the knowledge base.
-- **Human Escalation**: (See the next chapter).
+- **模式**：當工具失敗時，錯誤訊息不只是被記錄；它會作為 prompt 回饋給模型：*「動作因錯誤 X 而失敗。請反思為何會發生，並提供替代策略。」*
+- **Reasoning Models**（Claude Opus 4.7 extended thinking、GPT-5.5 reasoning、DeepSeek-R2）：這些模型特別擅長處理這種情況，因為它們會在隱藏的 Chain-of-Thought 中「內化」錯誤，因此一次復原成功率高得多。
 
 ---
 
-## Interview Questions
+<a id="rollbacks"></a>
+<a id="stateful-rollbacks-checkpointing"></a>
+## 有狀態回滾（Checkpointing）
 
-### Q: Why is traditional "Exception Handling" (Try/Catch) insufficient for Agentic Systems?
+對於長時間運行的 agent，Step 9 出錯不應該讓整個專案崩潰。
 
-**Strong answer:**
-In traditional software, an exception is a "Stop" command. In an agentic system, the model is the "Driver." If the system just stops, the user task fails. We use **Error Injection** instead of Exception Handling. We catch the exception at the platform level and transform it into a **Synthesized Observation** for the model. This allows the model to "Reason" around the failure. A TRY/Catch only fixes the code; Error Injection allows the model to fix the **Plan**.
-
-### Q: How do you handle "Silent Failures" (Where the tool returns 200 OK but the data is wrong)?
-
-**Strong answer:**
-Silent failures are the most dangerous. We implement **Output Validation Agents**. For critical steps, we don't just accept the tool output. We pipe the output to a "Verifier Agent" (often a smaller, faster model) whose only job is to check: *"Does this tool output actually answer the query provided?"* If the Verifier says "No," it triggers a self-correction loop as if it were a hard error.
+- **Checkpoints**：高可靠度系統（使用 LangGraph 或類似框架）會在每次成功的工具呼叫後，把「狀態快照」存進 DB。
+- **回滾**：如果 agent 進入邏輯停滯，supervisor agent 可以把 **common-state 重設**到 Step 5——也就是最後一個「安全」狀態——並強制改走另一條路徑。
 
 ---
 
-## References
-- LangGraph. "Persistence and Checkpointing" (2025)
-- Shinn et al. "Reflexion: Learning from Errors" (2024 update)
-- Microsoft. "Managing Hallucinations in Agentic Systems" (2025)
+<a id="stuck"></a>
+<a id="the-stuck-in-a-loop-fix"></a>
+## 修復「卡在迴圈中」的方法
+
+無限迴圈是 agentic systems 中排名第一的成本黑洞。
+
+**解法**：**基於計數器的介入**。
+1. 如果同一個 `(Tool, Args)` tuple 在單一 session 中出現 3 次，orchestrator 就會中斷模型。
+2. 它會注入強制性的 **「Pivot Instruction」**：*「你已經嘗試搜尋 'X' 三次。這條路走不通。你**必須**改用其他工具，或承認自己卡住了。」*
 
 ---
 
-*Next: [Human-in-the-Loop Patterns](08-human-in-the-loop-patterns.md)*
+<a id="degradation"></a>
+<a id="graceful-degradation"></a>
+## 優雅降級
+
+如果高推理能力 agent（Claude Opus 4.7、GPT-5.5 reasoning）持續失敗，我們就退回到：
+- **簡化版 Agent**：使用更小、工具更少但更可靠的模型。
+- **僅 RAG 模式**：停用動作，只根據知識庫提供概念性回答。
+- **人工升級處理**：（見下一章）。
+
+---
+
+<a id="interview-questions"></a>
+## 面試問題
+
+<a id="q-why-is-traditional-exception-handling-trycatch-insufficient-for-agentic-systems"></a>
+### 問：為什麼傳統的「Exception Handling」（Try/Catch）不足以應對 Agentic Systems？
+
+**強回答：**
+在傳統軟體中，exception 是「停止」命令。但在 agentic system 中，模型是「駕駛員」。如果系統只是停止，使用者任務就失敗了。我們使用的是 **Error Injection**，而不是 Exception Handling。我們在平台層捕捉 exception，並把它轉換成模型可見的 **Synthesized Observation**。這讓模型能夠圍繞失敗進行「推理」。TRY/Catch 只能修好程式碼；Error Injection 則讓模型有機會修正**計畫**。
+
+<a id="q-how-do-you-handle-silent-failures-where-the-tool-returns-200-ok-but-the-data-is-wrong"></a>
+### 問：你如何處理「Silent Failures」（工具回傳 200 OK，但資料是錯的）？
+
+**強回答：**
+Silent failure 是最危險的。我們會實作 **Output Validation Agents**。對於關鍵步驟，我們不會直接接受工具輸出，而是把輸出送到一個「Verifier Agent」（通常是較小、較快的模型），它唯一的工作是檢查：*「這個工具輸出真的有回答原本的查詢嗎？」* 如果 Verifier 回答「沒有」，就會像遇到硬錯誤一樣觸發自我修正迴圈。
+
+---
+
+<a id="references"></a>
+## 參考資料
+- LangGraph.「Persistence and Checkpointing」(2025)
+- Shinn et al.「Reflexion: Learning from Errors」(2024 update)
+- Microsoft.「Managing Hallucinations in Agentic Systems」(2025)
+
+---
+
+*下一章：[Human-in-the-Loop 模式](08-human-in-the-loop-patterns.md)*

@@ -1,45 +1,52 @@
-# Access Control for LLM Systems
+<a id="access-control-for-llm-systems"></a>
+# LLM 系統的存取控制
 
-Secure access control is essential for multi-user and multi-tenant LLM applications. This chapter covers authentication, authorization, and data isolation patterns.
+安全的存取控制，對多使用者與多租戶的 LLM 應用至關重要。本章涵蓋 authentication、authorization，以及資料隔離模式。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Access Control Requirements](#access-control-requirements)
-- [Authentication Patterns](#authentication-patterns)
-- [Authorization Models](#authorization-models)
-- [Tenant Isolation](#tenant-isolation)
-- [API Key Management](#api-key-management)
-- [Audit and Compliance](#audit-and-compliance)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [存取控制需求](#access-control-requirements)
+- [驗證模式](#authentication-patterns)
+- [授權模型](#authorization-models)
+- [租戶隔離](#tenant-isolation)
+- [API Key 管理](#api-key-management)
+- [稽核與合規](#audit-and-compliance)
+- [面試問題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Access Control Requirements
+<a id="access-control-requirements"></a>
+## 存取控制需求
 
-### Security Dimensions
+<a id="security-dimensions"></a>
+### 安全面向
 
-| Dimension | Description | Controls |
+| 面向 | 描述 | 控制措施 |
 |-----------|-------------|----------|
-| **Authentication** | Who is making the request? | API keys, OAuth, JWT |
-| **Authorization** | What can they do? | RBAC, ABAC, policies |
-| **Isolation** | What data can they see? | Tenant filtering, encryption |
-| **Audit** | What did they do? | Logging, compliance reports |
+| **Authentication** | 是誰發出這個請求？ | API keys、OAuth、JWT |
+| **Authorization** | 他們可以做什麼？ | RBAC、ABAC、policies |
+| **Isolation** | 他們可以看到哪些資料？ | Tenant filtering、encryption |
+| **Audit** | 他們做了什麼？ | Logging、compliance reports |
 
-### LLM-Specific Concerns
+<a id="llm-specific-concerns"></a>
+### LLM 特有考量
 
-| Concern | Risk | Mitigation |
+| 考量 | 風險 | 緩解方式 |
 |---------|------|------------|
-| Prompt injection | Bypass access controls | Input validation |
-| Data leakage | Cross-tenant exposure | Strict filtering |
-| Model output | Expose protected info | Output filtering |
-| Context pollution | Inject unauthorized data | Context validation |
+| Prompt injection | 繞過存取控制 | 輸入驗證 |
+| 資料外洩 | 跨租戶暴露 | 嚴格過濾 |
+| 模型輸出 | 暴露受保護資訊 | 輸出過濾 |
+| 上下文污染 | 注入未授權資料 | 上下文驗證 |
 
 ---
 
-## Authentication Patterns
+<a id="authentication-patterns"></a>
+## 驗證模式
 
-### API Key Authentication
+<a id="api-key-authentication"></a>
+### API Key 驗證
 
 ```python
 class APIKeyAuthenticator:
@@ -76,7 +83,8 @@ class APIKeyAuthenticator:
         return hashlib.sha256(key.encode()).hexdigest()
 ```
 
-### JWT with Scopes
+<a id="jwt-with-scopes"></a>
+### 帶有 Scopes 的 JWT
 
 ```python
 class JWTAuthenticator:
@@ -107,9 +115,11 @@ class JWTAuthenticator:
 
 ---
 
-## Authorization Models
+<a id="authorization-models"></a>
+## 授權模型
 
-### Role-Based Access Control (RBAC)
+<a id="role-based-access-control-rbac"></a>
+### 角色式存取控制（RBAC）
 
 ```python
 class RBACAuthorizer:
@@ -129,7 +139,8 @@ class RBACAuthorizer:
         return action in permissions
 ```
 
-### Attribute-Based Access Control (ABAC)
+<a id="attribute-based-access-control-abac"></a>
+### 屬性式存取控制（ABAC）
 
 ```python
 class ABACAuthorizer:
@@ -156,7 +167,8 @@ class ABACAuthorizer:
         return AuthzResult(allowed=False, reason="No matching policy")
 ```
 
-### Model-Level Permissions
+<a id="model-level-permissions"></a>
+### 模型層級權限
 
 ```python
 class ModelAccessControl:
@@ -180,9 +192,11 @@ class ModelAccessControl:
 
 ---
 
-## Tenant Isolation
+<a id="tenant-isolation"></a>
+## 租戶隔離
 
-### Data Isolation Patterns
+<a id="data-isolation-patterns"></a>
+### 資料隔離模式
 
 ```python
 class TenantIsolatedVectorStore:
@@ -216,7 +230,8 @@ class TenantIsolatedVectorStore:
         await self.db.insert(documents)
 ```
 
-### Prompt Isolation
+<a id="prompt-isolation"></a>
+### Prompt 隔離
 
 ```python
 class TenantAwarePromptBuilder:
@@ -241,7 +256,8 @@ User query: {user_query}
 """
 ```
 
-### Cache Isolation
+<a id="cache-isolation"></a>
+### 快取隔離
 
 ```python
 class TenantIsolatedCache:
@@ -264,9 +280,11 @@ class TenantIsolatedCache:
 
 ---
 
-## API Key Management
+<a id="api-key-management"></a>
+## API Key 管理
 
-### Key Lifecycle
+<a id="key-lifecycle"></a>
+### 金鑰生命週期
 
 ```python
 class APIKeyManager:
@@ -320,7 +338,8 @@ class APIKeyManager:
         })
 ```
 
-### Key Rotation
+<a id="key-rotation"></a>
+### 金鑰輪替
 
 ```python
 class KeyRotator:
@@ -349,9 +368,11 @@ class KeyRotator:
 
 ---
 
-## Audit and Compliance
+<a id="audit-and-compliance"></a>
+## 稽核與合規
 
-### Audit Logging
+<a id="audit-logging"></a>
+### 稽核日誌
 
 ```python
 class AuditLogger:
@@ -380,7 +401,8 @@ class AuditLogger:
         await self.audit_store.append(audit_entry)
 ```
 
-### Compliance Reports
+<a id="compliance-reports"></a>
+### 合規報告
 
 ```python
 class ComplianceReporter:
@@ -410,77 +432,81 @@ class ComplianceReporter:
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試問題
 
-### Q: How do you implement multi-tenant isolation in a RAG system?
+<a id="q-how-do-you-implement-multi-tenant-isolation-in-a-rag-system"></a>
+### 問：你如何在 RAG 系統中實作多租戶隔離？
 
-**Strong answer:**
+**強而有力的回答：**
 
-"Multi-tenant isolation requires defense in depth:
+「多租戶隔離需要縱深防禦：
 
-**Vector database level:**
-- Every vector includes tenant_id in metadata
-- All queries filter by tenant_id at the database level
-- Never filter after retrieval (data already leaked to memory)
+**Vector database 層：**
+- 每個向量都在 metadata 中包含 tenant_id
+- 所有查詢都在資料庫層以 tenant_id 過濾
+- 絕不在檢索後才過濾（資料已經先洩漏到記憶體）
 
-**Cache level:**
-- All cache keys prefixed with tenant_id
-- Semantic cache scoped to tenant
-- No cross-tenant cache hits even for identical queries
+**Cache 層：**
+- 所有 cache keys 都以 tenant_id 為前綴
+- Semantic cache 需限定在租戶範圍內
+- 即使查詢完全相同，也不能出現跨租戶 cache hit
 
-**Prompt level:**
-- Validate context documents belong to requesting tenant before including
-- Never mix context from multiple tenants
+**Prompt 層：**
+- 在納入前，先驗證 context documents 屬於提出請求的租戶
+- 絕不混用多個租戶的 context
 
-**Output level:**
-- Verify response does not contain cross-tenant information
-- Output filtering as additional safeguard
+**Output 層：**
+- 驗證回應中不含跨租戶資訊
+- 將 output filtering 作為額外防護
 
-**Audit:**
-- Log all access with tenant context
-- Monitor for cross-tenant access attempts
+**Audit：**
+- 記錄所有帶有租戶上下文的存取
+- 監控跨租戶存取嘗試
 
-The key principle: tenant_id is a mandatory filter at every data access point, not an optional parameter."
+關鍵原則是：tenant_id 是每個資料存取點都必須具備的強制篩選條件，而不是可有可無的參數。」
 
-### Q: How do you manage API keys for an LLM service?
+<a id="q-how-do-you-manage-api-keys-for-an-llm-service"></a>
+### 問：你如何為 LLM 服務管理 API keys？
 
-**Strong answer:**
+**強而有力的回答：**
 
-"Secure API key management:
+「安全的 API key 管理包括：
 
-**Creation:**
-- Generate cryptographically random keys
-- Store only the hash, return raw key once
-- Associate with user, tenant, scopes, expiration
+**建立：**
+- 產生具密碼學強度的隨機金鑰
+- 只儲存雜湊值，原始金鑰只回傳一次
+- 關聯 user、tenant、scopes 與到期時間
 
-**Validation:**
-- Hash incoming key, compare to stored hash
-- Check expiration and revocation status
-- Verify scopes match requested action
+**驗證：**
+- 將傳入金鑰做雜湊，與儲存的雜湊值比較
+- 檢查是否已過期與是否被撤銷
+- 驗證 scopes 是否符合請求的操作
 
-**Rotation:**
-- Support key rotation with grace period
-- Old key works during transition (7 days)
-- Notify users of impending expiration
+**輪替：**
+- 支援具有寬限期的金鑰輪替
+- 舊金鑰在轉換期間內仍可使用（7 天）
+- 通知使用者即將到期
 
-**Security:**
-- Rate limit failed authentication attempts
-- Revoke immediately on suspected compromise
-- Audit all key operations
+**安全性：**
+- 對失敗的驗證嘗試做速率限制
+- 一旦懷疑外洩就立即撤銷
+- 稽核所有金鑰操作
 
-**Scopes:**
-- Fine-grained: model access, operation type, daily limits
-- Least privilege by default
+**Scopes：**
+- 細粒度控制：模型存取、操作類型、每日限制
+- 預設採最小權限
 
-The key principle: never store raw keys, support rotation, implement least privilege."
+關鍵原則是：永遠不要儲存原始金鑰、支援輪替、落實最小權限。」
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - OAuth 2.0: https://oauth.net/2/
 - OWASP API Security: https://owasp.org/API-Security/
 
 ---
 
-*Previous: [Security Fundamentals](01-security-fundamentals.md)*
+*上一篇：[Security Fundamentals](01-security-fundamentals.md)*

@@ -1,44 +1,49 @@
+<a id="graphrag"></a>
 # GraphRAG
 
-GraphRAG is the combination of **Knowledge Graphs (KG)** and **Retrieval-Augmented Generation**. While vector RAG is good at "finding a specific chunk," GraphRAG is designed for **Global Reasoning** across an entire dataset.
+GraphRAG 是 **Knowledge Graphs（KG）** 與 **Retrieval-Augmented Generation** 的結合。Vector RAG 擅長「找出特定 chunk」，而 GraphRAG 則是為了在整個資料集上進行 **Global Reasoning** 而設計。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [When GraphRAG Actually Wins (and When It Doesn't)](#when-graphrag-actually-wins-and-when-it-doesnt)
-- [Graph as Reranker Pattern (May 2026)](#graph-as-reranker-pattern-may-2026)
-- [The Limitations of Vector RAG](#limitations)
-- [GraphRAG Architecture (Extract-Build-Query)](#architecture)
-- [Community Summarization (Microsoft Pattern)](#communities)
-- [Entity-Relationship Retrieval](#retrieval)
-- [When to Use GraphRAG](#when)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [GraphRAG 真正勝出的時機（以及不適用的時機）](#when-graphrag-actually-wins-and-when-it-doesnt)
+- [圖作為 Reranker 的模式（2026 年 5 月）](#graph-as-reranker-pattern-may-2026)
+- [Vector RAG 的限制](#the-limitations-of-vector-rag)
+- [GraphRAG 架構](#graphrag-architecture)
+- [Community Summarization（Microsoft 模式）](#community-summarization)
+- [實體－關係檢索](#entity-relationship-retrieval)
+- [何時使用 GraphRAG](#when-to-use-graphrag)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## When GraphRAG Actually Wins (and When It Doesn't)
+<a id="when-graphrag-actually-wins-and-when-it-doesnt"></a>
+## GraphRAG 真正勝出的時機（以及不適用的時機）
 
-GraphRAG is a specialized tool for graph-shaped questions, not a default upgrade over vector RAG. For roughly 80% of production retrieval workloads, a hybrid BM25-plus-dense retriever followed by a cross-encoder reranker is cheaper to build, cheaper to operate, and competitive on answer quality. The graph is worth building only when the question genuinely requires multi-hop traversal that vector similarity cannot recover.
+GraphRAG 是專門處理圖結構問題的工具，不是 vector RAG 的預設升級。對大約 80% 的正式環境檢索工作負載來說，先用 BM25 加 dense retriever 的 hybrid 檢索，再接 cross-encoder reranker，通常更便宜、維運成本更低，而且答案品質也很有競爭力。只有當問題真的需要多跳 traversal，而 vector similarity 無法找回答案時，才值得建圖。
 
-The decision should be data-driven, not aesthetic. Pull 100 failed retrievals from your existing RAG system, tag each failure into one of three buckets, and let the distribution decide:
+決策應該由資料驅動，而不是美學偏好。從你現有的 RAG 系統中抽出 100 個失敗檢索案例，將每個失敗標記到以下三個桶子之一，然後讓分布結果決定方向：
 
-1. **Lexical or chunking failures**: the answer was in the corpus but the retriever did not surface it. Fix the retriever (better embeddings, hybrid scoring, larger top-k, a reranker, or Contextual Retrieval).
-2. **Synthesis failures**: the retriever surfaced the right chunks but the generator combined them poorly. Fix the prompt, the reranker, or the model.
-3. **Graph-shaped failures**: the answer required following a chain of relationships across documents that share no surface text. This is the GraphRAG bucket.
+1. **詞彙或 chunking 失敗**：答案明明在語料中，但 retriever 沒找出來。這時應該修 retriever（更好的 embeddings、hybrid scoring、更大的 top-k、reranker，或 Contextual Retrieval）。
+2. **綜合失敗**：retriever 已經找到了正確 chunks，但 generator 沒有把它們組合好。這時應該修 prompt、reranker 或模型。
+3. **圖結構型失敗**：答案需要沿著跨文件的關係鏈前進，而這些文件之間沒有任何表面文字重疊。這才是 GraphRAG 的領域。
 
-If the third bucket is less than 30% of failures, do not build a graph. The construction and maintenance cost will not pay back. If it is 30% or more, GraphRAG (or a graph-as-reranker hybrid, covered below) is the right next investment.
+如果第三個桶子少於失敗案例的 30%，就不要建圖。建置與維護成本不會回本。如果達到或超過 30%，那麼 GraphRAG（或下文提到的 graph-as-reranker hybrid）就是下一個正確投資。
 
-### Workloads Where GraphRAG Is the Right Tool
+<a id="workloads-where-graphrag-is-the-right-tool"></a>
+### GraphRAG 適用的工作負載
 
-The pattern across these is the same: the question requires connecting entities that do not co-occur in any single chunk, and the relationships themselves carry semantic weight that surface embeddings do not capture.
+這些案例的共通點是：問題需要連接那些不會在同一個 chunk 中共現的實體，而且關係本身就帶有表意能力，是表層 embeddings 抓不到的。
 
-- **Drug discovery and biomedical research**: tracing pathways across genes, proteins, compounds, and diseases. UMLS-grounded variants like GraLC-RAG are tuned for this domain.
-- **Financial fraud rings**: connecting accounts, devices, locations, and transactions across documents that never name each other.
-- **Legal precedent chains**: following case citations through multiple jurisdictional layers, where each case only references its immediate parents.
-- **Enterprise org charts and policy ownership**: questions like "who approves an exception to policy X in region Y" require traversing reporting lines and policy-ownership edges.
-- **Code intelligence at repo scale**: call graphs, type hierarchies, and dependency relationships are inherently graph-shaped; vector similarity over source-code chunks loses the structure that makes the answer findable.
+- **藥物發現與生醫研究**：沿著基因、蛋白質、化合物與疾病之間的路徑追蹤。像 GraLC-RAG 這種以 UMLS 為基礎的變體，就是專為此領域調校。
+- **金融詐欺集團**：跨越互不直呼彼此的帳戶、裝置、地點與交易文件，找出連結。
+- **法律先例鏈**：沿著多層司法轄區追蹤案例引用，而每個案例通常只會引用它的直接上游。
+- **企業組織圖與政策責任歸屬**：例如「region Y 中，誰能批准 policy X 的例外？」這類問題需要沿著匯報線與政策責任邊遍歷。
+- **repo 規模的程式碼 intelligence**：call graphs、型別階層與依賴關係本質上就是圖；若只對程式碼 chunks 做 vector similarity，會失去真正讓答案可被找出的結構。
 
-### Decision Flow
+<a id="decision-flow"></a>
+### 決策流程
 
 ```mermaid
 flowchart TD
@@ -57,27 +62,30 @@ flowchart TD
     J --> K
 ```
 
-### The Maintenance Tail
+<a id="the-maintenance-tail"></a>
+### 維護尾端成本
 
-GraphRAG's hidden cost is not extraction; it is maintenance. The corpus drifts: new documents arrive, entities change names, relationships get rewritten. A graph built in January is meaningfully wrong by April. Plan for a quarterly refresh that re-runs extraction on changed documents and reconciles entity identity across the diff. Budget the LLM cost and the engineering time for this refresh up front, or do not build the graph. Teams that skip this step end up with a graph that retrieves confidently and wrongly, which is worse than no graph at all.
+GraphRAG 的隱藏成本不在抽取，而在維護。語料會漂移：新文件會進來、實體會改名、關係會重寫。1 月建立的圖，到 4 月時可能已經顯著失真。請預先規劃每季 refresh：對變更文件重新跑 extraction，並在 diff 範圍內重新對齊實體身分。若不一開始就編列這筆 LLM 成本與工程時間，就不要建圖。忽略這一步的團隊，最後往往會得到一張「很有信心、卻很錯」的圖，這比完全沒有圖還糟。
 
 ---
 
-## Graph as Reranker Pattern (May 2026)
+<a id="graph-as-reranker-pattern-may-2026"></a>
+## 圖作為 Reranker 的模式（2026 年 5 月）
 
-The dominant production pattern in 2026 is not full GraphRAG. It is graph-as-reranker, which delivers most of the multi-hop benefit at a fraction of the construction cost. The intuition is that you do not need a graph index over the entire corpus; you need a graph that covers the entities that show up in the top-k vector results, expanded just enough to find connected evidence.
+2026 年主流的正式環境模式其實不是完整的 GraphRAG，而是 graph-as-reranker。它能用完整 GraphRAG 一小部分的建置成本，拿到大部分 multi-hop 的效益。核心直覺是：你不需要整個語料庫的全域圖索引；你只需要一張能覆蓋 top-k vector 結果中出現實體的圖，並往外擴展到足以找到相連證據即可。
 
-The flow is:
+流程如下：
 
-1. Vector retrieves the top-50 chunks for the user query, using whatever hybrid scoring you already have.
-2. An entity extractor (a small fine-tuned model or a structured-output LLM call) pulls the named entities from those 50 chunks.
-3. A graph traversal from those entities, one or two hops deep, returns connected entities and the chunks where they appear.
-4. The expanded candidate set (original 50 plus graph-expanded chunks) goes to a cross-encoder reranker.
-5. The top-k reranked chunks feed the generator.
+1. 先用你現有的 hybrid scoring，讓 vector 檢索使用者 query 的 top-50 chunks。
+2. 用實體抽取器（小型 fine-tuned 模型或 structured-output 的 LLM call）從這 50 個 chunks 中抽出 named entities。
+3. 從這些實體出發，在圖中做一到兩跳 traversal，找回相連實體與它們出現的 chunks。
+4. 把擴展後的候選集合（原本的 50 個加上圖擴展 chunks）交給 cross-encoder reranker。
+5. 將 rerank 後的 top-k chunks 送給 generator。
 
-You build only the slice of graph that the query touches, lazily, rather than a global graph index. Construction cost drops by an order of magnitude. The maintenance tail shrinks because you are not re-indexing untouched regions. Empirically, teams report 70-80% of full GraphRAG's quality lift at roughly 20% of the upfront cost.
+你建的只是 query 實際碰到的那一小片圖，而且是惰性建立，不是全域索引。建置成本會降一個數量級。維護尾端成本也更低，因為不需要重新索引完全沒被碰觸的區域。實務上，團隊常回報：大約用完整 GraphRAG 20% 的前期成本，就能拿到 70-80% 的品質提升。
 
-### Pattern Flow
+<a id="pattern-flow"></a>
+### 模式流程
 
 ```mermaid
 sequenceDiagram
@@ -100,18 +108,19 @@ sequenceDiagram
     L-->>U: response
 ```
 
-### Recent Variants (2024 to 2026)
+<a id="recent-variants-2024-to-2026"></a>
+### 近期變體（2024 到 2026）
 
-A short tour of the variants worth knowing:
+以下是值得認識的幾種變體：
 
-- **HippoRAG and HippoRAG 2** (Princeton, 2024 and 2025): treat retrieval as a Personalized PageRank problem over a memory graph, with strong results on multi-hop benchmarks at lower index cost than Microsoft GraphRAG.
-- **LightRAG** (HKU, 2024): entity-centric retrieval with a simpler indexing pipeline; trades some recall on global questions for substantially faster construction and updates.
-- **GraLC-RAG** (March 2026): graph-aware late chunking paired with UMLS grounding for biomedical use cases, strong published result on multi-hop biomedical QA.
-- **Microsoft GraphRAG indexing pipeline v2** (2025): the original community-summarization approach, rearchitected for incremental updates and significantly cheaper extraction; this is what to use if you genuinely need global summarization rather than local multi-hop.
+- **HippoRAG 與 HippoRAG 2**（Princeton，2024 與 2025）：把檢索視為記憶圖上的 Personalized PageRank 問題，在 multi-hop benchmark 上表現強勁，索引成本也低於 Microsoft GraphRAG。
+- **LightRAG**（HKU，2024）：以實體為中心的檢索，索引流程更簡單；它在全域型問題上犧牲部分召回，但換來更快的建置與更新速度。
+- **GraLC-RAG**（2026 年 3 月）：把 graph-aware late chunking 與 UMLS grounding 結合，用於生醫場景；在 multi-hop biomedical QA 上有很強的已發表成果。
+- **Microsoft GraphRAG indexing pipeline v2**（2025）：原始的 community-summarization 方法，重新設計為支援增量更新且抽取成本顯著更低；如果你真的需要 global summarization，而不是局部 multi-hop，這會是首選。
 
-The general direction across all four variants is the same: less monolithic indexing, more incremental and lazy graph construction, and a clearer separation between "global summary" workloads (where Microsoft-style communities still win) and "local multi-hop" workloads (where HippoRAG-style traversal is cheaper and competitive).
+這四條路線的共同方向很一致：更少的單體式索引、更增量與惰性的圖建構，以及更清楚區分「全域摘要」工作負載（Microsoft 式 communities 仍較強）與「局部 multi-hop」工作負載（HippoRAG 式 traversal 更便宜也很有競爭力）。
 
-**Sources:**
+**來源：**
 - [Microsoft GraphRAG](https://microsoft.github.io/graphrag)
 - [HippoRAG: Neurobiologically Inspired Long-Term Memory](https://arxiv.org/abs/2405.14831)
 - [Edge et al., From Local to Global: A GraphRAG Approach](https://arxiv.org/abs/2404.16130)
@@ -120,79 +129,89 @@ The general direction across all four variants is the same: less monolithic inde
 
 ---
 
-## The Limitations of Vector RAG
+<a id="the-limitations-of-vector-rag"></a>
+## Vector RAG 的限制
 
-Vector RAG operates on "points" in space. This fails for questions like:
-- *"What are the primary themes across all 500 employee reviews?"*
-- *"Show me all connections between Project Alpha and the Q3 budget cuts."*
+Vector RAG 是在空間中的「點」上運作。這會讓它在以下問題上失效：
+- *「所有 500 份員工評價的主要主題是什麼？」*
+- *「告訴我 Project Alpha 與 Q3 預算刪減之間所有的連結。」*
 
-**The Problem**: Vector search finds "similar text," but it doesn't understand "connected entities."
-
----
-
-## GraphRAG Architecture
-
-A modern GraphRAG pipeline consists of three phases:
-
-1. **Extraction (VLB)**: An LLM scans the text and extracts **Entities** (People, Projects, Dates) and **Relationships** (e.g., "Person A *works on* Project B").
-2. **Graph Construction**: The entities are stored as nodes and relationships as edges in a Graph Database (Neo4j, Memgraph).
-3. **Querying**: 
-   - **Local Search**: Find a node and its neighbors.
-   - **Global Search**: Use **Community Summaries** to answer high-level questions.
+**問題點**：Vector search 只能找「相似文字」，但不理解「彼此相連的實體」。
 
 ---
 
+<a id="graphrag-architecture"></a>
+## GraphRAG 架構
+
+現代 GraphRAG pipeline 由三個階段組成：
+
+1. **Extraction（VLB）**：LLM 掃描文本並抽出 **Entities**（人、專案、日期）與 **Relationships**（例如「Person A *works on* Project B」）。
+2. **圖建構**：把實體作為節點、關係作為邊，存入 Graph Database（Neo4j、Memgraph）。
+3. **查詢**：
+   - **Local Search**：找到某個節點及其鄰居。
+   - **Global Search**：利用 **Community Summaries** 回答高階問題。
+
+---
+
+<a id="community-summarization"></a>
 ## Community Summarization
 
- popularized by Microsoft, this technique involves:
-1. Identifying clusters of related nodes (Communities) using graph algorithms (e.g., Leiden).
-2. Generating a natural language summary for *each* community.
-3. At query time, searching the **summaries** instead of the raw chunks.
+此技術由 Microsoft 推廣，做法包括：
+1. 以圖演算法（例如 Leiden）識別相關節點的群集（Communities）。
+2. 為 *每個* community 產生自然語言摘要。
+3. 在查詢時，搜尋的是這些 **summaries**，而不是原始 chunks。
 
-**The Win**: This allows the model to answer "Big Picture" questions without reading 1M tokens.
-
----
-
-## Entity-Relationship Retrieval
-
-Production stacks use **Hybrid Graph-Vector Search**.
-- **Dense Pass**: Find the most similar nodes via embeddings.
-- **Graph Pass**: Traverse the edges of those nodes to find relevant "supporting" info that might not be semantically similar to the query but is logically connected.
+**優勢**：讓模型不需要讀 100 萬 tokens，也能回答「整體大局」類問題。
 
 ---
 
-## When to Use GraphRAG
+<a id="entity-relationship-retrieval"></a>
+## 實體－關係檢索
 
-| Feature | Vector RAG | GraphRAG |
+正式環境堆疊通常會使用 **Hybrid Graph-Vector Search**。
+- **Dense Pass**：透過 embeddings 找到最相似的節點。
+- **Graph Pass**：沿著這些節點的邊走，找出那些語意上不一定和 query 相似、但在邏輯上相關的支援資訊。
+
+---
+
+<a id="when-to-use-graphrag"></a>
+## 何時使用 GraphRAG
+
+| 特性 | Vector RAG | GraphRAG |
 |---------|------------|----------|
-| **Data Type** | Unstructured text | Highly connected data |
-| **Query Type**| "Find X" | "Explain the relationship between X and Y" |
-| **Scale** | Petabytes | Millions of entities |
-| **Cost** | Low | High (Extraction is expensive) |
+| **資料型態** | 非結構化文字 | 高度連結的資料 |
+| **查詢型態**| 「找出 X」 | 「解釋 X 與 Y 的關係」 |
+| **規模** | Petabytes | 數百萬個實體 |
+| **成本** | 低 | 高（Extraction 很昂貴） |
 
-**2025 Recommendation**: Use GraphRAG for **Internal Knowledge Bases** (Wikis, Codebases, Legal repositories) where the connections between documents are as important as the content itself.
-
----
-
-## Interview Questions
-
-### Q: Why is the "Extraction" phase the bottleneck for GraphRAG?
-
-**Strong answer:**
-Knowledge Graph extraction is extremely token-intensive. To build a high-quality graph, you must process every document with a "Frontier" model to ensure you don't miss subtle entity connections. For a 10,000-page dataset, this can cost thousands of dollars in LLM API calls. The standard mitigation is **SLM-based Extraction** (Small Language Models) for the initial pass, with giant models reserved for "conflict resolution" between overlapping entities. Microsoft's LazyGraphRAG further delays community-summarization cost by deferring it until query time.
-
-### Q: How does GraphRAG solve the "Context Window" limit for aggregate questions?
-
-**Strong answer:**
-For aggregate questions (e.g., "Summarize the sentiment of 1,000 documents"), a standard RAG system would have to feed 1,000 chunks into the context window, which is impossible or prohibitively expensive. GraphRAG solves this by **Pre-Summarization**. It hierarchically summarizes the clusters of information in the graph (Communities). When the user asks a global question, the system only retrieves the high-level community summaries, which are compact and rich in information, allowing the model to "see" the entire dataset through a condensed lens.
+**2025 建議**：對於 **Internal Knowledge Bases**（Wiki、Codebase、法律資料庫）這類文件之間連結與內容同樣重要的場景，使用 GraphRAG 很有價值。
 
 ---
 
-## References
+<a id="interview-questions"></a>
+## 面試題
+
+<a id="q-why-is-the-extraction-phase-the-bottleneck-for-graphrag"></a>
+### Q：為什麼「Extraction」階段會是 GraphRAG 的瓶頸？
+
+**強答：**
+Knowledge Graph 抽取極度耗 token。要建出高品質的圖，你必須用「Frontier」模型處理每一份文件，才不會漏掉細微的實體連結。對一份 10,000 頁的資料集來說，光是 LLM API 呼叫就可能花掉數千美元。標準緩解方式是：第一輪用 **SLM-based Extraction**（Small Language Models），只有在重疊實體之間需要「衝突解決」時，才使用大型模型。Microsoft 的 LazyGraphRAG 也透過把 community-summarization 延後到 query time，進一步延遲成本發生。
+
+<a id="q-how-does-graphrag-solve-the-context-window-limit-for-aggregate-questions"></a>
+### Q：GraphRAG 如何解決聚合型問題中的「Context Window」限制？
+
+**強答：**
+對聚合型問題（例如「總結 1,000 份文件的情緒」）來說，標準 RAG 系統得把 1,000 個 chunks 全塞進 context window，這不是做不到，就是成本高得無法接受。GraphRAG 透過 **Pre-Summarization** 解決：它會階層式地總結圖中的資訊群集（Communities）。當使用者提出全域性問題時，系統只需檢索高階 community summaries，這些摘要既精簡又資訊密集，讓模型能透過壓縮後的視角「看見」整個資料集。
+
+---
+
+<a id="references"></a>
+## 參考資料
 - Edge et al. "From Local to Global: A GraphRAG Approach" (Microsoft Research, 2024)
 - Neo4j. "Generative AI and Graph Databases" (2025)
 - WhyHow AI. "Deterministic RAG with Knowledge Graphs" (2024)
 
 ---
 
-*Next: [Agentic RAG](08-agentic-rag.md)*
+*下一節：[Agentic RAG](08-agentic-rag.md)*
+

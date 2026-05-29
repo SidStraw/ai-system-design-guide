@@ -1,79 +1,90 @@
-# LangSmith Observability
+<a id="langsmith-observability"></a>
+# LangSmith 可觀測性
 
-In 2023, LLM observability was "logging strings." Now it is **Full Trajectory Debugging** and **Automated Evaluation Pipelines**. LangSmith is the LangChain-native option in a crowded "LLMOps" layer that also includes Langfuse (acquired by ClickHouse in January 2026), LangWatch, Braintrust, and Arize Phoenix.
+在 2023 年，LLM observability 幾乎等同於「記錄字串」。現在，它已變成 **完整軌跡除錯** 與 **自動化評估 pipeline**。LangSmith 是 LangChain 原生的選項，而在擁擠的「LLMOps」層中，其他選手還包括 Langfuse（於 2026 年 1 月被 ClickHouse 收購）、LangWatch、Braintrust 與 Arize Phoenix。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [The Observability Pyramid](#pyramid)
-- [Tracing and Trajectories](#tracing)
-- [Unit Testing for LLMs (Datasets)](#datasets)
-- [Automated Evaluators (LLM-as-Judge)](#evaluators)
-- [Managing Deployment: A/B Testing](#ab-testing)
-- [Interview Questions](#interview-questions)
-- [References](#references)
-
----
-
-## The Observability Pyramid
-
-1. **Top (Value)**: Is the user task getting completed? (Success Rate)
-2. **Middle (Flow)**: Which agent node is the bottleneck? (Latency/Cost per node)
-3. **Bottom (Raw)**: What were the exact prompt/completion pairs? (Traces)
+- [可觀測性金字塔](#pyramid)
+- [Tracing 與軌跡](#tracing)
+- [LLM 的單元測試（Datasets）](#datasets)
+- [自動化評估器（LLM-as-Judge）](#evaluators)
+- [管理部署：A/B Testing](#ab-testing)
+- [面試問題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Tracing and Trajectories
+<a id="the-observability-pyramid"></a>
+## 可觀測性金字塔
 
-LangSmith automatically captures every node in a **LangGraph** or **Chain**.
-- **Metadata Tagging**: Tag every trace with `user_id`, `model_tier`, and `is_canary`.
-- **The Debugger**: You can \"Play back\" a trace in the LangSmith UI, modifying the prompt and seeing how the response changes. This works without re-running the entire application.
-
----
-
-## Unit Testing for LLMs (Datasets)
-
-Building an LLM app without a **Dataset** is "vibe-based development."
-- **Gold Standard Datasets**: A collection of `(Input, Expected_Output)` pairs.
-- **Standard workflow**: Whenever a user provides negative feedback, that interaction is automatically pumped into a "Correction Dataset" for future testing.
+1. **頂層（價值）**：使用者任務是否真的被完成？（Success Rate）
+2. **中層（流程）**：哪個 agent node 是瓶頸？（每個 node 的 Latency/Cost）
+3. **底層（原始資料）**：精確的 prompt/completion 配對是什麼？（Traces）
 
 ---
 
-## Automated Evaluators
+<a id="tracing-and-trajectories"></a>
+## Tracing 與軌跡
 
-You cannot manually check 1,000 log entries every morning.
-- **LLM-as-Judge**: Using a superior model (Claude Opus 4.7, GPT-5.5 reasoning, DeepSeek-R2) to score the production model on categories like **Tone**, **Accuracy**, and **Safe Action execution**.
-- **Custom Evaluators**: Python functions that check for regex patterns, JSON schema validity, or Toxicity scores.
+LangSmith 會自動擷取 **LangGraph** 或 **Chain** 中的每個節點。
+- **Metadata Tagging**：為每條 trace 加上 `user_id`、`model_tier` 與 `is_canary` 標記。
+- **Debugger**：你可以在 LangSmith UI 中「回放」一條 trace，修改 prompt 並觀察回應如何變化。這不需要重新執行整個應用程式。
 
 ---
 
+<a id="unit-testing-for-llms-datasets"></a>
+## LLM 的單元測試（Datasets）
+
+打造 LLM 應用卻沒有 **Dataset**，就像是「憑感覺開發」。
+- **Gold Standard Datasets**：由 `(Input, Expected_Output)` 配對組成的集合。
+- **標準工作流**：每當使用者提供負面回饋時，該互動都會自動被送進「Correction Dataset」，供後續測試使用。
+
+---
+
+<a id="automated-evaluators"></a>
+## 自動化評估器
+
+你不可能每天早上手動檢查 1,000 筆 log。
+- **LLM-as-Judge**：使用更強的模型（Claude Opus 4.7、GPT-5.5 reasoning、DeepSeek-R2），從 **Tone**、**Accuracy** 與 **Safe Action execution** 等面向替 production model 打分。
+- **Custom Evaluators**：用 Python functions 檢查 regex patterns、JSON schema 有效性，或 Toxicity scores。
+
+---
+
+<a id="ab-testing"></a>
 ## A/B Testing
 
-LangSmith allows for **Experiment Branching**.
-- Run 2% of traffic on a new "System Prompt" version.
-- Compare the **Success Rate** and **Token Cost** in real-time.
-- Automatically roll back if the failure rate exceeds a threshold.
+LangSmith 支援 **實驗分支**。
+- 讓 2% 的流量跑在新的「System Prompt」版本上。
+- 即時比較 **Success Rate** 與 **Token Cost**。
+- 若失敗率超過門檻，則自動回滾。
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試問題
 
-### Q: Why is "Trace Attribution" critical for Staff-level engineers?
+<a id="q-why-is-trace-attribution-critical-for-staff-level-engineers"></a>
+### 問：為什麼「Trace Attribution」對 Staff-level engineers 如此重要？
 
-**Strong answer:**
-In complex multi-agent systems, the final output might be bad, but the error happened 10 steps ago in a "Researcher" node. Without **Trace Attribution**, you're just guessing where to fix the prompt. Attribution allows me to see the **Line of Reasoning**. I can see that the "Researcher" failed to find the right URL, which led to the "Summarizer" hallucinating. This allows for **Targeted Optimization** instead of broad "Prompt Engineering."
+**理想回答：**
+在複雜的多代理系統中，最終輸出可能很糟，但真正的錯誤其實發生在 10 個步驟前的某個「Researcher」節點。若沒有 **Trace Attribution**，你只能靠猜測決定要修哪個 prompt。Attribution 讓我看見整條 **推理脈絡**。我可以發現是「Researcher」沒有找到正確 URL，才導致「Summarizer」產生 hallucination。這樣就能做 **精準優化**，而不是廣泛地做「Prompt Engineering」。
 
-### Q: How do you justify the cost of an observability platform like LangSmith?
+<a id="q-how-do-you-justify-the-cost-of-an-observability-platform-like-langsmith"></a>
+### 問：你會如何合理化 LangSmith 這類 observability platform 的成本？
 
-**Strong answer:**
-The cost is offset by **Developer Productivity** and **Token Efficiency**. A single day of an engineer "guessing" why a model is failing costs significantly more than a monthly subscription. Moreover, by using LangSmith to find "Meandering" agents (those taking too many steps), I can optimize the graphs to reduce the average number of steps from 8 to 5, which directly results in a **30-40% reduction in LLM API bills**.
+**理想回答：**
+這類成本會被 **開發者生產力** 與 **Token Efficiency** 抵銷。工程師花上一整天「猜」模型為何失敗，其成本往往遠高於每月訂閱費。此外，透過 LangSmith 找出那些會「Meander」的 agents（也就是走太多步的代理），我可以優化 graphs，將平均步數從 8 降到 5，直接帶來 **30-40% 的 LLM API 帳單下降**。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 - LangChain Team. "LangSmith: The Unified Evaluation Platform" (2025)
 - Microsoft. "Tracing and Debugging Multi-Agent Systems" (2025)
 - Weights & Biases. "Integrating LLOps into the CI/CD Pipeline" (2024/2025)
 
 ---
 
-*Next: [LlamaIndex and Data-Centric AI](04-llamaindex.md)*
+*下一步：[LlamaIndex and Data-Centric AI](04-llamaindex.md)*

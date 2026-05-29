@@ -1,80 +1,91 @@
-# LoRA, QLoRA, and PEFT
+<a id="lora-qlora-and-peft"></a>
+# LoRA、QLoRA 與 PEFT
 
-Parameter-Efficient Fine-Tuning (PEFT) is the industry standard for adapting LLMs. This chapter covers the mechanics and advanced variants of LoRA and other PEFT methods.
+Parameter-Efficient Fine-Tuning (PEFT) 是調整 LLM 的業界標準。本章涵蓋 LoRA 與其他 PEFT 方法的機制與進階變體。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [The PEFT Revolution](#the-peft-revolution)
-- [LoRA Mechanics](#lora-mechanics)
-- [QLoRA: 4-bit Fine-Tuning](#qlora)
-- [Advanced Variants (DoRA, Vera, RS-LoRA)](#advanced-variants)
-- [Multi-LoRA Serving (Adapters)](#multi-lora-serving)
-- [Interview Questions](#interview-questions)
-- [References](#references)
-
----
-
-## The PEFT Revolution
-
-Full fine-tuning of frontier models (GPT-5.5, Claude Opus 4.7, Llama 4 405B) is economically unfeasible for most enterprises. PEFT allows:
-1. **Memory Efficiency**: Train 70B models on a single A100.
-2. **Speed**: 2x faster training by updating <1% of weights.
-3. **Modularity**: Swap "skills" (adapters) onto a shared base model without reloading weights.
+- [PEFT 革命](#the-peft-revolution)
+- [LoRA 機制](#lora-mechanics)
+- [QLoRA：4-bit 微調](#qlora)
+- [進階變體（DoRA、Vera、RS-LoRA）](#advanced-variants)
+- [Multi-LoRA Serving（Adapters）](#multi-lora-serving)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## LoRA Mechanics
+<a id="the-peft-revolution"></a>
+## PEFT 革命
 
-LoRA (Low-Rank Adaptation) injects trainable rank-decomposition matrices into the transformer layers.
+對多數企業而言，前沿模型（GPT-5.5、Claude Opus 4.7、Llama 4 405B）的全量微調在經濟上不可行。PEFT 帶來：
+1. **記憶體效率**：可在單張 A100 上訓練 70B 模型。
+2. **速度**：只更新 <1% 權重，訓練速度提升 2x。
+3. **模組化**：可在不重新載入權重的情況下，把不同「技能」（adapters）切換到共享的 base model 上。
+
+---
+
+<a id="lora-mechanics"></a>
+## LoRA 機制
+
+LoRA（Low-Rank Adaptation）會在 transformer layers 中注入可訓練的低秩分解矩陣。
 
 ```python
 # The LoRA Equation for a Weight Matrix W:
 h = Wx + (BA)x * (alpha/r)
 ```
-- **W**: Pretrained weights (Frozen, Gradient = None)
-- **A, B**: LoRA adapters (Trainable)
-- **r**: Rank (e.g., 8, 16, 64)
-- **alpha**: Scaling factor (typically 2 * rank)
+- **W**：預訓練權重（Frozen，Gradient = None）
+- **A, B**：LoRA adapters（可訓練）
+- **r**：Rank（例如 8、16、64）
+- **alpha**：縮放因子（通常為 2 * rank）
 
-### Principal Nuance: Target Modules
-Historically, we only targeted query/value projections (`q_proj`, `v_proj`).
-**Modern standard**: Target **all** linear layers (`q, k, v, o, gate, up, down`) for maximum stability and performance, even at lower ranks.
+<a id="principal-nuance-target-modules"></a>
+### 關鍵細節：Target Modules
+過去通常只針對 query/value projections（`q_proj`、`v_proj`）。
+**現代標準**：即使在較低 rank 下，也會針對**所有**線性層（`q, k, v, o, gate, up, down`），以獲得最佳穩定性與效能。
 
 ---
 
-## QLoRA: 4-bit Fine-Tuning
+<a id="qlora-4-bit-fine-tuning"></a>
+## QLoRA：4-bit 微調
 
-QLoRA pushes efficiency further by quantizing the base model to 4-bit (NF4) while maintaining 16-bit gradients.
+QLoRA 透過把 base model 量化為 4-bit（NF4），同時維持 16-bit gradients，進一步提升效率。
 
-| Optimization | Method | Benefit |
+| 最佳化 | 方法 | 效益 |
 |--------------|--------|---------|
-| **NF4 Quantization** | Normalized Float 4 | Better info density than standard Int4 |
-| **Double Quant** | Quantizing the quant constants | Saves ~0.5 GB VRAM per model |
-| **Paging** | Unified Memory (Nvidia) | Prevents OOM by spilling to CPU RAM |
+| **NF4 Quantization** | Normalized Float 4 | 資訊密度優於標準 Int4 |
+| **Double Quant** | 對量化常數再次量化 | 每個模型可省下約 0.5 GB VRAM |
+| **Paging** | Unified Memory (Nvidia) | 透過溢寫到 CPU RAM 避免 OOM |
 
 ---
 
-## Advanced Variants
+<a id="advanced-variants"></a>
+## 進階變體
 
-### 1. DoRA (Weight-Decomposed Low-Rank Adaptation)
-DoRA decomposes the weight update into **Magnitude** and **Direction**.
-- **Result**: Learns 2x faster than LoRA and performs closer to full fine-tuning.
-- **Why it wins**: It allows the model to adjust how much it changes vs. what it's changing independently.
+<a id="1-dora-weight-decomposed-low-rank-adaptation"></a>
+### 1. DoRA（Weight-Decomposed Low-Rank Adaptation）
+DoRA 會把權重更新拆成**Magnitude** 與 **Direction**。
+- **Result**：學習速度比 LoRA 快 2x，且表現更接近全量微調。
+- **Why it wins**：它能讓模型獨立調整「改多少」與「改什麼」。
 
-### 2. Vera (Vector-based Random Aggregation)
-Instead of low-rank matrices `A` and `B`, Vera uses fixed random projections with a small trainable vector.
-- **Efficiency**: Reduces adapter size by **10x** compared to LoRA.
-- **Use Case**: Massive-scale Multi-LoRA serving.
+<a id="2-vera-vector-based-random-aggregation"></a>
+### 2. Vera（Vector-based Random Aggregation）
+Vera 不使用低秩矩陣 `A` 與 `B`，而是改用固定隨機投影搭配小型可訓練向量。
+- **Efficiency**：相較於 LoRA，adapter 大小減少 **10x**。
+- **Use Case**：大規模 Multi-LoRA serving。
 
-### 3. RS-LoRA (Rank-Stabilized LoRA)
-Uses a scaling factor of `alpha / sqrt(r)`.
-- **Benefit**: Allows you to increase rank (to 256+) without the model becoming unstable or requiring a lower learning rate.
+<a id="3-rs-lora-rank-stabilized-lora"></a>
+### 3. RS-LoRA（Rank-Stabilized LoRA）
+使用 `alpha / sqrt(r)` 作為縮放因子。
+- **Benefit**：可以把 rank 提高到 256+，而不會讓模型變得不穩定，也不需要降低 learning rate。
 
 ---
 
-## Multi-LoRA Serving (Adapters)
+<a id="multi-lora-serving-adapters"></a>
+## Multi-LoRA Serving（Adapters）
 
-Production systems now serve one base model (e.g., Llama 4 70B) and dynamically swap adapters in the same batch.
+正式系統現在會服務單一 base model（例如 Llama 4 70B），並在同一個 batch 中動態切換 adapters。
 
 ```python
 # vLLM/LMCache Multi-LoRA Pattern:
@@ -82,29 +93,33 @@ Production systems now serve one base model (e.g., Llama 4 70B) and dynamically 
 # Request 2 -> Base + Legal_Adapter
 # Request 3 -> Base + Medical_Adapter
 ```
-**The Tech**: **Continuous Batching + PagedAttention v3** allows serving 100+ adapters with only a 5-10% latency overhead compared to the base model.
+**技術關鍵**：**Continuous Batching + PagedAttention v3** 讓系統能服務 100+ adapters，且相較於 base model 只增加 5-10% 延遲。
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: Why is the LoRA alpha parameter usually set to 2x the rank?
+<a id="q-why-is-the-lora-alpha-parameter-usually-set-to-2x-the-rank"></a>
+### Q: 為什麼 LoRA 的 alpha 參數通常設為 rank 的 2 倍？
 
-**Strong answer:**
-The `alpha` parameter is a scaling factor for the LoRA update. When we initialize LoRA matrices, B is usually zero-initialized, and A is random. As we train, the update size depends on the rank `r`. By setting `alpha=2r` (or any constant), we ensure that if we decide to change the rank later (e.g., from 8 to 16), we don't need to retune the learning rate. The scaling factor `alpha/r` normalizes the update magnitude relative to the learning rate.
+**強答：**
+`alpha` 是 LoRA 更新量的縮放因子。初始化 LoRA 矩陣時，B 通常會以零初始化，而 A 是隨機值。訓練過程中，更新大小會依賴 rank `r`。將 `alpha=2r`（或其他常數倍）可確保日後若調整 rank（例如從 8 改成 16）時，不需要重新調 learning rate。`alpha/r` 這個比例能讓更新幅度相對於 learning rate 維持正規化。
 
-### Q: What is DoRA, and why would you use it over standard LoRA?
+<a id="q-what-is-dora-and-why-would-you-use-it-over-standard-lora"></a>
+### Q: 什麼是 DoRA？為什麼會用它取代標準 LoRA？
 
-**Strong answer:**
-DoRA (Weight-Decomposed Low-Rank Adaptation) is a 2024 technique that separates the pretrained weight updates into magnitude and direction components, similar to Weight Normalization. While standard LoRA updates magnitude and direction simultaneously, DoRA allows them to be learned independently. Empirically, DoRA shows much better convergence and higher accuracy, often matching full-parameter fine-tuning even at low ranks, making it the preferred choice for high-stakes domain adaptation.
+**強答：**
+DoRA（Weight-Decomposed Low-Rank Adaptation）是 2024 年提出的技術，它像 Weight Normalization 一樣，把預訓練權重更新拆成 magnitude 與 direction 兩個部分。標準 LoRA 會同時更新兩者，而 DoRA 允許它們獨立學習。實證上，DoRA 收斂更好、準確率更高，且常能在低 rank 下逼近全參數微調，因此是高風險領域適應中的偏好選項。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 - Hu et al. "LoRA: Low-Rank Adaptation of Large Language Models" (2021)
 - Liu et al. "DoRA: Weight-Decomposed Low-Rank Adaptation" (2024)
 - Dettmers et al. "QLoRA: Efficient Finetuning of Quantized LLMs" (2023)
 
 ---
 
-*Next: [RLHF and DPO](04-rlhf-and-dpo.md)*
+*下一篇：[RLHF and DPO](04-rlhf-and-dpo.md)*

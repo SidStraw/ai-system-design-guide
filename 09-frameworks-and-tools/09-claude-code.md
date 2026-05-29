@@ -1,32 +1,35 @@
-# Claude Code: The Autonomous Coding Agent
+<a id="claude-code-the-autonomous-coding-agent"></a>
+# Claude Code：自主式程式編碼代理
 
-Claude Code is Anthropic's **terminal-native autonomous coding agent**. Unlike IDE plugins that suggest completions, Claude Code acts as a full-stack software engineer: it reads your codebase, edits files, runs commands, executes tests, and iterates until the task is done.
+Claude Code 是 Anthropic 的**終端機原生自主程式編碼代理**。不同於只會提供程式碼補全建議的 IDE 外掛，Claude Code 更像是一位全端軟體工程師：它會讀取你的程式碼庫、編輯檔案、執行命令、跑測試，並持續迭代直到任務完成。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [What Claude Code Is](#what-it-is)
-- [Core Architecture](#architecture)
-- [Core Tools](#tools)
-- [The CLAUDE.md Manifest Pattern](#claude-md)
-- [Running Claude Code](#running)
-- [Sub-Agents and Parallelism](#subagents)
-- [Custom MCP Integration](#mcp-integration)
-- [Safety and Permission Model](#safety)
-- [Production Use: CI Pipelines](#production)
-- [Comparison: Claude Code vs Alternatives](#comparison)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [Claude Code 是什麼](#what-it-is)
+- [核心架構](#architecture)
+- [核心工具](#tools)
+- [CLAUDE.md 清單模式](#claude-md)
+- [執行 Claude Code](#running)
+- [子代理與平行化](#subagents)
+- [自訂 MCP 整合](#mcp-integration)
+- [安全與權限模型](#safety)
+- [正式環境用法：CI Pipeline](#production)
+- [比較：Claude Code 與替代方案](#comparison)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## What Claude Code Is
+<a id="what-it-is"></a>
+## Claude Code 是什麼
 
-Released by Anthropic in early 2025, Claude Code is:
+Claude Code 由 Anthropic 於 2025 年初發布，其定位如下：
 
-- **A CLI tool**: `claude` command in your terminal
-- **An MCP-native agent**: Uses bash, text_editor, and computer tools
-- **An SDK**: Can be embedded in Python/TypeScript applications
-- **Not just a chatbot**: It autonomously plans, implements, and verifies
+- **CLI 工具**：終端機中的 `claude` 指令
+- **MCP-native 代理**：使用 bash、text_editor 與 computer 工具
+- **SDK**：可嵌入 Python/TypeScript 應用程式
+- **不只是聊天機器人**：它會自主規劃、實作與驗證
 
 ```
 # Install
@@ -39,13 +42,14 @@ claude
 claude -p "Add unit tests for all functions in src/utils.py" --output-format json
 ```
 
-**The key difference from Copilot/Cursor:**
-- Copilot/Cursor: Suggests code you accept or reject
-- Claude Code: **Autonomously implements the entire task**, running tests to verify
+**與 Copilot/Cursor 的關鍵差異：**
+- Copilot/Cursor：提供建議程式碼，由你接受或拒絕
+- Claude Code：**自主完成整個任務**，並透過執行測試來驗證
 
 ---
 
-## Core Architecture
+<a id="architecture"></a>
+## 核心架構
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -75,15 +79,17 @@ claude -p "Add unit tests for all functions in src/utils.py" --output-format jso
 └─────────────────────────────────────────────────────────┘
 ```
 
-Claude Code uses **Claude 3.7 Sonnet** as its backbone model, with Extended Thinking enabled by default for complex planning tasks.
+Claude Code 以 **Claude 3.7 Sonnet** 作為核心模型，且在複雜規劃任務中預設啟用 Extended Thinking。
 
 ---
 
-## Core Tools
+<a id="tools"></a>
+## 核心工具
 
-Claude Code has three native tools and supports custom MCP tools:
+Claude Code 內建三個原生工具，並支援自訂 MCP 工具：
 
-### 1. `bash` — Shell Execution
+<a id="1-bash-shell-execution"></a>
+### 1. `bash` — Shell 執行
 
 ```python
 # Claude calls this internally:
@@ -91,15 +97,16 @@ bash(command="pytest tests/ -v --tb=short", timeout=60)
 # Returns: stdout, stderr, exit_code
 ```
 
-**What Claude uses it for:**
-- Running test suites (`pytest`, `jest`, `cargo test`)
-- Git operations (`git diff`, `git commit`, `git log`)
-- Build commands (`npm build`, `make`, `docker build`)
-- Package installation (`pip install`, `npm install`)
+**Claude 會用它來：**
+- 執行測試套件（`pytest`、`jest`、`cargo test`）
+- 進行 Git 操作（`git diff`、`git commit`、`git log`）
+- 執行建置命令（`npm build`、`make`、`docker build`）
+- 安裝套件（`pip install`、`npm install`）
 
-The bash session is **persistent across turns** — environment variables and working directory carry over within a session.
+bash 工作階段在**跨回合之間會持續保留**——環境變數與工作目錄會在同一個 session 中延續。
 
-### 2. `text_editor` — File Operations
+<a id="2-text-editor-file-operations"></a>
+### 2. `text_editor` — 檔案操作
 
 ```python
 # Read a file
@@ -120,20 +127,22 @@ text_editor(
 text_editor(command="create", path="/project/tests/test_auth.py", file_text="...")
 ```
 
-**Why surgical replacement beats rewriting:**
-- Preserves file context
-- Reduces hallucination (only changes what needs changing)
-- Enables atomic, reviewable diffs
+**為什麼精準替換優於整段重寫：**
+- 保留檔案上下文
+- 降低幻覺風險（只改動需要變更的部分）
+- 讓 diff 更原子化且易於審查
 
-### 3. `computer` — GUI Automation (optional)
+<a id="3-computer-gui-automation-optional"></a>
+### 3. `computer` — GUI 自動化（選用）
 
-Full desktop control (screenshots, mouse, keyboard) — used for browser testing and UI verification. Requires sandboxed environment.
+提供完整桌面控制能力（截圖、滑鼠、鍵盤）——用於瀏覽器測試與 UI 驗證。需要沙箱化環境。
 
 ---
 
-## The CLAUDE.md Manifest Pattern
+<a id="claude-md"></a>
+## CLAUDE.md 清單模式
 
-The `CLAUDE.md` file is the **single most important pattern** for using Claude Code productively. It injects persistent project context into every Claude Code session.
+`CLAUDE.md` 檔案是高效使用 Claude Code 時**最重要的模式**。它會把持久性的專案上下文注入到每一次 Claude Code session 中。
 
 ```markdown
 # CLAUDE.md — Project: E-Commerce API
@@ -167,7 +176,7 @@ The `CLAUDE.md` file is the **single most important pattern** for using Claude C
 - Logging: structlog with JSON output, always include request_id
 ```
 
-**Nesting CLAUDE.md files:**
+**巢狀 CLAUDE.md 檔案：**
 ```
 project/
   CLAUDE.md          # global project rules
@@ -178,13 +187,15 @@ project/
       CLAUDE.md      # payment-specific rules (PCI compliance notes)
 ```
 
-Claude automatically reads the closest CLAUDE.md when working in a directory.
+Claude 會在某個目錄內工作時，自動讀取最近的 CLAUDE.md。
 
 ---
 
-## Running Claude Code
+<a id="running"></a>
+## 執行 Claude Code
 
-### Interactive Mode
+<a id="interactive-mode"></a>
+### 互動模式
 
 ```bash
 # Start session (reads CLAUDE.md automatically)
@@ -197,7 +208,8 @@ claude --model claude-3-7-sonnet-20250219
 claude --mcp-config .claude/mcp.json
 ```
 
-### Headless Mode (for scripting)
+<a id="headless-mode-for-scripting"></a>
+### 無頭模式（用於腳本）
 
 ```bash
 # Single task, JSON output
@@ -212,6 +224,7 @@ echo "Refactor src/utils.py to use async/await" | claude -p -
 claude -p "Add logging to all API endpoints" --output-format stream-json
 ```
 
+<a id="python-sdk"></a>
 ### Python SDK
 
 ```python
@@ -238,9 +251,10 @@ result = asyncio.run(run_coding_task(
 
 ---
 
-## Sub-Agents and Parallelism
+<a id="subagents"></a>
+## 子代理與平行化
 
-Claude Code supports **sub-agent dispatch** for large codebases:
+Claude Code 支援在大型程式碼庫中**派發子代理**：
 
 ```
 Main Claude Code session
@@ -252,18 +266,19 @@ Main Claude Code session
     └── Sub-agent 4: Update API documentation
 ```
 
-Each sub-agent runs in parallel, then the main agent reviews and merges the results.
+每個子代理會平行執行，之後再由主代理審查並合併結果。
 
-**When to use sub-agents:**
-- Codebase >50K lines of code
-- Parallel independent changes (no shared state)
-- Module-level refactoring tasks
+**適合使用子代理的時機：**
+- 程式碼庫超過 50K 行
+- 可平行進行的獨立變更（沒有共享狀態）
+- 以模組為單位的重構任務
 
 ---
 
-## Custom MCP Integration
+<a id="mcp-integration"></a>
+## 自訂 MCP 整合
 
-Claude Code reads MCP servers from `~/.claude/config.json` or `.claude/mcp.json`:
+Claude Code 會從 `~/.claude/config.json` 或 `.claude/mcp.json` 讀取 MCP server：
 
 ```json
 {
@@ -289,16 +304,17 @@ Claude Code reads MCP servers from `~/.claude/config.json` or `.claude/mcp.json`
 }
 ```
 
-With this config, Claude Code can:
-1. Look up current library docs before writing code (Context7)
-2. Read the actual DB schema before writing SQL (postgres MCP)
-3. Mark Jira tickets as done after completing implementations (jira MCP)
+有了這份設定後，Claude Code 可以：
+1. 在寫程式前先查詢最新的函式庫文件（Context7）
+2. 在撰寫 SQL 前先讀取真實的 DB schema（postgres MCP）
+3. 在完成實作後把 Jira ticket 標記為完成（jira MCP）
 
 ---
 
-## Safety and Permission Model
+<a id="safety"></a>
+## 安全與權限模型
 
-Claude Code has a **layered permission model**:
+Claude Code 採用**分層式權限模型**：
 
 ```
 Permission Level    Who approves       What it covers
@@ -309,7 +325,8 @@ Explicit allow     User pre-approves   Specific commands/dirs
 Blocked            Never runs          Network calls outside allowlist
 ```
 
-### Configuration
+<a id="configuration"></a>
+### 設定
 
 ```json
 {
@@ -329,19 +346,22 @@ Blocked            Never runs          Network calls outside allowlist
 }
 ```
 
-### Production Safety Rules
+<a id="production-safety-rules"></a>
+### 正式環境安全規則
 
-1. **Always sandbox**: Run in Docker container or E2B cloud VM
-2. **Git isolation**: Create a feature branch before starting; review diff before merge
-3. **Human checkpoint**: For prod deployments, require human review of the final diff
-4. **Secret scanning**: Run `truffleHog` or `git-secrets` on every Claude Code output
-5. **Rate limits**: Set `max_turns` to prevent runaway loops (recommended: 20-30)
+1. **務必使用沙箱**：在 Docker container 或 E2B cloud VM 中執行
+2. **Git 隔離**：開始前先建立 feature branch；合併前先審查 diff
+3. **人工檢查點**：正式環境部署必須由人工審查最終 diff
+4. **Secret 掃描**：對每個 Claude Code 輸出執行 `truffleHog` 或 `git-secrets`
+5. **速率限制**：設定 `max_turns` 以避免失控迴圈（建議：20-30）
 
 ---
 
-## Production Use: CI Pipelines
+<a id="production"></a>
+## 正式環境用法：CI Pipeline
 
-### GitHub Actions Integration
+<a id="github-actions-integration"></a>
+### GitHub Actions 整合
 
 ```yaml
 # .github/workflows/ai-fix.yml
@@ -382,74 +402,83 @@ jobs:
           branch: "ai-fix/${{ github.event.issue.number }}"
 ```
 
-### Cost Model for CI
+<a id="cost-model-for-ci"></a>
+### CI 成本模型
 
-| Task Type | Avg Turns | Avg Tokens | Estimated Cost |
+| 任務類型 | 平均回合數 | 平均 Token 數 | 預估成本 |
 |-----------|-----------|------------|----------------|
-| Bug fix (small) | 8 | 15K | $0.23 |
-| Test generation | 12 | 25K | $0.38 |
-| Feature implementation | 20 | 50K | $0.75 |
-| Large refactor | 30 | 100K | $1.50 |
+| Bug 修復（小） | 8 | 15K | $0.23 |
+| 測試生成 | 12 | 25K | $0.38 |
+| 功能實作 | 20 | 50K | $0.75 |
+| 大型重構 | 30 | 100K | $1.50 |
 
-*At 100 CI runs/day: ~$75-150/day depending on task mix.*
+*若每天執行 100 次 CI：依任務組合不同，約為 ~$75-150/天。*
 
 ---
 
-## Comparison: Claude Code vs Alternatives
+<a id="comparison"></a>
+## 比較：Claude Code 與替代方案
 
-| Feature | Claude Code | Cursor/Windsurf | Cline | OpenHands |
+| 功能 | Claude Code | Cursor/Windsurf | Cline | OpenHands |
 |---------|-------------|-----------------|-------|-----------|
-| **Interface** | CLI + SDK | IDE (VS Code fork) | VS Code extension | Web UI + CLI |
-| **Model** | Claude only | Any (GPT, Claude, Gemini) | Any | Any |
-| **Autonomy** | Full | Medium (requires clicks) | Full | Full |
-| **CI/Headless** | ✅ Native | ❌ | ✅ | ✅ |
-| **MCP support** | ✅ Native | ✅ | ✅ | ✅ |
-| **CLAUDE.md** | ✅ | ❌ (similar: .cursorrules) | ❌ | ❌ |
-| **Open source** | ❌ | ❌ | ✅ | ✅ |
-| **Best for** | Backend devs, CI/CD | UI/frontend devs, visual | Any developer | Self-hosted teams |
+| **介面** | CLI + SDK | IDE（VS Code fork） | VS Code extension | Web UI + CLI |
+| **模型** | 僅 Claude | 任意（GPT、Claude、Gemini） | 任意 | 任意 |
+| **自主性** | 完整 | 中等（需要點擊） | 完整 | 完整 |
+| **CI/Headless** | ✅ 原生支援 | ❌ | ✅ | ✅ |
+| **MCP 支援** | ✅ 原生支援 | ✅ | ✅ | ✅ |
+| **CLAUDE.md** | ✅ | ❌（相似概念：.cursorrules） | ❌ | ❌ |
+| **開源** | ❌ | ❌ | ✅ | ✅ |
+| **最適合** | 後端開發者、CI/CD | UI/frontend 開發者、視覺化工作流 | 任何開發者 | 自行託管團隊 |
 
-### SWE-bench Verified Scores (March 2026)
+<a id="swe-bench-verified-scores-march-2026"></a>
+### SWE-bench Verified 分數（2026 年 3 月）
 
-| Agent | Score | Notes |
+| 代理 | 分數 | 備註 |
 |-------|-------|-------|
-| Claude Code (claude-3-7-sonnet) | ~70% | Anthropic's official agent |
-| OpenHands + claude-3-7-sonnet | ~60% | Open-source framework |
-| Devin (commercial) | ~45% | Cognition AI product |
-| SWE-agent + GPT-4o | ~38% | Princeton research |
+| Claude Code (claude-3-7-sonnet) | ~70% | Anthropic 官方代理 |
+| OpenHands + claude-3-7-sonnet | ~60% | 開源框架 |
+| Devin（商業版） | ~45% | Cognition AI 產品 |
+| SWE-agent + GPT-4o | ~38% | Princeton 研究 |
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: How does Claude Code differ from GitHub Copilot?
+<a id="q-how-does-claude-code-differ-from-github-copilot"></a>
+### Q：Claude Code 與 GitHub Copilot 有何不同？
 
-**Strong answer:**
-Copilot is a **completion tool** — it predicts the next few lines of code as you type. Claude Code is an **autonomous agent** — you give it a task (e.g., "add authentication to this API"), and it reads the codebase, plans the implementation, edits multiple files, runs tests, fixes failures, and only finishes when tests pass. The experience is fundamentally different: Copilot helps you code faster; Claude Code codes *for* you while you review the output.
+**強答案：**
+Copilot 是**補全工具**——你在輸入時，它會預測接下來幾行程式碼。Claude Code 則是**自主代理**——你交給它一個任務（例如「為這個 API 加上驗證」），它會讀取程式碼庫、規劃實作、編輯多個檔案、執行測試、修正失敗，並且只有在測試通過時才算完成。兩者體驗本質上不同：Copilot 幫你更快寫程式；Claude Code 則在你審查輸出的同時替你寫程式。
 
-### Q: What is CLAUDE.md and why is it critical?
+<a id="q-what-is-claude-md-and-why-is-it-critical"></a>
+### Q：CLAUDE.md 是什麼？為什麼它如此關鍵？
 
-**Strong answer:**
-CLAUDE.md is like a `README` specifically written for an AI colleague. Without it, Claude Code treats your project as a generic Python/JS project. With it, Claude knows: your exact test command, your forbidden patterns (no raw SQL, use ORM), your architecture decisions (JWT auth, specific error format), and your coding standards. It converts a general-purpose agent into a **project-specialist**. I've seen 2-3x faster task completion and 60% fewer mistakes with a well-written CLAUDE.md.
+**強答案：**
+CLAUDE.md 很像是專門寫給 AI 同事看的 `README`。沒有它時，Claude Code 只會把你的專案視為一般的 Python/JS 專案。有了它，Claude 就知道：你的精確測試指令、禁止模式（不可用 raw SQL，必須使用 ORM）、架構決策（JWT auth、特定錯誤格式），以及程式碼標準。它能把通用型代理轉變成**專案專家**。在一份寫得好的 CLAUDE.md 幫助下，我看過任務完成速度快 2-3 倍、錯誤減少 60%。
 
-### Q: How do you safely run Claude Code in production CI?
+<a id="q-how-do-you-safely-run-claude-code-in-production-ci"></a>
+### Q：你會如何在正式環境 CI 中安全地執行 Claude Code？
 
-**Strong answer:**
-Three layers:
-1. **Sandbox**: Run Claude Code inside a Docker container with no external network access. Only the git repo and test runner are accessible.
-2. **Permission allow-list**: Use the permissions config to whitelist exactly which bash commands are allowed (test runners, linters) and block destructive operations (rm -rf, pip install without review).
-3. **Human gate**: Claude Code outputs a branch with a diff. A human reviews the diff in a PR and merges. Claude never merges directly to main. This keeps human judgment in the loop for the final decision.
+**強答案：**
+三層做法：
+1. **Sandbox**：讓 Claude Code 在沒有外部網路存取的 Docker container 中執行。只有 git repo 與測試執行器可存取。
+2. **權限 allow-list**：利用 permissions 設定，精確白名單允許的 bash 命令（測試執行器、linter），並封鎖破壞性操作（rm -rf、未審查的 pip install）。
+3. **人工關卡**：Claude Code 輸出的是帶有 diff 的 branch。由人工在 PR 中審查 diff 並合併。Claude 永遠不會直接 merge 到 main。這能讓最終決策仍保有人類判斷。
 
-### Q: How do you handle the cost of Claude Code for high-volume CI?
+<a id="q-how-do-you-handle-the-cost-of-claude-code-for-high-volume-ci"></a>
+### Q：在高流量 CI 場景下，你如何控制 Claude Code 的成本？
 
-**Strong answer:**
-I optimize in three ways:
-1. **Task scoping**: Claude Code is cost-effective for independent, bounded tasks (bug fixes, test generation). I don't use it for open-ended exploration — that's still cheaper with a human.
-2. **Max turns**: Setting `max_turns=15` prevents runaway jobs that burn $10+ on circular reasoning.
-3. **Model routing**: For simple bug fixes (syntax errors, obvious typos), I use Claude 3.5 Haiku via the SDK — 5x cheaper. For architectural refactoring, I use Claude 3.7 Sonnet with Extended Thinking.
+**強答案：**
+我會從三個方面最佳化：
+1. **任務範圍控制**：Claude Code 對於獨立且邊界明確的任務（bug 修復、測試生成）很划算。我不會把它用在開放式探索，因為那種情況人工通常更便宜。
+2. **最大回合數**：設定 `max_turns=15` 能避免失控工作在循環推理上燒掉超過 $10。
+3. **模型路由**：針對簡單 bug 修復（語法錯誤、明顯拼字錯誤），我會透過 SDK 使用 Claude 3.5 Haiku——成本低 5 倍。對於架構級重構，則使用啟用 Extended Thinking 的 Claude 3.7 Sonnet。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - Anthropic. "Claude Code: Building Agentic Coding Experiences" (2025) — https://docs.anthropic.com/claude-code
 - Anthropic. "Claude Code SDK Documentation" — https://github.com/anthropics/claude-code
@@ -458,4 +487,4 @@ I optimize in three ways:
 
 ---
 
-*Next: [OpenCoder / AI Coding Agents Landscape](10-opencoderguide.md)*
+*下一篇：[OpenCoder / AI Coding Agents 全景](10-opencoderguide.md)*

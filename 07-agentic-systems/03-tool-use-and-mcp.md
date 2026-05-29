@@ -1,58 +1,67 @@
-# Tool Use and MCP
+<a id="tool-use-and-mcp"></a>
+# 工具使用與 MCP
 
-Tools are the "hands" of an agent. The industry has standardized on the **Model Context Protocol (MCP)**, which replaces fragmented custom tool definitions with a unified, local-first communication layer. MCP saw major updates in 2025-2026, including Streamable HTTP transport and native computer-use tools. In parallel, **Agent-to-Agent (A2A)** and other interoperability protocols have emerged to complement MCP's tool-access layer with agent coordination capabilities.
+工具就是 agent 的「雙手」。業界已經標準化到 **Model Context Protocol (MCP)**，用統一、local-first 的通訊層取代零碎的客製工具定義。MCP 在 2025-2026 年間有重大更新，包括 Streamable HTTP transport 與原生 computer-use 工具。與此同時，**Agent-to-Agent (A2A)** 與其他互通協定也開始出現，補足 MCP 的工具存取層，提供代理協調能力。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [The Tool-Use Mechanism](#mechanism)
+- [工具使用機制](#mechanism)
 - [Model Context Protocol (MCP)](#mcp)
-- [MCP 2.0: Streamable HTTP & Auth](#mcp-updates)
-- [MCP Roadmap & Ecosystem](#mcp-roadmap)
+- [MCP 2.0：Streamable HTTP 與 Auth](#mcp-updates)
+- [MCP 路線圖與生態系](#mcp-roadmap)
 - [Agent-to-Agent Protocol (A2A)](#a2a)
-- [The Protocol Landscape: MCP + A2A + ACP](#protocol-landscape)
-- [Computer-Use Tools (Anthropic)](#computer-use)
-- [Defining High-Precision Tools](#precision)
+- [協定版圖：MCP + A2A + ACP](#protocol-landscape)
+- [Computer-Use Tools（Anthropic）](#computer-use)
+- [高精度工具的定義方式](#precision)
 - [MCP vs. OpenAI Function Calling](#mcp-vs-openai)
-- [Context7: Live Documentation MCP](#context7)
-- [Streaming Tool Calls](#streaming)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [Context7：即時文件 MCP](#context7)
+- [串流式工具呼叫](#streaming)
+- [面試問題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## The Tool-Use Mechanism
+<a id="mechanism"></a>
+<a id="the-tool-use-mechanism"></a>
+## 工具使用機制
 
-Tool use occurs in a 3-step cycle:
-1. **Schema Presentation**: The model is given a JSON schema of the tools.
-2. **Intent & Extraction**: The model outputs a "Call" (e.g., `{"tool": "get_weather", "args": {"city": "Tokyo"}}`).
-3. **Execution & Contextualization**: The system runs the function and feeds the result back into the prompt.
+工具使用會以 3 個步驟循環進行：
+1. **Schema Presentation**：把工具的 JSON schema 提供給模型。
+2. **Intent & Extraction**：模型輸出一個「Call」（例如 `{"tool": "get_weather", "args": {"city": "Tokyo"}}`）。
+3. **Execution & Contextualization**：系統執行函式，並把結果餵回 prompt。
 
-**Nuance**: Production stacks no longer "hardcode" tool definitions into the system prompt. They use **Dynamic Manifests** that fetch only necessary tools based on the user's intent.
+**細節補充**：生產環境的技術堆疊不再把工具定義「硬編碼」進 system prompt。它們會使用 **Dynamic Manifests**，依據使用者意圖只抓取必要的工具。
 
 ---
 
+<a id="mcp"></a>
+<a id="model-context-protocol-mcp"></a>
 ## Model Context Protocol (MCP)
 
-Developed by Anthropic (released November 2024) and now the universal tool-integration standard across Anthropic, OpenAI, Google, Microsoft, and AWS, MCP allows models to interact with data and tools regardless of where they live. Governance moved to the Linux Foundation's Agentic AI Foundation in December 2025.
+MCP 由 Anthropic 開發（於 2024 年 11 月釋出），現在已是 Anthropic、OpenAI、Google、Microsoft 與 AWS 之間通用的工具整合標準，讓模型不論資料與工具位在哪裡都能互動。其治理在 2025 年 12 月移交給 Linux Foundation 的 Agentic AI Foundation。
 
-- **MCP Client**: The AI application (e.g., your agent code).
-- **MCP Server**: A standalone process that exposes Tools (Functions), Resources (Data), and Prompts (Templates).
-- **Communication**: Uses JSON-RPC over stdio or HTTP.
+- **MCP Client**：AI 應用程式（例如你的 agent 程式碼）。
+- **MCP Server**：暴露 Tools（Functions）、Resources（Data）與 Prompts（Templates）的獨立程序。
+- **Communication**：以 stdio 或 HTTP 上的 JSON-RPC 溝通。
 
-### Why MCP?
-- **Security**: Tools run in their own process, not in the model logic.
-- **Portability**: Write a "Postgres Tool" once, use it in Claude, GPT, or Llama.
-- **Discoverability**: Standardized `list_tools` and `get_resource` commands.
+<a id="why-mcp"></a>
+### 為什麼是 MCP？
+- **Security**：工具在自己的程序中執行，而不是在模型邏輯裡。
+- **Portability**：只要寫一次「Postgres Tool」，就能在 Claude、GPT 或 Llama 中使用。
+- **Discoverability**：標準化的 `list_tools` 與 `get_resource` 指令。
 
 ---
 
-## Defining High-Precision Tools
+<a id="precision"></a>
+<a id="defining-high-precision-tools"></a>
+## 高精度工具的定義方式
 
-A production-quality tool must include:
+一個生產級工具必須包含：
 
-1. **Strict Type Validation**: Use Pydantic or Zod to enforce schemas before the model even sees the call.
-2. **Detailed Docstrings**: Describe *when NOT* to use the tool.
-3. **Confidence Thresholds**: Require the model to output a `confidence` score for the tool call.
+1. **Strict Type Validation**：在模型看到呼叫之前，就先用 Pydantic 或 Zod 強制驗證 schema。
+2. **Detailed Docstrings**：說明*什麼情況不要*使用這個工具。
+3. **Confidence Thresholds**：要求模型在工具呼叫時輸出 `confidence` 分數。
 
 ```python
 # MCP Server Example (Conceptual)
@@ -68,42 +77,50 @@ class ExecuteSQL(PydanticModel):
 
 ---
 
+<a id="mcp-vs-openai"></a>
+<a id="mcp-vs-openai-function-calling"></a>
 ## MCP vs. OpenAI Function Calling
 
-| Feature | OpenAI Native | MCP |
-|---------|---------------|-----|
-| **Coupling** | High (OpenAI specific) | Low (Agnostic) |
-| **Transport** | JSON in API body | JSON-RPC (Local/Remote) |
-| **Data Access**| No native data "Resource" | Native `Resources` support |
-| **Best For** | Prototyping | Enterprise Orchestration |
+| 功能 | OpenAI 原生 | MCP |
+|------|-------------|-----|
+| **Coupling** | 高（OpenAI 專屬） | 低（Agnostic） |
+| **Transport** | API body 中的 JSON | JSON-RPC（Local/Remote） |
+| **Data Access**| 沒有原生資料 `Resource` | 原生支援 `Resources` |
+| **Best For** | 原型開發 | 企業級協作 |
 
 ---
 
-## Streaming Tool Calls
+<a id="streaming"></a>
+<a id="streaming-tool-calls"></a>
+## 串流式工具呼叫
 
-Frontier models support **Partial Tool Speculation**.
-Instead of waiting for the full JSON to generate, the system starts "prefetching" tool results as soon as the tool name and critical IDs are visible in the stream. This reduces perceived latency by **400-800ms**.
+前沿模型支援 **Partial Tool Speculation**。
+系統不必等完整 JSON 生成完畢，只要串流中已看見工具名稱與關鍵 ID，就能開始「prefetching」工具結果。這可將體感延遲降低 **400-800ms**。
 
 ---
 
-## MCP 2.0: Streamable HTTP & Auth
+<a id="mcp-updates"></a>
+<a id="mcp-20-streamable-http--auth"></a>
+## MCP 2.0：Streamable HTTP 與 Auth
 
-The MCP 2.0 specification (ratified March 2026) introduced two major changes:
+MCP 2.0 規格（於 2026 年 3 月批准）帶來兩項重大變更：
 
+<a id="1-streamable-http-transport"></a>
 ### 1. Streamable HTTP Transport
-Previous MCP used `stdio` or basic HTTP with SSE. MCP 2.0 adds **Streamable HTTP** - a single long-lived HTTP connection that handles bidirectional streaming:
+先前的 MCP 使用 `stdio` 或搭配 SSE 的基本 HTTP。MCP 2.0 新增 **Streamable HTTP**——單一、長連線的 HTTP 連線可處理雙向串流：
 
 ```
 [MCP Client] ←── Streamable HTTP POST /mcp ──→ [MCP Server]
                   (with SSE response stream)
 ```
 
-- Enables MCP servers deployed as cloud microservices (not just local processes)
-- Allows multiple simultaneous tool calls over one connection
-- Backwards compatible with stdio transport
+- 讓 MCP servers 可部署成雲端 microservices（不再只是本機程序）
+- 允許在單一連線上同時進行多個工具呼叫
+- 與 stdio transport 向後相容
 
+<a id="2-oauth-21-authorization"></a>
 ### 2. OAuth 2.1 Authorization
-Remote MCP servers can now require proper auth:
+遠端 MCP servers 現在可以要求正式的授權：
 
 ```json
 {
@@ -113,42 +130,49 @@ Remote MCP servers can now require proper auth:
 }
 ```
 
-This enables enterprise MCP servers with fine-grained access control per tenant.
+這讓企業級 MCP servers 能為每個 tenant 啟用細粒度的存取控制。
 
 ---
 
-## MCP Roadmap & Ecosystem
+<a id="mcp-roadmap"></a>
+<a id="mcp-roadmap--ecosystem"></a>
+## MCP 路線圖與生態系
 
-As of May 2026, over 2,300 public MCP servers exist and major AI tools (Claude, Cursor, Windsurf) support it natively. MCP has crossed from developer tooling into consumer hardware (e.g., Elgato Stream Deck 7.4 shipped with MCP support in March 2026). Microsoft adopted MCP as a primary integration standard for Windows AI Foundry and Microsoft 365 Copilot.
+截至 2026 年 5 月，已有超過 2,300 個公開 MCP servers，且主要 AI 工具（Claude、Cursor、Windsurf）都已原生支援。MCP 也已從開發者工具跨入消費型硬體（例如 Elgato Stream Deck 7.4 在 2026 年 3 月隨附 MCP 支援）。Microsoft 也採用 MCP 作為 Windows AI Foundry 與 Microsoft 365 Copilot 的主要整合標準。
 
-The MCP roadmap focuses on four pillars:
+MCP 路線圖聚焦於四大支柱：
 
-1. **Transport Scalability**: Evolving Streamable HTTP for stateless operation across horizontal server instances, with correct behavior behind load balancers and proxies. **MCP Server Cards** provide a `.well-known` URL for structured server metadata discovery.
-2. **Agent Communication**: Enabling agent-to-agent patterns on top of MCP's existing tool layer.
-3. **Enterprise Authentication (Q2 2026)**: OAuth 2.1 with PKCE for browser-based agents plus SAML/OIDC integration for enterprise identity providers, unlocking regulated-industry deployments.
-4. **MCP Registry (Q4 2026)**: A curated, verified server directory with security audits, usage statistics, and SLA commitments.
+1. **Transport Scalability**：持續演進 Streamable HTTP，讓它能在水平擴充的多個 server instance 間以無狀態方式運作，並在 load balancer 與 proxy 後方維持正確行為。**MCP Server Cards** 提供 `.well-known` URL，用於探索結構化 server metadata。
+2. **Agent Communication**：在 MCP 既有的工具層之上支援 agent-to-agent 模式。
+3. **Enterprise Authentication (Q2 2026)**：針對瀏覽器型 agents 提供帶有 PKCE 的 OAuth 2.1，並整合企業身分提供者的 SAML/OIDC，解鎖受監管產業的部署。
+4. **MCP Registry (Q4 2026)**：建立經過策展與驗證的 server 目錄，提供安全稽核、使用統計與 SLA 承諾。
 
-**Governance**: The MCP Governance Working Group introduced a Contributor Ladder and a delegation model allowing domain-specific working groups to accept SEPs (Specification Enhancement Proposals) without full core-maintainer review.
+**Governance**：MCP Governance Working Group 引入了 Contributor Ladder 與 delegation model，讓特定領域的 working groups 能在不經完整 core-maintainer review 的情況下接受 SEP（Specification Enhancement Proposals）。
 
-> *Verified May 2026. Source: modelcontextprotocol.io/development/roadmap*
+> *已於 2026 年 5 月驗證。來源：modelcontextprotocol.io/development/roadmap*
 
 ---
 
+<a id="a2a"></a>
+<a id="agent-to-agent-protocol-a2a"></a>
 ## Agent-to-Agent Protocol (A2A)
 
-Google introduced the **Agent2Agent (A2A)** protocol in April 2025 to solve a problem MCP does not address: how do **agents from different vendors** communicate with each other (not just with tools)?
+Google 在 2025 年 4 月推出 **Agent2Agent (A2A)** 協定，目的是解決 MCP 沒有處理的問題：**來自不同廠商的 agents** 該如何彼此溝通（而不只是和工具互動）？
 
-### What A2A Solves
+<a id="what-a2a-solves"></a>
+### A2A 解決了什麼
 
-MCP defines how an agent connects to **tools and data**. A2A defines how an **orchestrator agent delegates tasks to a specialist agent** from a different vendor or framework, even when they do not share memory, tools, or context.
+MCP 定義 agent 如何連接 **tools 與 data**。A2A 則定義 **協調代理如何把任務委派給來自不同廠商或 framework 的專家代理**，即使它們不共享記憶、工具或上下文也沒問題。
 
-### Technical Foundation
+<a id="technical-foundation"></a>
+### 技術基礎
 
-- Built on **HTTP, SSE, and JSON-RPC** (same foundation as MCP, for easy integration)
-- Supports enterprise-grade authentication with parity to OpenAPI auth schemes
-- **Agent Cards**: JSON metadata documents that describe an agent's capabilities, skills, and endpoint - analogous to MCP Server Cards but for agents
+- 建構於 **HTTP、SSE 與 JSON-RPC** 之上（與 MCP 共用基礎，便於整合）
+- 支援與 OpenAPI auth schemes 同級的企業級驗證
+- **Agent Cards**：描述 agent 能力、skills 與 endpoint 的 JSON metadata 文件——可視為代理版本的 MCP Server Cards
 
-### A2A Task Lifecycle
+<a id="a2a-task-lifecycle"></a>
+### A2A 任務生命週期
 
 ```
 [Client Agent] ── POST /tasks ──→ [Remote Agent]
@@ -158,30 +182,34 @@ MCP defines how an agent connects to **tools and data**. A2A defines how an **or
                   ← Task Complete ───┘  (final result)
 ```
 
-A2A tasks support long-running operations with streaming status updates, making it suitable for enterprise workflows spanning minutes or hours.
+A2A 任務支援帶有串流狀態更新的長時間操作，因此很適合跨越數分鐘或數小時的企業工作流程。
 
-### Industry Adoption
+<a id="industry-adoption"></a>
+### 業界採用情況
 
-- Backed by 50+ technology partners including Atlassian, Salesforce, SAP, LangChain, and PayPal
-- Donated to the **Linux Foundation** in June 2025 as an open governance project
-- **Version 0.3** (latest as of May 2026) added gRPC support, signed security cards, and extended Python SDK support
-- NIST launched an "AI Agent Standards Initiative" in February 2026 partly in response to A2A/MCP momentum
+- 獲得 50+ 技術夥伴支持，包括 Atlassian、Salesforce、SAP、LangChain 與 PayPal
+- 於 2025 年 6 月捐贈給 **Linux Foundation**，成為開放治理專案
+- **Version 0.3**（截至 2026 年 5 月的最新版本）新增 gRPC 支援、簽章 security cards，以及更完整的 Python SDK 支援
+- NIST 於 2026 年 2 月啟動「AI Agent Standards Initiative」，部分原因正是回應 A2A/MCP 的發展動能
 
-> *Verified May 2026. Source: developers.googleblog.com, a2a-protocol.org*
+> *已於 2026 年 5 月驗證。來源：developers.googleblog.com, a2a-protocol.org*
 
 ---
 
-## The Protocol Landscape: MCP + A2A + ACP
+<a id="protocol-landscape"></a>
+<a id="the-protocol-landscape-mcp--a2a--acp"></a>
+## 協定版圖：MCP + A2A + ACP
 
-In production enterprise systems, multiple protocols operate at different layers simultaneously:
+在生產級企業系統中，多種協定會同時在不同層運作：
 
-| Protocol | Layer | Purpose | Governed By |
-|----------|-------|---------|-------------|
-| **MCP** | Agent-to-Tool | Universal tool and data access | Anthropic (open spec) |
-| **A2A** | Agent-to-Agent | Cross-vendor agent delegation | Linux Foundation |
-| **ACP** | Agent Communication | Lightweight async agent messaging (REST) | IBM / Linux Foundation |
+| 協定 | 層級 | 目的 | 治理單位 |
+|------|------|------|----------|
+| **MCP** | Agent-to-Tool | 通用工具與資料存取 | Anthropic（開放規格） |
+| **A2A** | Agent-to-Agent | 跨廠商 agent 委派 | Linux Foundation |
+| **ACP** | Agent Communication | 輕量非同步 agent 訊息傳遞（REST） | IBM / Linux Foundation |
 
-### How They Complement Each Other
+<a id="how-they-complement-each-other"></a>
+### 它們如何互補
 
 ```
 ┌──────────────────────────────────────────┐
@@ -199,19 +227,21 @@ In production enterprise systems, multiple protocols operate at different layers
 └──────────────────────────────────────────┘
 ```
 
-**Key insight**: MCP and A2A are complementary, not competing. MCP handles agent-to-tool connections; A2A handles agent-to-agent coordination. Production systems use both.
+**關鍵洞見**：MCP 與 A2A 是互補關係，不是競爭關係。MCP 負責 agent-to-tool 連線；A2A 負責 agent-to-agent 協調。生產系統會同時使用兩者。
 
-**ACP note**: The IBM-originated Agent Communication Protocol (ACP) team merged efforts with the Google A2A team in September 2025 to develop a unified agent communication standard. New projects should target A2A as the primary agent-to-agent protocol.
+**ACP 補充**：起源於 IBM 的 Agent Communication Protocol (ACP) 團隊，已於 2025 年 9 月與 Google A2A 團隊合併投入統一 agent communication 標準。新專案應以 A2A 作為主要 agent-to-agent 協定。
 
 ---
 
-## A2A v1.0 GA and the May 2026 MCP Production Story
+<a id="a2a-v10-ga-and-the-may-2026-mcp-production-story"></a>
+## A2A v1.0 GA 與 2026 年 5 月的 MCP 生產實戰
 
-A2A v1.0 reached general availability at Google Cloud Next 2026 (April) with public commitments from 150+ organizations including AWS, Microsoft, Salesforce, SAP, ServiceNow, Workday, and IBM. The project moved under the Linux Foundation's Agentic AI Foundation, which now governs A2A alongside the merged ACP work. A point release (v1.2) added cryptographically signed Agent Cards: cards are signed JWS documents tied to the agent operator's public key, so a client agent can verify that a remote agent at `https://refunds.acme.com/.well-known/agent.json` actually belongs to ACME before issuing a task. Native A2A client/server support shipped in Google ADK 1.0, LangGraph, CrewAI, LlamaIndex, Semantic Kernel, and AutoGen.
+A2A v1.0 在 Google Cloud Next 2026（4 月）達到 general availability，並獲得 150+ 組織的公開承諾，包括 AWS、Microsoft、Salesforce、SAP、ServiceNow、Workday 與 IBM。此專案已移至 Linux Foundation 的 Agentic AI Foundation 之下，現在與合併後的 ACP 工作一同由其治理。後續點版本（v1.2）加入了加密簽章的 Agent Cards：卡片是與 agent operator 公鑰綁定的 JWS 文件，因此 client agent 可以驗證位於 `https://refunds.acme.com/.well-known/agent.json` 的遠端 agent 是否真的屬於 ACME，再決定是否派發任務。Google ADK 1.0、LangGraph、CrewAI、LlamaIndex、Semantic Kernel 與 AutoGen 都已提供原生 A2A client/server 支援。
 
-### Composition Pattern: Support Agent Delegating Refunds
+<a id="composition-pattern-support-agent-delegating-refunds"></a>
+### 組合模式：客服代理委派退款
 
-A LangGraph customer-support agent owns conversation state and a set of MCP tools (CRM, ticket search, knowledge base). When the user asks for a refund, that work belongs to a different team's Finance refund agent, which lives behind an A2A endpoint and enforces its own policy, audit log, and SOX controls. The support agent does not call the refund database directly; it issues an A2A task and lets the Finance agent decide.
+一個 LangGraph 客服代理擁有對話狀態，以及一組 MCP 工具（CRM、ticket search、knowledge base）。當使用者要求退款時，該工作屬於另一個團隊的財務退款代理，後者位於 A2A endpoint 後方，並自行執行 policy、audit log 與 SOX 控制。客服代理不會直接呼叫退款資料庫；它會送出 A2A task，讓財務代理自行判斷。
 
 ```mermaid
 sequenceDiagram
@@ -234,30 +264,32 @@ sequenceDiagram
     Support-->>User: refund confirmed
 ```
 
-The Support agent never sees the ledger. The Refund agent owns ledger access through its own MCP server and enforces a different policy. The A2A task is asynchronous: the Support agent can yield to the user with a hold message while the refund processes and reattach when the artifact arrives.
+客服代理永遠不會看到 ledger。退款代理透過自己的 MCP server 掌管 ledger 存取，並執行不同的 policy。A2A task 是非同步的：在退款處理期間，客服代理可以先向使用者回覆等待訊息，等 artifact 抵達後再接續處理。
 
-### MCP 2026 Roadmap Highlights
+<a id="mcp-2026-roadmap-highlights"></a>
+### MCP 2026 路線圖重點
 
-The MCP roadmap for the remainder of 2026 concentrates on two areas. **Transport scalability** targets multi-instance and load-balanced deployments: Streamable HTTP gains session resumption and sticky-session hints so an MCP server can run as a horizontally scaled Kubernetes Deployment without breaking long-lived tool sessions. **Enterprise-managed auth** formalizes the OAuth Resource Server posture: MCP servers are now classified as Resource Servers under RFC 8707, which means tokens are audience-bound to a specific server URI and cannot be replayed across servers.
+MCP 在 2026 年剩餘時間的路線圖聚焦兩個方向。**Transport scalability** 針對多實例與負載平衡部署：Streamable HTTP 將加入 session resumption 與 sticky-session hints，使 MCP server 能以水平擴充的 Kubernetes Deployment 形式運行，而不會破壞長時間工具 session。**Enterprise-managed auth** 則正式化 OAuth Resource Server 姿態：MCP servers 現在被歸類為 RFC 8707 定義下的 Resource Servers，代表 token 會綁定特定 server URI 作為 audience，無法在不同 servers 間被重放。
 
-### MCP Production Hardening (post-May-2026)
+<a id="mcp-production-hardening-post-may-2026"></a>
+### MCP 生產環境強化（2026 年 5 月後）
 
-May 2026 surfaced a class of vulnerability in the MCP STDIO transport: STDIO MCP servers had implicitly assumed that the process boundary was the trust boundary, but a crafted tool argument from an upstream model could trick a poorly written STDIO server into invoking host commands with the host user's privileges. The architectural fix is two-step:
+2026 年 5 月暴露出 MCP STDIO transport 的一類弱點：STDIO MCP servers 過去隱含地假設程序邊界就是信任邊界，但來自上游模型的惡意工具參數，可能誘使寫得不夠安全的 STDIO server 以宿主使用者權限執行主機命令。架構上的修補分成兩步：
 
-1. **Migrate STDIO MCP servers to HTTP transport with TLS** wherever possible. HTTP transport forces an explicit trust boundary (the network) and enables OAuth 2.1 Resource Server enforcement, which STDIO cannot provide.
-2. **For STDIO servers that cannot migrate**, run each server in a dedicated container with no host filesystem mounts, no network egress, a strict CPU and memory budget, and a read-only image. Treat the container as the trust boundary; the blast radius of compromise is the container.
+1. **盡可能把 STDIO MCP servers 遷移到具備 TLS 的 HTTP transport。** HTTP transport 會強制建立明確的信任邊界（網路），也能啟用 OAuth 2.1 Resource Server 強制執行，而這些是 STDIO 做不到的。
+2. **對無法遷移的 STDIO servers**，讓每個 server 都執行在獨立容器中：不要掛載 host filesystem、不要有 network egress、設定嚴格的 CPU 與 memory 預算，並使用唯讀映像。把容器當作信任邊界；一旦受損，爆炸半徑就只限於容器內。
 
-**Defense-in-Depth Checklist for Production MCP:**
+**生產級 MCP 的 Defense-in-Depth 檢查清單：**
 
-- All remote MCP servers run behind OAuth 2.1 with PKCE and audience-bound tokens (RFC 8707).
-- STDIO servers run inside a container with `network: none`, read-only root filesystem, no host volume mounts, and a `nproc` and `memory` cap.
-- Every tool invocation is logged with user identity, bound token audience, tool name, argument hash, and result hash. Logs ship to an append-only store.
-- A rate limiter sits in front of every MCP server, scoped by user identity. Burst budgets are tight for write-capable tools.
-- Tool arguments pass through a content filter before reaching the server: pattern-based prompt-injection detection on string fields, schema validation on structured fields, hard rejection for shell metacharacters in tools that do not need them.
-- Tool results pass through an output validator before being fed back to the model: PII detection, secret detection, size cap, content filter for known exfiltration markers.
-- Dangerous tools (file write, shell execution, outbound HTTP) require a human approval step or a signed capability token rather than relying on the model to call them safely.
+- 所有遠端 MCP servers 都在 OAuth 2.1、PKCE 與 audience-bound tokens（RFC 8707）後面運作。
+- STDIO servers 執行於容器內，設定 `network: none`、唯讀 root filesystem、無 host volume mounts，以及 `nproc` 與 `memory` 上限。
+- 每次工具呼叫都要記錄使用者身分、綁定 token audience、工具名稱、參數雜湊與結果雜湊，並把日誌送往 append-only store。
+- 每個 MCP server 前方都要有 rate limiter，並以使用者身分為 scope。對可寫入工具的 burst budget 要特別緊。
+- 工具參數在到達 server 前，必須先通過內容過濾器：對字串欄位做模式式 prompt-injection 偵測、對結構化欄位做 schema 驗證、對不需要 shell metacharacters 的工具則直接硬性拒絕。
+- 工具結果回餵給模型前，必須先通過輸出驗證器：PII 偵測、secret 偵測、大小上限，以及已知資料外洩標記的內容過濾。
+- 危險工具（檔案寫入、shell 執行、對外 HTTP）必須要求人工批准步驟或簽章 capability token，而不是只依賴模型安全呼叫它們。
 
-Request flow with all defensive layers:
+具備所有防護層的請求流程：
 
 ```mermaid
 flowchart TD
@@ -275,9 +307,9 @@ flowchart TD
     H --> I[Return result to model]
 ```
 
-The pipeline is deliberately conservative. Every layer can reject; only the result that survives all five gates reaches the model.
+這條管線刻意採取保守設計。每一層都可以拒絕；只有通過全部五道關卡的結果，才會送回模型。
 
-**Sources for this section:**
+**本節來源：**
 - [Google Cloud A2A v1.0 GA at Cloud Next 2026](https://cloud.google.com/blog/products/ai-machine-learning/agent2agent-protocol-is-getting-an-upgrade)
 - [MCP 2026 Roadmap (The New Stack)](https://thenewstack.io/model-context-protocol-roadmap-2026/)
 - [RFC 8707: Resource Indicators for OAuth 2.0](https://www.rfc-editor.org/rfc/rfc8707)
@@ -286,15 +318,17 @@ The pipeline is deliberately conservative. Every layer can reject; only the resu
 
 ---
 
-## Computer-Use Tools (Anthropic)
+<a id="computer-use"></a>
+<a id="computer-use-tools-anthropic"></a>
+## Computer-Use Tools（Anthropic）
 
-Claude 3.5+ introduced native **computer-use** tools - the model can directly control a desktop or web browser. These are available via the Anthropic API:
+Claude 3.5+ 引入了原生 **computer-use** 工具——模型可以直接控制桌面或網頁瀏覽器。這些工具可透過 Anthropic API 使用：
 
-| Tool | Capability | Notes |
-|------|------------|-------|
-| `bash` | Run shell commands | Persistent session across turns |
-| `text_editor` | Read/write/edit files | Supports view, create, str_replace commands |
-| `computer` | Mouse, keyboard, screenshot | Full desktop GUI control |
+| 工具 | 能力 | 備註 |
+|------|------|------|
+| `bash` | 執行 shell 指令 | 跨回合持久 session |
+| `text_editor` | 讀取/寫入/編輯檔案 | 支援 view、create、str_replace 指令 |
+| `computer` | 滑鼠、鍵盤、截圖 | 完整桌面 GUI 控制 |
 
 ```python
 import anthropic
@@ -315,17 +349,19 @@ response = client.beta.messages.create(
 )
 ```
 
-**Production safety rules for computer-use:**
-1. Always run in a sandboxed VM (Docker + VNC, or E2B cloud)
-2. Screenshot-validate critical state before destructive actions
-3. Use HITL (Human-in-the-Loop) for irreversible actions (file deletion, form submission)
-4. Set `ANTHROPIC_MAX_COMPUTER_TOKENS` to cap runaway loops
+**computer-use 的生產安全規則：**
+1. 一律在 sandboxed VM 中執行（Docker + VNC，或 E2B cloud）
+2. 進行破壞性動作前，先用 screenshot 驗證關鍵狀態
+3. 對不可逆動作（刪檔、送出表單）使用 HITL（Human-in-the-Loop）
+4. 設定 `ANTHROPIC_MAX_COMPUTER_TOKENS` 以限制失控迴圈
 
 ---
 
-## Context7: Live Documentation MCP
+<a id="context7"></a>
+<a id="context7-live-documentation-mcp"></a>
+## Context7：即時文件 MCP
 
-One of the most practical MCP servers in 2026 is **Context7** - it resolves the "stale training data" problem for coding agents:
+2026 年最實用的 MCP servers 之一就是 **Context7**——它解決了 coding agents 的「訓練資料過時」問題：
 
 ```
 # Without Context7:
@@ -338,7 +374,7 @@ MCP → Agent: Returns current v0.3.x docs
 Agent: "I'll use the new `create_react_agent` interface..."
 ```
 
-**Setup in Claude Desktop / Claude Code:**
+**在 Claude Desktop / Claude Code 中的設定：**
 ```json
 {
   "mcpServers": {
@@ -350,37 +386,42 @@ Agent: "I'll use the new `create_react_agent` interface..."
 }
 ```
 
-Claude automatically calls `resolve-library-id` and `get-library-docs` before writing code that uses the library.
+Claude 會在撰寫使用該函式庫的程式碼前，自動呼叫 `resolve-library-id` 與 `get-library-docs`。
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試問題
 
-### Q: How does MCP solve the "Too Many Tools" problem (Schema Overload)?
+<a id="q-how-does-mcp-solve-the-too-many-tools-problem-schema-overload"></a>
+### Q：MCP 如何解決「工具太多」（Schema Overload）問題？
 
-**Strong answer:**
-In 2023, giving a model 50 tools would degrade performance because the prompt became too long. MCP solves this through **Dynamic Resource Discovery**. Instead of loading 50 tool schemas into the prompt, the agent sends a `list_resources` call to the MCP server. It then only "attaches" the specific tools relevant to the current `Resource` context. This keeps the prompt lean and the context window focused on reasoning rather than parsing unused schemas.
+**強答案：**
+在 2023 年，如果給模型 50 個工具，表現通常會下降，因為 prompt 變得太長。MCP 透過 **Dynamic Resource Discovery** 解決這件事。agent 不再把 50 個工具 schema 全部載入 prompt，而是先向 MCP server 發送 `list_resources` 呼叫，接著只「附加」與當前 `Resource` 上下文相關的工具。這讓 prompt 維持精簡，也讓 context window 專注在推理，而不是解析沒用到的 schema。
 
-### Q: Why is it important to separate "Tool Logic" from the "Agent App" using MCP servers?
+<a id="q-why-is-it-important-to-separate-tool-logic-from-the-agent-app-using-mcp-servers"></a>
+### Q：為什麼使用 MCP servers 將「Tool Logic」與「Agent App」分離很重要？
 
-**Strong answer:**
-Separation of concerns. If the tool logic (e.g., a Python scraper) lives in a separate MCP server, I can scale the scraping infrastructure independently of the LLM orchestrator. More importantly, it provides a **Security Sandbox**. If a model tries to perform an injection through a tool argument, it only affects the MCP server process, which can be containerized with zero network access to the core Agent state.
+**強答案：**
+這是 separation of concerns。如果工具邏輯（例如 Python scraper）位在獨立的 MCP server 中，我就能把 scraping infrastructure 與 LLM orchestrator 分開擴展。更重要的是，這也提供了 **Security Sandbox**。如果模型試圖透過工具參數進行 injection，它只會影響 MCP server 程序；而該程序可以被容器化，並且完全不允許存取核心 Agent 狀態所需的網路。
 
-### Q: How do MCP and A2A work together in a production multi-agent system?
+<a id="q-how-do-mcp-and-a2a-work-together-in-a-production-multi-agent-system"></a>
+### Q：MCP 與 A2A 在生產級多代理系統中如何協同運作？
 
-**Strong answer:**
-They address **different communication layers**. MCP is the agent-to-tool protocol - it gives any agent standardized access to databases, APIs, and files through MCP servers. A2A is the agent-to-agent protocol - it enables an orchestrator agent (from Vendor X) to delegate a task to a specialist agent (from Vendor Y) without sharing memory or context. In production, I use MCP for every tool connection and A2A when I need cross-vendor agent coordination. For example, a procurement orchestrator built on LangGraph uses MCP to query an inventory database, then uses A2A to delegate compliance checking to a specialized agent hosted by a different team. The key design principle is: MCP within an agent's own tool stack, A2A across organizational or vendor boundaries.
+**強答案：**
+它們處理的是**不同的通訊層**。MCP 是 agent-to-tool 協定——它透過 MCP servers，為任何 agent 提供對資料庫、API 與檔案的標準化存取。A2A 是 agent-to-agent 協定——它讓協調代理（Vendor X）能把任務委派給專家代理（Vendor Y），而不用共享記憶或上下文。在生產環境中，我會對所有工具連線使用 MCP；當我需要跨廠商的代理協作時，再使用 A2A。舉例來說，一個建構於 LangGraph 之上的採購協調代理會先用 MCP 查詢庫存資料庫，再用 A2A 把合規檢查委派給另一個團隊所託管的專業代理。核心設計原則是：agent 自身工具堆疊內用 MCP，跨組織或跨廠商邊界則用 A2A。
 
 ---
 
-## References
-- Anthropic. "The Model Context Protocol Specification" (2025)
-- Google. "Agent2Agent Protocol Specification v0.3" (2026)
-- Linux Foundation. "Agent2Agent Protocol Project" (2025)
-- NIST. "AI Agent Standards Initiative" (Feb 2026)
+<a id="references"></a>
+## 參考資料
+- Anthropic.《The Model Context Protocol Specification》（2025）
+- Google.《Agent2Agent Protocol Specification v0.3》（2026）
+- Linux Foundation.《Agent2Agent Protocol Project》（2025）
+- NIST.《AI Agent Standards Initiative》（2026 年 2 月）
 - JSON-RPC 2.0 Specification.
 - Pydantic v3.0 Documentation.
 
 ---
 
-*Next: [Multi-Agent Orchestration](04-multi-agent-orchestration.md)*
+*下一章：[Multi-Agent Orchestration](04-multi-agent-orchestration.md)*

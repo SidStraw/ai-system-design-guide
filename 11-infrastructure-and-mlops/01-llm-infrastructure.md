@@ -1,37 +1,42 @@
-# LLM Infrastructure
+<a id="llm-infrastructure"></a>
+# LLM 基礎設施
 
-Building production LLM systems requires understanding deployment options, scaling patterns, and operational concerns. This chapter covers the infrastructure layer.
+建置可投入生產的 LLM 系統，需要理解部署選項、擴展模式與維運考量。本章聚焦於基礎設施層。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Deployment Options](#deployment-options)
-- [Serving Architecture](#serving-architecture)
-- [Scaling Patterns](#scaling-patterns)
-- [Cost Management](#cost-management)
-- [Monitoring and Alerting](#monitoring-and-alerting)
-- [Disaster Recovery](#disaster-recovery)
-- [May 2026 AI Accelerator Landscape](#may-2026-ai-accelerator-landscape)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [部署選項](#deployment-options)
+- [服務架構](#serving-architecture)
+- [擴展模式](#scaling-patterns)
+- [成本管理](#cost-management)
+- [監控與警示](#monitoring-and-alerting)
+- [災難復原](#disaster-recovery)
+- [2026 年 5 月 AI 加速器版圖](#may-2026-ai-accelerator-landscape)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Deployment Options
+<a id="deployment-options"></a>
+## 部署選項
 
-### API vs Self-Hosted
+<a id="api-vs-self-hosted"></a>
+### API 與自託管
 
-| Factor | API Providers | Self-Hosted |
+| 因素 | API 供應商 | 自託管 |
 |--------|---------------|-------------|
-| Setup time | Minutes | Days to weeks |
-| Operational burden | None | Significant |
-| Cost at low volume | Lower | Higher (fixed costs) |
-| Cost at high volume | Higher | Lower (scale economics) |
-| Latency control | Limited | Full control |
-| Data privacy | Data leaves your infra | Data stays local |
-| Model selection | Provider's models | Any open model |
-| Customization | Fine-tuning via API | Full control |
+| 設定時間 | 幾分鐘 | 幾天到幾週 |
+| 維運負擔 | 無 | 顯著 |
+| 低流量成本 | 較低 | 較高（固定成本） |
+| 高流量成本 | 較高 | 較低（規模經濟） |
+| 延遲控制 | 有限 | 完全控制 |
+| 資料隱私 | 資料會離開你的基礎設施 | 資料留在本地 |
+| 模型選擇 | 供應商提供的模型 | 任何開放模型 |
+| 客製化 | 透過 API fine-tuning | 完全控制 |
 
-### When to Use API Providers
+<a id="when-to-use-api-providers"></a>
+### 何時使用 API 供應商
 
 ```python
 # Decision framework
@@ -56,21 +61,24 @@ def should_use_api(requirements: dict) -> bool:
     return True
 ```
 
-### Self-Hosting Options
+<a id="self-hosting-options"></a>
+### 自託管選項
 
-| Option | Complexity | Performance | Use Case |
+| 選項 | 複雜度 | 效能 | 使用情境 |
 |--------|------------|-------------|----------|
-| vLLM | Medium | Excellent | Production serving |
-| TGI (HuggingFace) | Medium | Very good | HuggingFace ecosystem |
-| TensorRT-LLM | High | Best (NVIDIA) | Maximum performance |
-| Ollama | Low | Good | Development, small scale |
-| llama.cpp | Low | Good | CPU inference, edge |
+| vLLM | 中 | 極佳 | 生產服務 |
+| TGI (HuggingFace) | 中 | 很好 | HuggingFace 生態系 |
+| TensorRT-LLM | 高 | 最佳（NVIDIA） | 最高效能 |
+| Ollama | 低 | 良好 | 開發、小規模 |
+| llama.cpp | 低 | 良好 | CPU 推論、邊緣裝置 |
 
 ---
 
-## Serving Architecture
+<a id="serving-architecture"></a>
+## 服務架構
 
-### Single Model Serving
+<a id="single-model-serving"></a>
+### 單模型服務
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -83,7 +91,8 @@ def should_use_api(requirements: dict) -> bool:
                     └─────────────┘
 ```
 
-### Multi-Model Serving
+<a id="multi-model-serving"></a>
+### 多模型服務
 
 ```
                     ┌─────────────────────────────── │
@@ -99,7 +108,8 @@ def should_use_api(requirements: dict) -> bool:
     └───────────────┘       └───────────────┘       └───────────────┘
 ```
 
-### Model Router Pattern
+<a id="model-router-pattern"></a>
+### 模型路由模式
 
 ```python
 class ModelRouter:
@@ -145,9 +155,11 @@ class ModelRouter:
 
 ---
 
-## Scaling Patterns
+<a id="scaling-patterns"></a>
+## 擴展模式
 
-### Horizontal Scaling
+<a id="horizontal-scaling"></a>
+### 水平擴展
 
 ```python
 # Kubernetes HPA config for LLM service
@@ -180,18 +192,20 @@ spec:
 """
 ```
 
-### GPU Scaling for Self-Hosted
+<a id="gpu-scaling-for-self-hosted"></a>
+### 自託管的 GPU 擴展
 
-| Scale | GPUs | Suggested Setup |
+| 規模 | GPU 數量 | 建議配置 |
 |-------|------|-----------------|
-| Dev/Test | 1 | Single A10G or L4 |
-| Small prod | 2-4 | 2x A100 with tensor parallel |
-| Medium prod | 4-8 | 4x H100 with tensor parallel |
-| Large prod | 8+ | Multi-node with pipeline parallel |
+| 開發/測試 | 1 | 單張 A10G 或 L4 |
+| 小型正式環境 | 2-4 | 2x A100 搭配 tensor parallel |
+| 中型正式環境 | 4-8 | 4x H100 搭配 tensor parallel |
+| 大型正式環境 | 8+ | 多節點搭配 pipeline parallel |
 
-### Queue-Based Architecture
+<a id="queue-based-architecture"></a>
+### 以佇列為基礎的架構
 
-For high-throughput async workloads:
+適合高吞吐量非同步工作負載：
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -237,9 +251,11 @@ class AsyncLLMProcessor:
 
 ---
 
-## Cost Management
+<a id="cost-management"></a>
+## 成本管理
 
-### Cost Tracking
+<a id="cost-tracking"></a>
+### 成本追蹤
 
 ```python
 class CostTracker:
@@ -278,17 +294,19 @@ class CostTracker:
         return cost
 ```
 
-### Cost Optimization Strategies
+<a id="cost-optimization-strategies"></a>
+### 成本最佳化策略
 
-| Strategy | Savings | Implementation |
+| 策略 | 節省幅度 | 實作方式 |
 |----------|---------|----------------|
-| Model routing | 50-80% | Route simple queries to cheap models |
-| Caching | 30-70% | Cache frequent queries |
-| Prompt optimization | 10-30% | Shorter prompts, structured output |
-| Batch API | 50% | Use batch endpoints for async work |
-| Self-hosting | Variable | At scale, can be cheaper |
+| 模型路由 | 50-80% | 將簡單查詢導向便宜模型 |
+| 快取 | 30-70% | 快取常見查詢 |
+| Prompt 最佳化 | 10-30% | 更短的 prompt、結構化輸出 |
+| Batch API | 50% | 對非同步工作使用 batch endpoint |
+| 自託管 | 視情況而定 | 在足夠規模下可能更便宜 |
 
-### Budget Alerts
+<a id="budget-alerts"></a>
+### 預算警示
 
 ```python
 class BudgetManager:
@@ -316,9 +334,11 @@ class BudgetManager:
 
 ---
 
-## Monitoring and Alerting
+<a id="monitoring-and-alerting"></a>
+## 監控與警示
 
-### Key Metrics
+<a id="key-metrics"></a>
+### 關鍵指標
 
 ```python
 LLM_METRICS = {
@@ -349,7 +369,8 @@ LLM_METRICS = {
 }
 ```
 
-### Alert Configuration
+<a id="alert-configuration"></a>
+### 警示設定
 
 ```yaml
 alerts:
@@ -381,9 +402,11 @@ alerts:
 
 ---
 
-## Disaster Recovery
+<a id="disaster-recovery"></a>
+## 災難復原
 
-### Multi-Provider Failover
+<a id="multi-provider-failover"></a>
+### 多供應商容錯移轉
 
 ```python
 class MultiProviderClient:
@@ -417,7 +440,8 @@ class MultiProviderClient:
         raise AllProvidersUnavailable("All LLM providers failed")
 ```
 
-### Graceful Degradation
+<a id="graceful-degradation"></a>
+### 優雅降級
 
 ```python
 class GracefulDegradation:
@@ -451,104 +475,112 @@ class GracefulDegradation:
 
 ---
 
-## May 2026 AI Accelerator Landscape
+<a id="may-2026-ai-accelerator-landscape"></a>
+## 2026 年 5 月 AI 加速器版圖
 
-The hardware picture has shifted faster between January and May 2026 than at any previous moment in the AI build-out. The capacity announcements add up to **over a trillion dollars in committed cloud spend** and the supply chain is no longer single-vendor. This section is the snapshot a senior architect should be carrying into capacity-planning conversations in May 2026.
+在 2026 年 1 月到 5 月之間，硬體局勢的變化速度比 AI 基礎建設歷來任何時刻都更快。各項產能公告累計已超過 **一兆美元的已承諾雲端支出**，供應鏈也不再是單一供應商主導。本節提供的是 2026 年 5 月高階架構師在容量規劃討論中應掌握的快照。
 
-### NVIDIA Blackwell Ultra (B300 / GB300 NVL72)
+<a id="nvidia-blackwell-ultra-b300--gb300-nvl72"></a>
+### NVIDIA Blackwell Ultra（B300 / GB300 NVL72）
 
-The flagship is the **B300** ("Blackwell Ultra"), shipping in volume since January 2026 ([NVIDIA newsroom announcement](https://nvidianews.nvidia.com/news/nvidia-blackwell-ultra-ai-factory-platform-paves-way-for-age-of-ai-reasoning)).
+旗艦產品是 **B300**（「Blackwell Ultra」），自 2026 年 1 月起已開始大量出貨（[NVIDIA newsroom announcement](https://nvidianews.nvidia.com/news/nvidia-blackwell-ultra-ai-factory-platform-paves-way-for-age-of-ai-reasoning)）。
 
-| Spec | B300 / GB300 NVL72 |
+| 規格 | B300 / GB300 NVL72 |
 |------|---------------------|
-| HBM3e per GPU | 288 GB |
-| Peak FP4 (sparse) | ~15 PFLOPS |
-| Form factor | NVL72 rack: 72 Blackwell Ultra GPUs + 36 Grace CPUs |
-| Aggregate NVLink bandwidth in NVL72 | ~130 TB/s |
-| Total HBM per NVL72 | ~20 TB |
-| Projected racks shipping in 2026 | ~60,000 (Jensen Huang, GTC 2026 keynote) |
+| 每張 GPU 的 HBM3e | 288 GB |
+| 峰值 FP4（稀疏） | ~15 PFLOPS |
+| 外型規格 | NVL72 機櫃：72 張 Blackwell Ultra GPU + 36 顆 Grace CPU |
+| NVL72 的總 NVLink 頻寬 | ~130 TB/s |
+| 每個 NVL72 的總 HBM | ~20 TB |
+| 2026 年預計出貨機櫃數 | ~60,000（Jensen Huang，GTC 2026 keynote） |
 
-The strategic pitch is "AI factories": the NVL72 is sold as the smallest unit of a coherent, NVLink-domain inference / training cell rather than as individual cards. For frontier model training (Anthropic, OpenAI, Google's external work) and the largest reasoning-model inference workloads, this is still the default in May 2026.
+其策略主軸是「AI factories」：NVL72 被當成一致性的 NVLink domain 推論／訓練單元的最小銷售單位，而不是單張卡片。對前沿模型訓練（Anthropic、OpenAI、Google 的外部工作）以及最大型 reasoning-model 推論工作負載而言，截至 2026 年 5 月這仍是預設選項。
 
-The trade-off has stayed the same: highest absolute performance, highest absolute price, deepest software lock-in. CUDA, NCCL, and TensorRT-LLM all assume NVIDIA. If you architect around them, you have committed.
+取捨沒有改變：絕對效能最高、絕對價格最高、軟體鎖定最深。CUDA、NCCL 與 TensorRT-LLM 都以 NVIDIA 為前提。如果你的架構圍繞它們打造，你就已經做出承諾。
 
-### AMD MI400 and Helios Rack
+<a id="amd-mi400-and-helios-rack"></a>
+### AMD MI400 與 Helios 機櫃
 
-[AMD's MI400](https://ir.amd.com/news-events/press-releases/detail/1252/amd-introduces-fifth-generation-instinct-mi400-series) (announced Q4 2025, sampling Q1 2026, GA mid-2026) is the credible second source.
+[AMD 的 MI400](https://ir.amd.com/news-events/press-releases/detail/1252/amd-introduces-fifth-generation-instinct-mi400-series)（2025 年 Q4 宣布、2026 年 Q1 開始樣品、2026 年中 GA）是可信的第二來源。
 
-| Spec | MI400 |
+| 規格 | MI400 |
 |------|-------|
-| Memory | HBM4, **432 GB** per GPU |
-| Memory bandwidth | ~20 TB/s |
-| Peak FP4 | ~13 PFLOPS |
-| Rack solution | **Helios**: EPYC Venice CPUs, MI400 GPUs, Pensando Vulcano 800Gb NICs |
-| Software | ROCm 7.x with PyTorch / vLLM / SGLang first-class support |
+| 記憶體 | HBM4，**每張 GPU 432 GB** |
+| 記憶體頻寬 | ~20 TB/s |
+| 峰值 FP4 | ~13 PFLOPS |
+| 機櫃方案 | **Helios**：EPYC Venice CPU、MI400 GPU、Pensando Vulcano 800Gb NIC |
+| 軟體 | ROCm 7.x，對 PyTorch / vLLM / SGLang 提供一級支援 |
 
-The 432 GB per GPU is the headline: it sits more than 50% above the B300's 288 GB. For MoE serving (where the limiting factor is keeping expert weights resident) and for KV-cache-heavy long-context workloads, the per-GPU memory advantage is real. AMD has also closed most of the software gap; ROCm 7.x is no longer the disqualifier it was in 2023. Open-source serving frameworks routinely test on both.
+每張 GPU 432 GB 是最大的亮點：比 B300 的 288 GB 高出 50% 以上。對 MoE serving（瓶頸在於讓 expert weights 常駐）與 KV-cache 密集的長上下文工作負載而言，單 GPU 記憶體優勢是真實存在的。AMD 也已補上大部分軟體差距；ROCm 7.x 已不再像 2023 年那樣成為淘汰理由。開源服務框架現在也經常同時在兩者上測試。
 
-The catch: **production deployment maturity**. NVIDIA has shipped at scale to every hyperscaler for two generations; AMD is still ramping the volume side of the supply chain. Hyperscalers (Meta, Microsoft, Oracle Cloud, and notably the AWS Trainium fleet for non-Trainium workloads) are running mixed fleets.
+但要注意的是：**正式環境部署成熟度**。NVIDIA 已連續兩代在所有 hyperscaler 上大規模出貨；AMD 仍在擴大量產供應鏈。各大 hyperscaler（Meta、Microsoft、Oracle Cloud，以及特別是 AWS 的 Trainium 機群在處理非 Trainium 工作負載時）都在運行混合機群。
 
-### AWS Trainium3 and the Anthropic $100B+ Deal
+<a id="aws-trainium3-and-the-anthropic-100b-deal"></a>
+### AWS Trainium3 與 Anthropic 的 1000 億美元以上合作
 
-In November 2025, Anthropic and AWS announced an expansion to **up to 5 gigawatts** of compute capacity through 2026, anchored on Trainium chips and described as a **"$100B+" deal** ([AWS news release](https://press.aboutamazon.com/2025/11/anthropic-and-aws-announce-100-billion-strategic-partnership-investment-to-expand-trainium-compute-and-collaborate-on-ai-frontier-research)).
+2025 年 11 月，Anthropic 與 AWS 宣布將合作擴展至 **最高 5 吉瓦** 的 2026 年算力容量，核心建立在 Trainium 晶片上，並被描述為一筆 **「1000 億美元以上」的合作**（[AWS news release](https://press.aboutamazon.com/2025/11/anthropic-and-aws-announce-100-billion-strategic-partnership-investment-to-expand-trainium-compute-and-collaborate-on-ai-frontier-research)）。
 
-Key numbers:
+關鍵數字：
 
-| Spec | Trainium3 |
+| 規格 | Trainium3 |
 |------|-----------|
-| Process node | 3nm |
-| Configuration | **Trn3 UltraServer** with **144 chips** per system |
-| Peak perf vs T2 | **~4.4x** in target workloads |
-| Memory | HBM3e |
-| Networking | NeuronLink across the UltraServer; EFA across the cluster |
+| 製程節點 | 3nm |
+| 配置 | **Trn3 UltraServer**，每套系統 **144 顆晶片** |
+| 相對 T2 的峰值效能 | 在目標工作負載上約 **4.4x** |
+| 記憶體 | HBM3e |
+| 網路 | UltraServer 內使用 NeuronLink；叢集間使用 EFA |
 
-The strategic implication: AWS now has a credible vertically-integrated AI fabric (Trainium silicon + Annapurna networking + EC2 + Bedrock). For inference-heavy workloads on Anthropic models, the price/performance is competitive with NVIDIA on H200-class hardware and improving toward B300 parity by end of 2026.
+其策略含義是：AWS 現在擁有可信的垂直整合 AI fabric（Trainium 晶片 + Annapurna 網路 + EC2 + Bedrock）。對 Anthropic 模型的推論型工作負載而言，其價格／效能已能與 NVIDIA H200 級硬體競爭，並朝 2026 年底接近 B300 水準持續改善。
 
-The constraint: Trainium runs the **AWS Neuron SDK**, not CUDA. Porting a stack means rebuilding kernels, retesting numerics, and re-tuning batching. Worth it at scale, painful at small scale.
+限制在於：Trainium 使用的是 **AWS Neuron SDK**，不是 CUDA。移植整個技術棧代表你要重建 kernel、重新測試數值行為，並重新調整 batching。大規模時值得，小規模時痛苦。
 
-### Cerebras IPO (May 2026)
+<a id="cerebras-ipo-may-2026"></a>
+### Cerebras IPO（2026 年 5 月）
 
-Cerebras priced its IPO on **May 14, 2026** at **$185/share** and raised roughly **$5.55B**, opening above $190 and closing the first day near a **~$100B** valuation ([CNBC coverage](https://www.cnbc.com/2026/05/14/cerebras-ipo-priced.html); [The Register](https://www.theregister.com/2026/05/15/cerebras_ipo/)).
+Cerebras 於 **2026 年 5 月 14 日** 以 **每股 185 美元** 的價格完成 IPO，募得約 **55.5 億美元**，開盤高於 190 美元，首日收盤時估值接近 **約 1000 億美元**（[CNBC coverage](https://www.cnbc.com/2026/05/14/cerebras-ipo-priced.html)；[The Register](https://www.theregister.com/2026/05/15/cerebras_ipo/)）。
 
-What changed in the market because of it:
+它對市場帶來的變化：
 
-- **AWS partnered with Cerebras** for high-throughput inference ([AWS / Cerebras blog post](https://aws.amazon.com/blogs/machine-learning/cerebras-on-aws/)). The pitch is Trainium3 for serving Anthropic and other in-house workloads, Cerebras for ultra-low-latency Llama / OSS workloads.
-- The CS-3 wafer-scale engine remains the only credible option for **single-chip, single-replica inference of a 70B+ model** at <50ms TTFT.
-- The Cerebras Cloud API has been used as a quick second source for teams whose primary stack is GPU-based and want a latency edge without porting.
+- **AWS 與 Cerebras 合作**提供高吞吐量推論（[AWS / Cerebras blog post](https://aws.amazon.com/blogs/machine-learning/cerebras-on-aws/)）。其主張是：Trainium3 用於 Anthropic 與其他內部工作負載的服務，Cerebras 則用於超低延遲的 Llama / OSS 工作負載。
+- CS-3 wafer-scale engine 仍是唯一可信、可在 **單晶片、單副本情境下推論 70B+ 模型** 並達到 <50ms TTFT 的方案。
+- 對以 GPU 為主堆疊、又想在不移植的情況下取得延遲優勢的團隊而言，Cerebras Cloud API 已被當作快速的第二來源使用。
 
-The IPO is structurally important because it changes the financing thesis: there is now a public-market path for a non-NVIDIA inference vendor, which makes it cheaper for the next entrants to raise.
+這次 IPO 之所以具有結構性意義，在於它改變了融資論述：現在非 NVIDIA 的推論供應商已經有公開市場的退出路徑，讓下一批進入者更容易募資。
 
+<a id="tenstorrent-galaxy-blackhole"></a>
 ### Tenstorrent Galaxy Blackhole
 
-[Tenstorrent's Galaxy](https://tenstorrent.com/hardware/galaxy) reached general availability on **April 28, 2026** ([The Register](https://www.theregister.com/2026/04/28/tenstorrent_galaxy_ga/); [EE Times](https://www.eetimes.com/tenstorrent-launches-blackhole-galaxy/)).
+[Tenstorrent 的 Galaxy](https://tenstorrent.com/hardware/galaxy) 已於 **2026 年 4 月 28 日** 進入 GA（[The Register](https://www.theregister.com/2026/04/28/tenstorrent_galaxy_ga/)；[EE Times](https://www.eetimes.com/tenstorrent-launches-blackhole-galaxy/)）。
 
-| Spec | Galaxy Blackhole |
+| 規格 | Galaxy Blackhole |
 |------|------------------|
-| Per-server | **32 Blackhole chips** |
-| Per-chip | RISC-V cores, Tensix tiles, no external memory hierarchy |
-| Peak BlockFP8 | **~23 PFLOPS** per server |
-| Memory | LPDDR4X (chip-attached) + on-chip SRAM |
-| List price | **~$110,000** per 32-chip server |
-| Architecture | Fully open RISC-V control plane, open firmware, open compiler |
+| 每台伺服器 | **32 顆 Blackhole 晶片** |
+| 每顆晶片 | RISC-V cores、Tensix tiles、無外部記憶體階層 |
+| 峰值 BlockFP8 | 每台伺服器約 **23 PFLOPS** |
+| 記憶體 | LPDDR4X（晶片附掛）+ on-chip SRAM |
+| 定價 | 每台 32 晶片伺服器約 **110,000 美元** |
+| 架構 | 完全開放的 RISC-V control plane、開放韌體、開放編譯器 |
 
-The open-source RISC-V story matters for two audiences:
+開源 RISC-V 故事對兩類受眾很重要：
 
-- **Hyperscalers and sovereign clouds** that want a non-CUDA stack with full visibility into firmware and toolchain.
-- **Research labs** building custom kernels who hit walls with CUDA's closed bits.
+- **Hyperscaler 與主權雲**：希望使用非 CUDA 技術棧，並能完整掌握韌體與工具鏈。
+- **研究實驗室**：建置自訂 kernel 時，常會卡在 CUDA 的封閉部分。
 
-At $110K per server, Galaxy is roughly an order of magnitude cheaper than a comparable NVIDIA inference rack for some workloads. It is not a frontier-training competitor. It is an inference and small-fine-tuning competitor where the per-dollar argument is overwhelming.
+以每台伺服器 11 萬美元來看，對某些工作負載而言，Galaxy 約比相當的 NVIDIA 推論機櫃便宜一個數量級。它不是前沿訓練的競爭者；它是推論與小型 fine-tuning 的競爭者，在每美元效益上極具吸引力。
 
-### Stargate and the Scale of Cloud Commitments
+<a id="stargate-and-the-scale-of-cloud-commitments"></a>
+### Stargate 與雲端投入規模
 
-The capacity story is no longer just about chips; it is about the buildings around them.
+產能故事已不再只是晶片，而是圍繞它們建造的機房與設施。
 
-- **Stargate** (OpenAI / Oracle / SoftBank joint venture) has committed roughly **$1.4 trillion in total cloud spend** across the program ([OpenAI announcement page](https://openai.com/index/stargate-update/)).
-- The **Abilene, Texas** flagship site is online at **1.2 GW** as of Q1 2026, with multi-gigawatt expansions under construction across **seven announced sites** totaling roughly **7 GW** of planned capacity.
-- Over **$400B** has already been invested or contracted toward this footprint per public filings and announcements (Oracle Q3 FY26 earnings, [SoftBank investor materials](https://group.softbank/en/ir)).
+- **Stargate**（OpenAI / Oracle / SoftBank 合資）已承諾整個計畫約 **1.4 兆美元的總雲端支出**（[OpenAI announcement page](https://openai.com/index/stargate-update/)）。
+- 旗艦站點 **Texas 州 Abilene** 已在 2026 年 Q1 上線，規模為 **1.2 GW**；另有 **七個已宣布站點** 正在興建多吉瓦擴充，總計約 **7 GW** 的規劃產能。
+- 根據公開申報與公告（Oracle Q3 FY26 earnings、[SoftBank investor materials](https://group.softbank/en/ir)），這個足跡中已有超過 **4000 億美元** 被投資或簽約。
 
-The architectural implication for senior engineers: the marginal cost of inference for frontier-model providers is dropping faster than the public API pricing would suggest. Spot capacity, off-peak inference batching, and multi-region failover are all easier in 2026 because the underlying buildings exist.
+對高階工程師的架構意義在於：前沿模型供應商的推論邊際成本下降速度，比公開 API 定價顯示得更快。因為底層設施已經存在，2026 年的 spot capacity、離峰推論 batching 與 multi-region failover 都變得更容易。
 
-### A Three-Tier Fleet Strategy
+<a id="a-three-tier-fleet-strategy"></a>
+### 三層機群策略
 
 ```mermaid
 flowchart TD
@@ -569,87 +601,92 @@ flowchart TD
     E --> E3[Groq LPU for specific low-latency niches]
 ```
 
-| Tier | What It Serves | Default Hardware | Why |
+| 層級 | 服務內容 | 預設硬體 | 原因 |
 |------|----------------|-------------------|-----|
-| **Tier 1: Training and Heavy Compute** | Frontier model training, reasoning-heavy inference, multi-trillion-parameter MoE | **B300 NVL72**, **MI400 Helios** | Need NVLink-class coherency and the largest HBM pools available |
-| **Tier 2: High-Throughput Inference** | API products, RAG backends, agent platforms | **Trainium3**, **MI400**, **Cerebras CS-3**, **B300** | Optimize for cost per token and predictable P99, often MoE-aware |
-| **Tier 3: Edge and Specialty** | Latency-critical, sovereign, open-source-firmware mandated, low total spend | **Tenstorrent Galaxy**, **Apple Silicon**, consumer GPUs, **Groq LPU** | $/perf, open stack, regulatory locality |
+| **Tier 1：訓練與重度運算** | 前沿模型訓練、重 reasoning 推論、多兆參數 MoE | **B300 NVL72**、**MI400 Helios** | 需要 NVLink 等級一致性與最大 HBM 容量 |
+| **Tier 2：高吞吐量推論** | API 產品、RAG 後端、agent 平台 | **Trainium3**、**MI400**、**Cerebras CS-3**、**B300** | 最佳化每 token 成本與可預測的 P99，通常需考慮 MoE |
+| **Tier 3：邊緣與特殊場景** | 延遲敏感、主權要求、要求開源韌體、總支出低 | **Tenstorrent Galaxy**、**Apple Silicon**、consumer GPU、**Groq LPU** | $/perf、開放技術棧、法規在地性 |
 
-The framing that matters in 2026: **no senior architect designs a serious AI product around a single vendor anymore**. The capacity is too contested, the price moves too fast, and the failure modes are too correlated within a single vendor's stack. Multi-vendor is the new default.
+2026 年最重要的框架是：**沒有任何高階架構師會再把嚴肅的 AI 產品設計成依賴單一供應商**。產能競爭過於激烈、價格變化過快，而且單一供應商技術棧內的失效模式高度相關。Multi-vendor 已成為新的預設。
 
-### Take-Aways for Capacity Planning
+<a id="take-aways-for-capacity-planning"></a>
+### 容量規劃重點
 
-- Plan around **memory per accelerator** as much as FLOPS. MoE serving is bottlenecked on expert residency.
-- Treat **CUDA lock-in as a real cost**. ROCm 7.x is good enough for most production serving. Neuron is good enough for Anthropic and any team willing to do the porting work. Open RISC-V is good enough for cost-sensitive inference.
-- The hyperscaler choice now drives the chip choice as much as the other way around. AWS = Trainium + Cerebras + some NVIDIA. Microsoft = NVIDIA + Maia. Google = TPU + some NVIDIA. Oracle = NVIDIA at scale.
-- **$/token** has been falling roughly 3-5x per year through 2025 and 2026 ([a16z State of AI Compute](https://a16z.com/state-of-ai-compute-2026/)). Long-term contracts at 2024 prices are now usually a worse deal than spot.
-
----
-
-## Interview Questions
-
-### Q: How would you design infrastructure for 1M LLM queries per day?
-
-**Strong answer:**
-
-"At 1M queries per day, that is about 12 queries per second on average, with peaks potentially 3-5x higher. Here is my approach:
-
-**Architecture:**
-- Load balancer distributing across multiple API endpoints
-- Model router for cost optimization (route simple queries to cheaper models)
-- Redis cache for frequent queries
-- Queue-based processing for async workloads
-
-**Cost optimization is critical at this scale:**
-- Route 60-70% of simple queries to GPT-4o-mini or Claude Haiku
-- Implement semantic caching (30%+ cache hit rate target)
-- Use batch API for non-urgent requests (50% discount)
-- At this volume, self-hosting becomes cost-competitive
-
-**Reliability:**
-- Multi-provider setup with automatic failover
-- Rate limiting per user to prevent abuse
-- Queue-based architecture for handling spikes
-- Graceful degradation when providers are unavailable
-
-**Monitoring:**
-- Real-time cost tracking with budget alerts
-- Latency percentiles (p50, p95, p99)
-- Quality metrics sampled continuously
-- Error rate and rate-limit hit tracking
-
-At 1M queries with average 2K tokens, using GPT-4o would cost about $25K/day. With routing and caching, I can reduce this to $5-8K/day."
-
-### Q: When would you self-host vs use API providers?
-
-**Strong answer:**
-
-"My decision framework considers several factors:
-
-**Use API providers when:**
-- Volume is under 1M queries/month (cost crossover point)
-- Time-to-market is critical
-- Team lacks GPU infrastructure expertise
-- You want the latest models immediately
-- Workload is variable and hard to predict
-
-**Self-host when:**
-- Data cannot leave your infrastructure (compliance, security)
-- Volume exceeds 10M queries/month (significant savings)
-- You need latency under 100ms P99
-- You need custom model weights or fine-tuning
-- You want full control over model behavior
-
-**Hybrid approach often works best:**
-- Self-host for high-volume predictable workloads
-- API for spikes and specialized models
-- API as fallback for self-hosted failures
-
-The hidden costs of self-hosting: GPU procurement/rental, engineering time for ops, model updates, monitoring infrastructure. Factor in at least 1-2 dedicated engineers for infrastructure."
+- 規劃時要同時關注 **每個加速器的記憶體容量** 與 FLOPS。MoE serving 的瓶頸在於 expert residency。
+- 要把 **CUDA 鎖定**當成真實成本。ROCm 7.x 對大多數正式環境服務已經夠用。Neuron 對 Anthropic 與願意投入移植工作的團隊也夠用。開放式 RISC-V 對成本敏感的推論也已足夠。
+- 現在 hyperscaler 的選擇與其說受晶片選擇驅動，不如說兩者互相影響。AWS = Trainium + Cerebras + 部分 NVIDIA。Microsoft = NVIDIA + Maia。Google = TPU + 部分 NVIDIA。Oracle = 大規模 NVIDIA。
+- **$/token** 在 2025 到 2026 年間大致以每年 3-5 倍的幅度下降（[a16z State of AI Compute](https://a16z.com/state-of-ai-compute-2026/)）。現在以 2024 年價格簽的長約，通常已不如 spot 划算。
 
 ---
 
-## References
+<a id="interview-questions"></a>
+## 面試題
+
+<a id="q-how-would-you-design-infrastructure-for-1m-llm-queries-per-day"></a>
+### Q：你會如何為每天 100 萬次 LLM 查詢設計基礎設施？
+
+**強回答：**
+
+「每天 100 萬次查詢，平均約是每秒 12 次查詢，尖峰可能高出 3-5 倍。我的做法如下：
+
+**架構：**
+- 以負載平衡器分流到多個 API endpoint
+- 使用模型路由做成本最佳化（將簡單查詢導向較便宜的模型）
+- 用 Redis 快取高頻查詢
+- 對非同步工作負載採用佇列式處理
+
+**在這個規模下，成本最佳化非常關鍵：**
+- 將 60-70% 的簡單查詢導向 GPT-4o-mini 或 Claude Haiku
+- 導入 semantic caching（快取命中率目標 30% 以上）
+- 對非緊急請求使用 batch API（可省 50%）
+- 到這個量級時，自託管會開始具備成本競爭力
+
+**可靠性：**
+- 採用多供應商架構與自動容錯移轉
+- 依使用者做 rate limiting 以防止濫用
+- 用佇列式架構處理流量尖峰
+- 當供應商不可用時進行優雅降級
+
+**監控：**
+- 即時成本追蹤與預算警示
+- 延遲百分位數（p50、p95、p99）
+- 持續抽樣的品質指標
+- 錯誤率與 rate-limit hit 追蹤
+
+若以平均 2K tokens 的 100 萬次查詢來看，全部使用 GPT-4o 的成本大約是每天 2.5 萬美元。透過路由與快取，我可以把這個數字降到每天 5,000-8,000 美元。」
+
+<a id="q-when-would-you-self-host-vs-use-api-providers"></a>
+### Q：何時應該自託管，何時應該使用 API 供應商？
+
+**強回答：**
+
+「我的決策框架會考慮幾個因素：
+
+**適合使用 API 供應商的情況：**
+- 流量低於每月 100 萬次查詢（成本交叉點）
+- 上市時程極為關鍵
+- 團隊缺乏 GPU 基礎設施經驗
+- 你想立即使用最新模型
+- 工作負載變動大且難以預測
+
+**適合自託管的情況：**
+- 資料不能離開你的基礎設施（合規、安全）
+- 流量超過每月 1000 萬次查詢（節省顯著）
+- 你需要低於 100ms P99 的延遲
+- 你需要自訂模型權重或 fine-tuning
+- 你希望完全掌控模型行為
+
+**混合式做法通常最好：**
+- 以自託管處理高流量、可預測的工作負載
+- 以 API 應對尖峰與特殊模型
+- 將 API 當成自託管失敗時的備援
+
+自託管的隱藏成本包括：GPU 採購／租用、維運工程時間、模型更新、監控基礎設施。至少要把 1-2 位專職基礎設施工程師算進去。」
+
+---
+
+<a id="references"></a>
+## 參考資料
 
 - vLLM: https://docs.vllm.ai/
 - TensorRT-LLM: https://github.com/NVIDIA/TensorRT-LLM
@@ -659,4 +696,4 @@ The hidden costs of self-hosting: GPU procurement/rental, engineering time for o
 
 ---
 
-*Next: [CI/CD for LLM Applications](02-cicd.md)*
+*下一章：[LLM 應用程式的 CI/CD](02-cicd.md)*

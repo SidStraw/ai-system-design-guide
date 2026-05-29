@@ -1,26 +1,29 @@
-# RAG Evaluation Patterns
+<a id="rag-evaluation-patterns"></a>
+# RAG 評估模式
 
-Evaluation is the hardest unsolved problem in RAG. You can build a retrieval pipeline in a day; knowing whether it actually works takes weeks. The industry has converged on a layered evaluation strategy: the RAG Triad for correctness, component-level metrics for debugging, and automated regression testing for production safety. Langfuse, LangWatch, Braintrust, and Arize Phoenix all ship native RAG eval recipes; pick by deployment model (self-hosted vs SaaS) and whether you need eval-gated CI/CD blocking.
+評估是 RAG 中最難、也最未被完全解決的問題。你可以在一天內建好一條 retrieval pipeline；但要知道它是否真的有效，往往要花上數週。業界如今已逐漸收斂到分層式評估策略：用 RAG Triad 檢查正確性、用元件層級指標除錯，以及用自動化 regression testing 守住正式環境安全。Langfuse、LangWatch、Braintrust 與 Arize Phoenix 都已提供原生 RAG eval recipe；選型時可依部署模式（self-hosted 或 SaaS）與是否需要 eval-gated 的 CI/CD blocking 來決定。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [The RAG Triad](#the-rag-triad)
-- [RAGAS Framework and Metrics](#ragas-framework)
-- [Component-Level Evaluation](#component-level-evaluation)
-- [LLM-as-Judge for RAG](#llm-as-judge)
-- [Building Golden Test Sets](#golden-test-sets)
-- [Automated Regression Testing](#regression-testing)
-- [Production Monitoring](#production-monitoring)
-- [Cost of Evaluation at Scale](#cost-at-scale)
-- [Tools Comparison](#tools-comparison)
-- [System Design Interview Angle](#system-design-interview-angle)
-- [References](#references)
+- [RAG Triad](#the-rag-triad)
+- [RAGAS framework 與指標](#ragas-framework)
+- [元件層級評估](#component-level-evaluation)
+- [以 LLM-as-Judge 評估 RAG](#llm-as-judge)
+- [建立 Golden Test Set](#golden-test-sets)
+- [自動化 Regression Testing](#regression-testing)
+- [正式環境監控](#production-monitoring)
+- [大規模評估成本](#cost-at-scale)
+- [工具比較](#tools-comparison)
+- [系統設計面試角度](#system-design-interview-angle)
+- [參考資料](#references)
 
 ---
 
-## The RAG Triad
+<a id="the-rag-triad"></a>
+## RAG Triad
 
-The RAG Triad is the foundational framework for evaluating RAG systems. It decomposes correctness into three independent dimensions, each catching a different failure mode.
+RAG Triad 是評估 RAG 系統的基礎框架。它把正確性拆成三個彼此獨立的維度，每一個維度都對應不同的失敗模式。
 
 ```
                           User Query
@@ -48,63 +51,69 @@ The RAG Triad is the foundational framework for evaluating RAG systems. It decom
              No hallucination       No tangential answers
 ```
 
-### Dimension 1: Context Relevance
+<a id="dimension-1-context-relevance"></a>
+### 維度 1：Context Relevance
 
-**Question**: Is each retrieved chunk actually relevant to the user query?
+**問題**：每個被取回的 chunk，是否真的與使用者查詢有關？
 
-**What it catches**: Bad retrieval -- the vector search returned documents about the wrong topic, or the query was ambiguous and the retriever guessed wrong.
+**可捕捉的問題**：錯誤檢索——向量搜尋回傳了錯主題的文件，或 query 本身有歧義，導致 retriever 猜錯方向。
 
-**How to measure**:
-- For each retrieved chunk, ask: "Is this chunk relevant to answering the query?"
-- Score: (number of relevant chunks) / (total retrieved chunks)
-- A score of 0.3 means 70% of retrieved context is noise, forcing the LLM to find a needle in irrelevant hay.
+**如何衡量**：
+- 對每個 retrieved chunk 問：「這個 chunk 是否與回答該 query 有關？」
+- 分數 =（相關 chunk 數量）/（取回 chunk 總數）
+- 若分數為 0.3，代表 70% 的 retrieved context 都是雜訊，迫使 LLM 在無關內容中找針。
 
-**Why it matters**: Low context relevance is the root cause of most RAG failures. Even a perfect generator cannot produce a good answer from irrelevant context.
+**為何重要**：低 context relevance 是大多數 RAG 失敗的根源。即使 generator 再完美，面對無關 context 也無法產出好答案。
 
-### Dimension 2: Groundedness (Faithfulness)
+<a id="dimension-2-groundedness-faithfulness"></a>
+### 維度 2：Groundedness（Faithfulness）
 
-**Question**: Is every claim in the generated answer supported by the retrieved context?
+**問題**：生成答案中的每個主張，是否都能被 retrieved context 支持？
 
-**What it catches**: Hallucination -- the LLM generated claims that are plausible but not present in the retrieved documents.
+**可捕捉的問題**：幻覺——LLM 產生了看似合理、但其實不在 retrieved documents 中的內容。
 
-**How to measure**:
-- Decompose the answer into individual claims/statements.
-- For each claim, search the retrieved context for supporting evidence.
-- Score: (number of supported claims) / (total claims)
-- A score of 0.7 means 30% of the answer is hallucinated.
+**如何衡量**：
+- 將答案拆成個別 claim／statement。
+- 對每個 claim，在 retrieved context 中尋找支持證據。
+- 分數 =（有證據支持的 claim 數量）/（claim 總數）
+- 若分數為 0.7，表示答案中有 30% 是 hallucinated。
 
-**Why it matters**: This is the metric that enterprise customers care about most. An unfaithful RAG system is worse than no RAG at all because it produces confident-sounding wrong answers with fake citations.
+**為何重要**：這是企業客戶最在意的指標。若 RAG 不忠於證據，還不如不用 RAG，因為它會產生聽起來很有把握、還帶著假引用的錯誤答案。
 
-### Dimension 3: Answer Relevance
+<a id="dimension-3-answer-relevance"></a>
+### 維度 3：Answer Relevance
 
-**Question**: Does the final answer actually address what the user asked?
+**問題**：最終答案是否真的回答了使用者的問題？
 
-**What it catches**: Tangential answers -- the retrieval was good, the answer is grounded, but it does not answer the question. Common when the retriever finds related-but-not-matching content.
+**可捕捉的問題**：答非所問——檢索沒有問題、答案也有根據，但就是沒有回答到問題本身。這在 retriever 找到「相關但不匹配」的內容時很常見。
 
-**How to measure**:
-- Generate N hypothetical questions that the answer would be a good response to.
-- Measure semantic similarity between these hypothetical questions and the original query.
-- High similarity means the answer is on-topic.
+**如何衡量**：
+- 產生 N 個「如果這個答案是好答案，使用者可能問什麼」的假設問題。
+- 衡量這些假設問題與原始 query 的語意相似度。
+- 相似度高表示答案有對題。
 
-**Why it matters**: A system can retrieve relevant context and faithfully summarize it, yet still miss the point of the question. Answer relevance catches this.
+**為何重要**：系統可能取回了相關 context，也忠實地摘要了它，但依然沒回答到重點。Answer relevance 就是抓這種問題。
 
-### Triad Failure Modes
+<a id="triad-failure-modes"></a>
+### Triad 失敗模式
 
-| Failure Pattern | Context Relevance | Groundedness | Answer Relevance | Root Cause |
+| 失敗模式 | Context Relevance | Groundedness | Answer Relevance | 根因 |
 |----------------|-------------------|-------------|-----------------|------------|
-| Good RAG | High | High | High | System working correctly |
-| Bad Retrieval | **Low** | High | Low | Embeddings or search misconfigured |
-| Hallucination | High | **Low** | High | LLM ignoring context, prompt issue |
-| Tangential Answer | High | High | **Low** | Query ambiguity, wrong index |
-| Total Failure | **Low** | **Low** | **Low** | Fundamental pipeline issue |
+| 好的 RAG | 高 | 高 | 高 | 系統正常運作 |
+| 錯誤檢索 | **低** | 高 | 低 | Embedding 或搜尋設定錯誤 |
+| 幻覺 | 高 | **低** | 高 | LLM 忽略 context、prompt 有問題 |
+| 答非所問 | 高 | 高 | **低** | Query 歧義、索引錯誤 |
+| 完全失敗 | **低** | **低** | **低** | Pipeline 的根本性問題 |
 
 ---
 
-## RAGAS Framework and Metrics
+<a id="ragas-framework-and-metrics"></a>
+## RAGAS Framework 與指標
 
-RAGAS (Retrieval Augmented Generation Assessment) is the most widely adopted open-source evaluation framework for RAG, providing reference-free metrics that do not require ground-truth answers.
+RAGAS（Retrieval Augmented Generation Assessment）是目前最廣泛採用的開源 RAG 評估框架，提供不需要 ground-truth answer 的 reference-free 指標。
 
-### Core RAGAS Metrics
+<a id="core-ragas-metrics"></a>
+### 核心 RAGAS 指標
 
 ```
   RAGAS Metric Suite (v0.2+)
@@ -129,7 +138,8 @@ RAGAS (Retrieval Augmented Generation Assessment) is the most widely adopted ope
         +-- Multimodal Relevance: Are retrieved images relevant?
 ```
 
-### How RAGAS Faithfulness Works (Under the Hood)
+<a id="how-ragas-faithfulness-works-under-the-hood"></a>
+### RAGAS Faithfulness 底層如何運作
 
 ```
 Step 1: Claim Extraction
@@ -152,7 +162,8 @@ Step 3: Score Calculation
   Faithfulness = supported / total = 2/4 = 0.50
 ```
 
-### How RAGAS Context Precision Works
+<a id="how-ragas-context-precision-works"></a>
+### RAGAS Context Precision 如何運作
 
 ```
   Retrieved chunks ranked by retriever score:
@@ -171,26 +182,29 @@ Step 3: Score Calculation
                     = (1.0 + 0.67) / 2 = 0.835
 ```
 
-### RAGAS vs. Ground-Truth Metrics
+<a id="ragas-vs-ground-truth-metrics"></a>
+### RAGAS 與 Ground-Truth 指標比較
 
-| Metric | Needs Ground Truth? | What It Measures |
+| 指標 | 需要 Ground Truth 嗎？ | 衡量內容 |
 |--------|-------------------|------------------|
-| Faithfulness | No | Claims supported by context |
-| Context Relevance | No | Retrieved chunks relevance |
-| Answer Relevance | No | Answer addresses query |
-| Context Recall | **Yes** | Coverage of reference answer |
-| Answer Correctness | **Yes** | Match against reference answer |
-| Answer Similarity | **Yes** | Semantic overlap with reference |
+| Faithfulness | 否 | claim 是否被 context 支持 |
+| Context Relevance | 否 | retrieved chunk 的相關性 |
+| Answer Relevance | 否 | 答案是否回應 query |
+| Context Recall | **是** | 是否覆蓋 reference answer |
+| Answer Correctness | **是** | 是否與 reference answer 相符 |
+| Answer Similarity | **是** | 與 reference 的語意重疊 |
 
-**Insight**: Start with reference-free metrics (faithfulness, context relevance, answer relevance) for rapid iteration. Add ground-truth metrics once you have a golden test set for regression testing.
+**洞見**：一開始應先用 reference-free 指標（faithfulness、context relevance、answer relevance）快速迭代。等有 golden test set 後，再加入 ground-truth 指標做 regression testing。
 
 ---
 
-## Component-Level Evaluation
+<a id="component-level-evaluation"></a>
+## 元件層級評估
 
-The RAG Triad evaluates the system end-to-end. Component-level evaluation isolates each stage to pinpoint failures.
+RAG Triad 是端到端評估；元件層級評估則是把各個階段切開，精準找出失敗點。
 
-### Retriever Evaluation
+<a id="retriever-evaluation"></a>
+### Retriever 評估
 
 ```
   Query Set (100+ queries with known relevant documents)
@@ -209,18 +223,19 @@ The RAG Triad evaluates the system end-to-end. Component-level evaluation isolat
     +-- Precision@K: What fraction of top K are relevant?
 ```
 
-**Key Retriever Benchmarks**:
+**關鍵 Retriever 基準**：
 
-| Metric | Minimum Threshold | Good | Excellent |
+| 指標 | 最低門檻 | 良好 | 優秀 |
 |--------|------------------|------|-----------|
 | Recall@10 | 0.70 | 0.85 | 0.95+ |
 | MRR | 0.50 | 0.70 | 0.85+ |
 | NDCG@10 | 0.50 | 0.70 | 0.85+ |
 | Precision@5 | 0.40 | 0.60 | 0.80+ |
 
-### Generator Evaluation
+<a id="generator-evaluation"></a>
+### Generator 評估
 
-Isolate the generator by fixing the retrieval context and varying only the generation.
+固定檢索 context，只變動 generation，將 generator 單獨抽出來評估。
 
 ```
   Fixed Context (known relevant chunks)
@@ -238,7 +253,8 @@ Isolate the generator by fixing the retrieval context and varying only the gener
     +-- Citation Accuracy: Do citations point to the right chunks?
 ```
 
-### Reranker Evaluation
+<a id="reranker-evaluation"></a>
+### Reranker 評估
 
 ```
   Query + Initial retrieval results (e.g., top 100 from BM25)
@@ -255,11 +271,13 @@ Isolate the generator by fixing the retrieval context and varying only the gener
 
 ---
 
-## LLM-as-Judge for RAG
+<a id="llm-as-judge-for-rag"></a>
+## 以 LLM-as-Judge 評估 RAG
 
-Using an LLM to evaluate another LLM's output is the dominant evaluation paradigm. It scales where human evaluation cannot, but has known biases.
+用一個 LLM 來評估另一個 LLM 的輸出，已成為目前主流的評估方式。它能擴展到人類無法負擔的規模，但也有已知偏誤。
 
-### How It Works
+<a id="how-it-works"></a>
+### 運作方式
 
 ```
   Evaluation Prompt Template:
@@ -281,31 +299,35 @@ Using an LLM to evaluate another LLM's output is the dominant evaluation paradig
   +------------------------------------------------------------------+
 ```
 
-### Known Biases and Mitigations
+<a id="known-biases-and-mitigations"></a>
+### 已知偏誤與緩解方式
 
-| Bias | Description | Mitigation |
+| 偏誤 | 描述 | 緩解方式 |
 |------|-------------|------------|
-| **Verbosity** | LLM judges prefer longer answers | Normalize scores by answer length; add conciseness penalty |
-| **Self-preference** | GPT-4 rates GPT-4 answers higher | Use a different judge model than the generator |
-| **Position** | First option in A/B comparisons rated higher | Randomize presentation order |
-| **Sycophancy** | Judge agrees with the system being evaluated | Use structured rubrics with specific criteria |
-| **Leniency** | LLMs rarely give scores below 3/5 | Use binary (pass/fail) instead of Likert scales |
+| **冗長偏誤** | LLM judge 偏好較長答案 | 依答案長度正規化分數；加入 conciseness penalty |
+| **自我偏好** | GPT-4 較容易給 GPT-4 產出的答案高分 | judge model 與 generator 使用不同模型 |
+| **位置偏誤** | A/B 比較時，第一個選項較常被評高 | 隨機化呈現順序 |
+| **迎合偏誤** | judge 傾向同意被評估系統 | 使用具體標準的結構化 rubric |
+| **寬鬆偏誤** | LLM 很少給低於 3/5 的分數 | 改用二元判定（pass/fail）而非 Likert 尺度 |
 
-### Best Practices for LLM-as-Judge
+<a id="best-practices-for-llm-as-judge"></a>
+### LLM-as-Judge 最佳實務
 
-1. **Use binary decisions over scales**: "Is this claim supported? YES/NO" is more reliable than "Rate support on 1-5."
-2. **Decompose into atomic evaluations**: Evaluate one claim or one dimension at a time.
-3. **Require evidence**: Force the judge to cite the specific context passage that supports/contradicts each claim.
-4. **Calibrate with human agreement**: Run 100+ examples through both LLM and human judges. Measure Cohen's Kappa. Target > 0.7.
-5. **Use the strongest available model**: Claude Opus or GPT-4o as judges; never use the same model that generated the answer.
+1. **用二元判定取代分數量表**：「這個 claim 是否被支持？YES/NO」比「請為支持程度打 1–5 分」更可靠。
+2. **拆成原子評估**：一次只評估一個 claim 或一個維度。
+3. **要求證據**：強制 judge 指出支持／反駁各 claim 的具體 context 片段。
+4. **用人工一致性做校準**：拿 100+ 個案例同時給 LLM 與人工評審，計算 Cohen's Kappa，目標 > 0.7。
+5. **使用手上最強的模型**：用 Claude Opus 或 GPT-4o 做 judge；不要用同一個產生答案的模型來評自己。
 
 ---
 
-## Building Golden Test Sets
+<a id="building-golden-test-sets"></a>
+## 建立 Golden Test Set
 
-A golden test set is a curated, versioned collection of (query, expected_context, expected_answer) triples that serves as the ground truth for regression testing.
+Golden test set 是經過整理與版本化的（query, expected_context, expected_answer）三元組集合，可作為 regression testing 的 ground truth。
 
-### Building Process
+<a id="building-process"></a>
+### 建立流程
 
 ```
   Step 1: Seed Collection
@@ -345,17 +367,19 @@ A golden test set is a curated, versioned collection of (query, expected_context
   +-------------------------------------------------------+
 ```
 
-### Golden Set Composition Guidelines
+<a id="golden-set-composition-guidelines"></a>
+### Golden Set 組成指南
 
-| Question Type | Percentage | Purpose |
+| 問題類型 | 佔比 | 目的 |
 |--------------|-----------|---------|
-| Simple factual | 40% | Baseline: should always pass |
-| Multi-hop reasoning | 25% | Tests cross-document retrieval |
-| Comparative | 15% | Tests retrieval of multiple relevant docs |
-| Temporal | 10% | Tests handling of versioned/dated content |
-| Adversarial | 10% | Tests robustness (unanswerable, out-of-scope) |
+| 簡單事實題 | 40% | 基線：理論上應全部通過 |
+| Multi-hop 推理 | 25% | 測試跨文件檢索 |
+| 比較型問題 | 15% | 測試多份相關文件檢索 |
+| 時間性問題 | 10% | 測試版本化／帶日期內容的處理 |
+| 對抗型問題 | 10% | 測試魯棒性（不可回答、超出範圍） |
 
-### Synthetic Test Generation with RAGAS
+<a id="synthetic-test-generation-with-ragas"></a>
+### 用 RAGAS 產生合成測試資料
 
 ```python
 # Pseudocode: Generate synthetic test queries from your corpus
@@ -375,15 +399,17 @@ testset = generator.generate_with_langchain_docs(
 testset.to_pandas().to_csv("golden_set_draft_v4.csv")
 ```
 
-**Warning**: Synthetic test sets are a starting point, not a destination. Always validate with human review to avoid testing against artifacts of the generation model.
+**警告**：合成測試集只是起點，不是終點。一定要經過人工審查，避免你最終是在測試生成模型本身的偏差，而非系統品質。
 
 ---
 
-## Automated Regression Testing
+<a id="automated-regression-testing"></a>
+## 自動化 Regression Testing
 
-Every RAG pipeline change (new embeddings, chunk size, prompt edit, reranker swap) needs automated regression testing before deployment.
+每次 RAG pipeline 變更（新 embedding、chunk size 調整、prompt 修改、reranker 更換）在部署前都應進行自動化 regression testing。
 
-### CI/CD Integration
+<a id="cicd-integration"></a>
+### CI/CD 整合
 
 ```
   PR (RAG change) --> CI: Load golden set --> Run pipeline --> Compute metrics
@@ -391,81 +417,91 @@ Every RAG pipeline change (new embeddings, chunk size, prompt edit, reranker swa
                           --> Post metrics table as PR comment
 ```
 
-### Quality Gates
+<a id="quality-gates"></a>
+### 品質門檻
 
-| Metric | Absolute Minimum | Regression Threshold |
+| 指標 | 絕對最低標準 | 退化門檻 |
 |--------|-----------------|---------------------|
-| Recall@10 | 0.85 | 5% drop from baseline |
-| MRR | 0.70 | 5% drop |
-| Faithfulness | 0.80 | 3% drop |
-| Answer Relevance | 0.75 | 5% drop |
-| Answer Correctness | 0.70 | 5% drop |
+| Recall@10 | 0.85 | 相較 baseline 下滑 5% |
+| MRR | 0.70 | 下滑 5% |
+| Faithfulness | 0.80 | 下滑 3% |
+| Answer Relevance | 0.75 | 下滑 5% |
+| Answer Correctness | 0.70 | 下滑 5% |
 
-Any metric below its absolute minimum blocks the PR. Any regression beyond threshold triggers a warning and flags the specific queries that degraded.
+任何指標低於絕對最低標準都應阻擋 PR；任何超過退化門檻的下降都應觸發警告，並標記出退步的具體查詢。
 
 ---
 
-## Production Monitoring
+<a id="production-monitoring"></a>
+## 正式環境監控
 
-Offline evaluation is necessary but not sufficient. Production queries differ from test sets, and retrieval quality can degrade over time as the corpus changes.
+離線評估是必要條件，但不是充分條件。正式環境中的查詢和測試集不同，隨著語料改變，檢索品質也可能隨時間下降。
 
-### Key Production Signals
+<a id="key-production-signals"></a>
+### 關鍵正式環境訊號
 
-| Signal | What It Detects | How to Measure |
+| 訊號 | 偵測內容 | 衡量方法 |
 |--------|----------------|----------------|
-| **Empty Retrieval Rate** | Queries with no relevant results | % of queries where top-1 similarity < threshold |
-| **Similarity Score Drift** | Embedding or corpus degradation | Track avg similarity over time; alert on drop |
-| **Faithfulness Sampling** | Hallucination rate in production | Run LLM-as-judge on 5-10% random sample |
-| **User Feedback Correlation** | Whether metrics match real quality | Compare thumbs-up/down with automated scores |
-| **Latency P99** | Performance degradation | Track retrieval + generation latency |
-| **Token Usage** | Cost drift | Monitor avg context tokens per query |
+| **空檢索率** | 沒有相關結果的查詢 | top-1 similarity < threshold 的查詢比例 |
+| **相似度分數漂移** | Embedding 或語料退化 | 追蹤平均 similarity；下跌即告警 |
+| **Faithfulness 抽樣** | 正式環境幻覺率 | 對 5–10% 隨機樣本跑 LLM-as-judge |
+| **使用者回饋關聯** | 指標是否反映真實品質 | 比較 thumbs-up/down 與自動化分數 |
+| **Latency P99** | 效能退化 | 追蹤檢索 + 生成延遲 |
+| **Token Usage** | 成本漂移 | 監控每次 query 的平均 context token |
 
-### Retrieval Quality Drift
+<a id="retrieval-quality-drift"></a>
+### 檢索品質漂移
 
-Drift happens when the corpus changes but embeddings, chunks, or prompts do not keep up. Four common scenarios: (1) new documents with different vocabulary cause embedding space mismatch -- fix by re-embedding affected collections, (2) user query patterns shift to topics with no content -- detect via empty retrieval rate monitoring, (3) stale content returns outdated answers -- add freshness metadata and prefer recent docs, (4) embedding model updates change similarity distributions -- re-calibrate all thresholds after model changes.
+當語料變了，但 embedding、chunk 或 prompt 沒有跟上，就會發生漂移。常見有四種情境：（1）新文件使用了不同詞彙，導致 embedding space 不匹配——應重新為受影響集合做 embedding；（2）使用者查詢模式轉向語料中不存在的主題——可透過空檢索率監控偵測；（3）過時內容回傳舊答案——需加入 freshness metadata，偏好較新文件；（4）embedding model 更新改變 similarity 分布——模型變更後需重新校準所有 threshold。
 
 ---
 
-## Cost of Evaluation at Scale
+<a id="cost-of-evaluation-at-scale"></a>
+## 大規模評估成本
 
-LLM-as-judge evaluation is powerful but expensive. Understanding the cost structure is critical for budgeting.
+LLM-as-judge 很強大，但也昂貴。理解其成本結構，是預算規劃的關鍵。
 
-### Cost per Query (Full RAG Triad)
+<a id="cost-per-query-full-rag-triad"></a>
+### 每次查詢成本（完整 RAG Triad）
 
-| Metric | LLM Calls | Tokens | GPT-4o Cost | Claude Haiku Cost |
+| 指標 | LLM 呼叫次數 | Tokens | GPT-4o 成本 | Claude Haiku 成本 |
 |--------|-----------|--------|-------------|-------------------|
-| Faithfulness | ~3 (extract + verify) | ~3k | $0.0075 | $0.00075 |
-| Context Relevance | ~5 (per chunk) | ~2.5k | $0.00625 | $0.000625 |
-| Answer Relevance | ~2 (question gen) | ~1.6k | $0.004 | $0.0004 |
-| **Full Triad** | **~10** | **~7k** | **~$0.018** | **~$0.002** |
+| Faithfulness | ~3（抽取 + 驗證） | ~3k | $0.0075 | $0.00075 |
+| Context Relevance | ~5（每個 chunk） | ~2.5k | $0.00625 | $0.000625 |
+| Answer Relevance | ~2（問題生成） | ~1.6k | $0.004 | $0.0004 |
+| **完整 Triad** | **~10** | **~7k** | **~$0.018** | **~$0.002** |
 
-### Scaling Strategy
+<a id="scaling-strategy"></a>
+### 擴展策略
 
-| Evaluation Type | Frequency | Volume | Judge Model | Monthly Cost (10k queries/day) |
+| 評估類型 | 頻率 | 量級 | Judge Model | 月成本（每日 1 萬查詢） |
 |----------------|-----------|--------|-------------|-------------------------------|
-| **CI Regression** | Per PR | Golden set (500 queries) | GPT-4o | ~$9/run |
-| **Nightly Batch** | Daily | Random 1k production queries | Claude Haiku | ~$60/month |
-| **Production Sample** | Real-time | 5% of traffic | Claude Haiku | ~$300/month |
-| **Deep Audit** | Weekly | Full golden set + analysis | GPT-4o | ~$36/month |
+| **CI Regression** | 每次 PR | Golden set（500 queries） | GPT-4o | ~$9/次 |
+| **Nightly Batch** | 每日 | 正式環境隨機 1k queries | Claude Haiku | ~$60/月 |
+| **Production Sample** | 即時 | 5% 流量 | Claude Haiku | ~$300/月 |
+| **Deep Audit** | 每週 | 完整 golden set + 分析 | GPT-4o | ~$36/月 |
 
-**Insight**: Use Claude Haiku 4.5 or GPT-5.5-mini for high-volume production sampling. Reserve Claude Opus 4.7 or GPT-5.5 for CI regression tests and deep audits where accuracy matters more than cost.
+**洞見**：在高流量正式環境抽樣中，使用 Claude Haiku 4.5 或 GPT-5.5-mini；在 CI regression 與 deep audit 這種準確度比成本更重要的情境，才使用 Claude Opus 4.7 或 GPT-5.5。
 
 ---
 
-## Tools Comparison
+<a id="tools-comparison"></a>
+## 工具比較
 
-### Framework Overview
+<a id="framework-overview"></a>
+### Framework 總覽
 
-| Tool | Best For | Open Source | Key Strength | Key Weakness |
+| 工具 | 最適合 | Open Source | 核心優勢 | 核心弱點 |
 |------|----------|------------|--------------|--------------|
-| **RAGAS** | Quick RAG evaluation, synthetic data | Yes | Reference-free metrics, strong community | Metric results lack explanations |
-| **DeepEval** | CI/CD integration, TDD for LLMs | Yes | pytest-compatible, self-explaining scores | Heavier setup |
-| **TruLens** | RAG Triad evaluation, observability | Yes | Coined the RAG Triad, good tracing | Less active development |
-| **UpTrain** | Production monitoring, drift detection | Yes | Hybrid eval (LLM + heuristic), drift alerts | Lower ranking accuracy |
-| **Braintrust** | Team collaboration, experiment tracking | Commercial | Best UI/UX, experiment comparison | Paid for advanced features |
-| **LangSmith** | LangChain ecosystem, tracing | Commercial | Deep LangChain integration, tracing | Locked to LangChain ecosystem |
+| **RAGAS** | 快速 RAG 評估、合成資料 | 是 | Reference-free 指標、社群強 | 指標結果缺少解釋 |
+| **DeepEval** | CI/CD 整合、LLM 的 TDD | 是 | pytest 相容、分數可自解釋 | 設定較重 |
+| **TruLens** | RAG Triad 評估、可觀測性 | 是 | 提出 RAG Triad、追蹤好用 | 開發較不活躍 |
+| **UpTrain** | 正式環境監控、漂移偵測 | 是 | 混合評估（LLM + heuristic）、漂移告警 | 排序準確性較低 |
+| **Braintrust** | 團隊協作、實驗追蹤 | 商業產品 | 最佳 UI/UX、實驗比較強 | 高階功能需付費 |
+| **LangSmith** | LangChain 生態、追蹤 | 商業產品 | 深度整合 LangChain、追蹤完整 | 綁定 LangChain 生態 |
 
-### When to Use What
+<a id="when-to-use-what"></a>
+### 何時該用哪個工具
 
 ```
   Starting a new RAG project?
@@ -484,9 +520,10 @@ LLM-as-judge evaluation is powerful but expensive. Understanding the cost struct
     --> Roll your own with LLM-as-judge + the RAG Triad structure
 ```
 
-### Custom Evaluator Pattern
+<a id="custom-evaluator-pattern"></a>
+### 自訂 Evaluator 模式
 
-The core pattern for a custom evaluator is simple: for each triad dimension, use binary LLM-as-judge calls and aggregate.
+自訂 evaluator 的核心模式其實很簡單：對 triad 的每個維度使用二元 LLM-as-judge 呼叫，再將結果彙總。
 
 ```python
 # Pseudocode: Core faithfulness evaluator (other dimensions follow the same pattern)
@@ -506,64 +543,69 @@ def evaluate_faithfulness(answer: str, context: str, judge) -> float:
     return supported / max(len(json.loads(claims)), 1)
 ```
 
-Apply the same decompose-then-judge pattern for context relevance (per-chunk: "Is this relevant to the query?") and answer relevance (generate hypothetical questions, measure similarity to original query).
+對 context relevance（逐 chunk 問「這和 query 有關嗎？」）與 answer relevance（產生假設問題，再衡量與原始 query 的相似度）也套用相同的 decompose-then-judge 模式。
 
 ---
 
-## System Design Interview Angle
+<a id="system-design-interview-angle"></a>
+## 系統設計面試角度
 
-### Q: You deployed a RAG system and users report that answers are sometimes wrong. How do you systematically diagnose and fix the problem?
+<a id="q-you-deployed-a-rag-system-and-users-report-that-answers-are-sometimes-wrong-how-do-you-systematically-diagnose-and-fix-the-problem"></a>
+### Q：你已部署一個 RAG 系統，但使用者回報答案有時會出錯。你要如何系統化診斷並修復問題？
 
-**Strong answer:**
+**強答範例：**
 
-I would use the RAG Triad to isolate the failure mode:
+我會使用 RAG Triad 來隔離失敗模式：
 
-1. **Sample failing queries**: Collect 50-100 queries where users flagged bad answers. Categorize them by failure type.
+1. **抽樣失敗查詢**：收集 50–100 個被使用者標記為錯誤答案的 query，依失敗類型分類。
 
-2. **Run the triad**:
-   - **Context Relevance low?** --> Retrieval problem. The system is fetching wrong documents. Fix: inspect embedding similarity scores, check if the query language matches document language, try hybrid search (BM25 + dense), add a reranker.
-   - **Groundedness low?** --> Hallucination problem. The LLM is making things up despite having good context. Fix: strengthen the system prompt ("Only answer from the provided context"), reduce temperature, switch to a more instruction-following model, or add citation requirements.
-   - **Answer Relevance low?** --> The system retrieves related content and faithfully summarizes it, but misses the actual question. Fix: improve query understanding (query rewriting, HyDE), add query classification to route to the correct index.
+2. **跑 triad**：
+   - **Context Relevance 低？** → 檢索問題。系統抓錯文件。修法：檢查 embedding similarity score、確認查詢語言是否與文件語言一致、嘗試 hybrid search（BM25 + dense）、加入 reranker。
+   - **Groundedness 低？** → 幻覺問題。LLM 在有不錯 context 的情況下仍自行編造。修法：強化 system prompt（「只能根據提供的 context 回答」）、降低 temperature、改用更聽指令的模型，或加入 citation requirement。
+   - **Answer Relevance 低？** → 系統取回了相關內容，也忠實摘要，但沒回答真正的問題。修法：改善 query understanding（query rewriting、HyDE），加入 query classification，把查詢導到正確索引。
 
-3. **Build a regression test**: Take the 50 failing queries, annotate the expected answers, and add them to the golden test set. Every future pipeline change must pass these cases.
+3. **建立 regression test**：把這 50 個失敗查詢標註出期望答案，加入 golden test set。之後所有 pipeline 變更都必須通過這些案例。
 
-4. **Set up ongoing monitoring**: Sample 5% of production traffic for automated evaluation. Alert when faithfulness drops below 0.80 or context relevance drops below 0.60.
+4. **建立持續監控**：對正式環境 5% 流量做自動評估抽樣。當 faithfulness 低於 0.80 或 context relevance 低於 0.60 時發出告警。
 
-The key insight is that "answers are wrong" is not a diagnosis -- it is a symptom. The RAG Triad turns a vague complaint into a specific, actionable root cause.
+關鍵洞見是：「答案錯了」不是診斷，而是症狀。RAG Triad 能把模糊抱怨轉成具體且可行動的根因。
 
-### Q: How do you evaluate a RAG system when you do not have ground-truth answers?
+<a id="q-how-do-you-evaluate-a-rag-system-when-you-do-not-have-ground-truth-answers"></a>
+### Q：當你沒有 ground-truth answer 時，要如何評估一個 RAG 系統？
 
-**Strong answer:**
+**強答範例：**
 
-This is the most common real-world scenario. I use a three-layer approach:
+這是最常見的真實世界情境。我會用三層方法：
 
-**Layer 1: Reference-free metrics (Day 1)**. RAGAS faithfulness and context relevance require no ground truth. They tell you whether the system is hallucinating and whether retrieval is working. You can run these immediately on any query.
+**第 1 層：Reference-free 指標（第 1 天）**。RAGAS faithfulness 與 context relevance 不需要 ground truth。它們能告訴你系統是否在 hallucinate，以及檢索是否正常。你可以立刻對任何 query 執行。
 
-**Layer 2: Synthetic golden set (Week 1)**. Use RAGAS TestsetGenerator to create synthetic (query, answer) pairs from your corpus. This gives you approximate ground truth for answer correctness and context recall. Human-review a sample to validate quality.
+**第 2 層：合成 golden set（第 1 週）**。使用 RAGAS TestsetGenerator，從語料產生合成的（query, answer）對。這會給你近似的 ground truth，以評估 answer correctness 與 context recall。再抽樣給人類審查，確認品質。
 
-**Layer 3: Production-derived golden set (Month 1)**. Mine production logs for queries with high user satisfaction (thumbs-up, no follow-up questions). Have annotators label these with reference answers. This creates a golden set that reflects real usage patterns, not synthetic distributions.
+**第 3 層：來自正式環境的 golden set（第 1 個月）**。從 production log 中挖出使用者滿意度高的 query（thumbs-up、沒有後續追問），再由標註人員補上 reference answer。這會形成反映真實使用模式、而非合成分布的 golden set。
 
-The trade-off is accuracy vs. speed. Layer 1 gives you signal in hours but is approximate. Layer 3 gives you ground truth but takes weeks. Run all three in parallel, starting with Layer 1 for immediate feedback.
+取捨在於準確度與速度。第 1 層能在數小時內給你訊號，但只是近似；第 3 層能提供真正的 ground truth，但需要數週。最佳做法是三層並行，先用第 1 層取得即時回饋。
 
-### Q: Your RAG evaluation pipeline costs $500/day in LLM judge calls. How do you reduce it?
+<a id="q-your-rag-evaluation-pipeline-costs-500day-in-llm-judge-calls-how-do-you-reduce-it"></a>
+### Q：你的 RAG 評估 pipeline 每天要花 $500 在 LLM judge 呼叫上。你會如何降低成本？
 
-**Strong answer:**
+**強答範例：**
 
-Four strategies, in order of impact:
+有四個策略，依影響力排序：
 
-1. **Tiered judge models**: Use Claude Haiku ($0.002/query) for production sampling (90% of volume). Reserve GPT-4o ($0.018/query) for CI regression tests and weekly deep audits. This alone cuts costs by 80%.
+1. **分層 judge model**：正式環境抽樣（90% 流量）用 Claude Haiku（$0.002/query），CI regression test 與每週 deep audit 才用 GPT-4o（$0.018/query）。光這一步就能把成本砍掉 80%。
 
-2. **Smart sampling**: Do not evaluate every query. Sample 5% of production traffic, stratified by query type and user segment. For CI, only run the golden set (500 queries), not the full synthetic set.
+2. **聰明抽樣**：不要評估每一筆 query。對正式環境流量抽樣 5%，並依 query 類型與使用者分群做分層抽樣。CI 只跑 golden set（500 queries），不要跑完整 synthetic set。
 
-3. **Caching**: Many production queries are similar. Hash the (query, context, answer) tuple and cache evaluation results. Identical or near-identical inputs get the cached score.
+3. **快取**：很多正式環境 query 很相似。可將（query, context, answer）tuple 做 hash，快取評估結果。相同或近似相同輸入可直接重用分數。
 
-4. **Heuristic pre-filters**: Before calling the LLM judge, run cheap heuristic checks. If the answer contains "I don't know" or has zero overlap with the context (ROUGE-L < 0.1), skip the expensive faithfulness evaluation and assign a score directly.
+4. **Heuristic 預過濾**：呼叫 LLM judge 前先做便宜的 heuristic 檢查。若答案包含「I don't know」，或與 context 完全沒有重疊（ROUGE-L < 0.1），就跳過昂貴的 faithfulness 評估，直接給分。
 
-The goal is to spend evaluation budget where it provides the most signal: on ambiguous, borderline cases where the LLM judge's nuanced reasoning matters.
+目標是把評估預算花在最有訊號的地方：那些模糊、接近邊界、真正需要 LLM judge 細膩判斷的案例。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - Es et al. "RAGAS: Automated Evaluation of Retrieval Augmented Generation" (2023, arXiv:2309.15217)
 - TruLens. "The RAG Triad" (2024)
@@ -574,4 +616,4 @@ The goal is to spend evaluation budget where it provides the most signal: on amb
 
 ---
 
-*Previous: [Multi-Modal RAG](12-multimodal-rag.md) | Next: Coming Soon*
+*上一篇：[Multi-Modal RAG](12-multimodal-rag.md) | 下一篇：Coming Soon*

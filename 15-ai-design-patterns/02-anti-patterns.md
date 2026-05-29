@@ -1,24 +1,28 @@
-# AI Anti-Patterns
+<a name="ai-anti-patterns"></a>
+# AI 反模式
 
-Recognizing what NOT to do is as important as knowing best practices. This chapter catalogs common mistakes in AI system design.
+認識「不該做什麼」與了解最佳實踐同樣重要。本章整理了 AI 系統設計中的常見錯誤。
 
-## Table of Contents
+<a name="table-of-contents"></a>
+## 目錄
 
-- [Architecture Anti-Patterns](#architecture-anti-patterns)
-- [RAG Anti-Patterns](#rag-anti-patterns)
-- [Agent Anti-Patterns](#agent-anti-patterns)
-- [Prompting Anti-Patterns](#prompting-anti-patterns)
-- [Evaluation Anti-Patterns](#evaluation-anti-patterns)
-- [Production Anti-Patterns](#production-anti-patterns)
-- [Interview Questions](#interview-questions)
+- [架構反模式](#architecture-anti-patterns)
+- [RAG 反模式](#rag-anti-patterns)
+- [代理人反模式](#agent-anti-patterns)
+- [提示工程反模式](#prompting-anti-patterns)
+- [評估反模式](#evaluation-anti-patterns)
+- [生產環境反模式](#production-anti-patterns)
+- [面試題目](#interview-questions)
 
 ---
 
-## Architecture Anti-Patterns
+<a name="architecture-anti-patterns"></a>
+## 架構反模式
 
-### The God Prompt
+<a name="the-god-prompt"></a>
+### 神級提示（God Prompt）
 
-**Problem:** Single massive prompt trying to do everything.
+**問題：** 單一巨大提示試圖處理所有事情。
 
 ```python
 # ANTI-PATTERN: God Prompt
@@ -36,13 +40,13 @@ You are a helpful assistant. You can:
 """
 ```
 
-**Why it fails:**
-- Context consumed by instructions, not user content
-- Model struggles with conflicting instructions
-- Impossible to optimize for all cases
-- Updates affect everything
+**失敗原因：**
+- 指令佔用上下文，擠壓使用者內容的空間
+- 模型難以處理相互衝突的指令
+- 無法針對所有情境進行最佳化
+- 更新會影響所有功能
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Specialized components
 class QueryRouter:
@@ -54,9 +58,10 @@ class QueryRouter:
 
 ---
 
-### Single Provider Dependency
+<a name="single-provider-dependency"></a>
+### 單一供應商依賴
 
-**Problem:** Entire system depends on one LLM provider.
+**問題：** 整個系統依賴單一 LLM 供應商。
 
 ```python
 # ANTI-PATTERN: Single provider
@@ -64,13 +69,13 @@ async def generate(prompt: str) -> str:
     return await openai.chat.completions.create(...)
 ```
 
-**Why it fails:**
-- Provider outage = complete system failure
-- Rate limits affect all traffic
-- No price negotiation leverage
-- Locked into one model family
+**失敗原因：**
+- 供應商中斷 = 系統完全失效
+- 速率限制影響所有流量
+- 缺乏議價籌碼
+- 被鎖定在單一模型家族
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Multi-provider with failover
 class LLMClient:
@@ -88,34 +93,37 @@ class LLMClient:
 
 ---
 
-### Premature Fine-Tuning
+<a name="premature-fine-tuning"></a>
+### 過早微調
 
-**Problem:** Fine-tuning before exhausting simpler approaches.
+**問題：** 在窮盡更簡單的方法之前就進行微調。
 
-**Why it fails:**
-- Expensive and time-consuming
-- Requires quality training data (often unavailable)
-- Hard to update and maintain
-- Often unnecessary
+**失敗原因：**
+- 成本高昂且耗時
+- 需要高品質訓練資料（通常不易取得）
+- 難以更新與維護
+- 通常並非必要
 
-**Decision flow:**
+**決策流程：**
 ```
-Try prompting first
-    ↓ (not working)
-Try few-shot examples
-    ↓ (not working)
-Try RAG for knowledge
-    ↓ (not working)
-Consider fine-tuning (with 500+ examples)
+嘗試提示工程
+    ↓ （效果不佳）
+嘗試少樣本範例
+    ↓ （效果不佳）
+嘗試 RAG 補充知識
+    ↓ （效果不佳）
+考慮微調（需要 500+ 筆範例）
 ```
 
 ---
 
-## RAG Anti-Patterns
+<a name="rag-anti-patterns"></a>
+## RAG 反模式
 
-### Retrieve Everything
+<a name="retrieve-everything"></a>
+### 檢索所有內容
 
-**Problem:** Retrieving too many documents regardless of relevance.
+**問題：** 不論相關性，一律檢索大量文件。
 
 ```python
 # ANTI-PATTERN: Retrieve everything
@@ -123,13 +131,13 @@ results = vector_db.search(query, top_k=50)
 context = "\n".join([r.text for r in results])
 ```
 
-**Why it fails:**
-- Noise drowns out signal
-- Exceeds context limits
-- Wastes tokens on irrelevant content
-- "Lost in the middle" effect
+**失敗原因：**
+- 雜訊淹沒有效信號
+- 超出上下文限制
+- 在不相關內容上浪費 token
+- 「迷失在中間」效應
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Quality over quantity
 results = vector_db.search(query, top_k=20)
@@ -139,22 +147,23 @@ context = "\n".join([r.text for r in reranked[:5] if r.score > 0.7])
 
 ---
 
-### No Chunking Strategy
+<a name="no-chunking-strategy"></a>
+### 缺乏分塊策略
 
-**Problem:** Arbitrary or no chunking of documents.
+**問題：** 對文件進行任意或無策略的分塊。
 
 ```python
 # ANTI-PATTERN: Fixed-size blind chunking
 chunks = [text[i:i+1000] for i in range(0, len(text), 1000)]
 ```
 
-**Why it fails:**
-- Breaks mid-sentence, mid-paragraph
-- Loses semantic coherence
-- Separates related information
-- Poor retrieval quality
+**失敗原因：**
+- 在句子中間、段落中間截斷
+- 失去語意連貫性
+- 分離相關資訊
+- 檢索品質差
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Semantic-aware chunking
 chunks = semantic_chunker.chunk(
@@ -167,9 +176,10 @@ chunks = semantic_chunker.chunk(
 
 ---
 
-### Ignoring Metadata
+<a name="ignoring-metadata"></a>
+### 忽略元資料
 
-**Problem:** Treating all documents as equal text.
+**問題：** 將所有文件視為純文字一視同仁。
 
 ```python
 # ANTI-PATTERN: Ignore metadata
@@ -177,13 +187,13 @@ embedding = embed(document.text)
 vector_db.insert(embedding, {"text": document.text})
 ```
 
-**Why it fails:**
-- Cannot filter by date, source, type
-- No access control per document
-- Cannot weight recent vs old
-- Loses valuable context
+**失敗原因：**
+- 無法依日期、來源、類型進行過濾
+- 無法對文件進行存取控制
+- 無法對新舊文件加權
+- 遺失有價值的上下文
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Rich metadata
 vector_db.insert(embedding, {
@@ -204,11 +214,13 @@ results = vector_db.search(
 
 ---
 
-## Agent Anti-Patterns
+<a name="agent-anti-patterns"></a>
+## 代理人反模式
 
-### Infinite Loop Risk
+<a name="infinite-loop-risk"></a>
+### 無限迴圈風險
 
-**Problem:** No termination conditions for agents.
+**問題：** 代理人沒有終止條件。
 
 ```python
 # ANTI-PATTERN: No limits
@@ -218,13 +230,13 @@ while not done:
     done = agent.check_done(result)
 ```
 
-**Why it fails:**
-- Agents can loop forever
-- Costs spiral out of control
-- Never returns to user
-- Resource exhaustion
+**失敗原因：**
+- 代理人可能永遠迴圈
+- 成本螺旋式上升
+- 永遠不回應使用者
+- 資源耗盡
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Multiple termination conditions
 MAX_STEPS = 20
@@ -248,9 +260,10 @@ return "Step limit reached"
 
 ---
 
-### Unsafe Tool Access
+<a name="unsafe-tool-access"></a>
+### 不安全的工具存取
 
-**Problem:** Giving agents unrestricted tool access.
+**問題：** 賦予代理人不受限制的工具存取權。
 
 ```python
 # ANTI-PATTERN: Full access
@@ -262,13 +275,13 @@ tools = [
 ]
 ```
 
-**Why it fails:**
-- Agent can delete critical files
-- Can exfiltrate data
-- Can execute malicious commands
-- No audit trail
+**失敗原因：**
+- 代理人可能刪除關鍵檔案
+- 可能洩漏資料
+- 可能執行惡意指令
+- 無稽核記錄
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Scoped, validated tools
 tools = [
@@ -281,9 +294,10 @@ tools = [
 
 ---
 
-### Agent Without Memory
+<a name="agent-without-memory"></a>
+### 沒有記憶的代理人
 
-**Problem:** Agent restarts from scratch every turn.
+**問題：** 代理人每輪對話都從零開始。
 
 ```python
 # ANTI-PATTERN: Stateless agent
@@ -291,13 +305,13 @@ async def handle_message(message: str) -> str:
     return await agent.run(message)  # No context
 ```
 
-**Why it fails:**
-- Cannot do multi-turn tasks
-- Repeats same mistakes
-- Cannot learn from experience
-- Poor user experience
+**失敗原因：**
+- 無法執行多輪任務
+- 重複相同的錯誤
+- 無法從經驗中學習
+- 使用者體驗差
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Persistent memory
 async def handle_message(session_id: str, message: str) -> str:
@@ -309,24 +323,26 @@ async def handle_message(session_id: str, message: str) -> str:
 
 ---
 
-## Prompting Anti-Patterns
+<a name="prompting-anti-patterns"></a>
+## 提示工程反模式
 
-### Vague Instructions
+<a name="vague-instructions"></a>
+### 模糊指令
 
-**Problem:** Ambiguous prompts expecting specific behavior.
+**問題：** 模糊的提示卻期待特定行為。
 
 ```python
 # ANTI-PATTERN: Vague
 prompt = "Help the user with their request."
 ```
 
-**Why it fails:**
-- "Help" is undefined
-- No format specified
-- No boundaries
-- Inconsistent behavior
+**失敗原因：**
+- 「幫助」定義不明
+- 未指定格式
+- 沒有邊界
+- 行為不一致
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Specific and structured
 prompt = """
@@ -351,9 +367,10 @@ Do NOT:
 
 ---
 
-### No Output Format
+<a name="no-output-format"></a>
+### 沒有輸出格式
 
-**Problem:** Expecting structured output without specifying format.
+**問題：** 期待結構化輸出卻未指定格式。
 
 ```python
 # ANTI-PATTERN: Hope for structure
@@ -363,7 +380,7 @@ response = await llm.generate(prompt)
 # Now try to parse that...
 ```
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Explicit format
 prompt = """
@@ -382,11 +399,13 @@ response = await llm.generate(prompt, response_format={"type": "json_object"})
 
 ---
 
-## Evaluation Anti-Patterns
+<a name="evaluation-anti-patterns"></a>
+## 評估反模式
 
-### Vibes-Based Evaluation
+<a name="vibes-based-evaluation"></a>
+### 感覺式評估
 
-**Problem:** "It looks good to me" as the evaluation method.
+**問題：** 以「看起來不錯」作為評估方法。
 
 ```python
 # ANTI-PATTERN: Manual spot-checking
@@ -396,13 +415,13 @@ for i in range(5):
 # "Looks good, ship it!"
 ```
 
-**Why it fails:**
-- Not reproducible
-- Cherry-picked examples
-- No baseline comparison
-- Misses edge cases
+**失敗原因：**
+- 不可重現
+- 人為挑選範例
+- 缺乏基準比較
+- 遺漏邊緣案例
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Systematic evaluation
 eval_dataset = load_eval_set()  # 100+ examples
@@ -421,9 +440,10 @@ metrics = {
 
 ---
 
-### Training on Test Set
+<a name="training-on-test-set"></a>
+### 在測試集上訓練
 
-**Problem:** Using evaluation data for development decisions.
+**問題：** 將評估資料用於開發決策。
 
 ```python
 # ANTI-PATTERN: Overfitting to eval
@@ -432,12 +452,12 @@ for iteration in range(100):
     tweak_prompt_based_on_failures(test_set)  # Optimizing for test set
 ```
 
-**Why it fails:**
-- Overfits to specific examples
-- Real-world performance differs
-- No true measure of generalization
+**失敗原因：**
+- 過擬合特定範例
+- 真實世界表現與評估結果不符
+- 無法衡量真正的泛化能力
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Proper data splits
 dev_set = load_dev_set()      # For iteration
@@ -454,11 +474,13 @@ final_accuracy = evaluate(test_set)
 
 ---
 
-## Production Anti-Patterns
+<a name="production-anti-patterns"></a>
+## 生產環境反模式
 
-### No Rate Limiting
+<a name="no-rate-limiting"></a>
+### 沒有速率限制
 
-**Problem:** Unlimited LLM calls per user.
+**問題：** 不限制每位使用者的 LLM 呼叫次數。
 
 ```python
 # ANTI-PATTERN: Open access
@@ -467,13 +489,13 @@ async def generate():
     return await llm.generate(request.prompt)  # No limits!
 ```
 
-**Why it fails:**
-- Single user can exhaust budget
-- Denial of service risk
-- Cost surprises
-- No fair usage
+**失敗原因：**
+- 單一使用者可耗盡預算
+- 拒絕服務風險
+- 成本驚喜
+- 缺乏公平使用機制
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Rate limiting
 @app.route("/generate")
@@ -485,9 +507,10 @@ async def generate():
 
 ---
 
-### No Caching
+<a name="no-caching"></a>
+### 沒有快取
 
-**Problem:** Every identical request hits the LLM.
+**問題：** 每個相同的請求都打到 LLM。
 
 ```python
 # ANTI-PATTERN: No cache
@@ -495,12 +518,12 @@ async def answer_faq(question: str) -> str:
     return await llm.generate(question)  # Same FAQ, same cost every time
 ```
 
-**Why it fails:**
-- Wasted money on identical queries
-- Unnecessary latency
-- Inconsistent answers to same question
+**失敗原因：**
+- 相同查詢浪費金錢
+- 不必要的延遲
+- 相同問題得到不一致的答案
 
-**Solution:**
+**解決方案：**
 ```python
 # PATTERN: Semantic caching
 async def answer_faq(question: str) -> str:
@@ -515,57 +538,60 @@ async def answer_faq(question: str) -> str:
 
 ---
 
-## Interview Questions
+<a name="interview-questions"></a>
+## 面試題目
 
-### Q: What is the biggest anti-pattern you see in LLM applications?
+<a name="q-what-is-the-biggest-anti-pattern-you-see-in-llm-applications"></a>
+### 問：您認為 LLM 應用中最大的反模式是什麼？
 
-**Strong answer:**
+**優質回答範例：**
 
-"The most damaging is the 'God Prompt' anti-pattern: a single massive prompt trying to handle every scenario.
+「危害最大的是「神級提示」反模式：用單一巨大提示試圖處理所有情境。
 
-**Why it is common:** It seems simpler to start with one prompt and add instructions as needs arise.
+**為何常見：** 從一個提示開始，隨著需求增加不斷添加指令，看起來更簡單。
 
-**Why it fails:**
-- Context consumed by instructions, not user content
-- Conflicting instructions confuse the model
-- Cannot optimize for different use cases
-- Changes have unpredictable side effects
+**失敗原因：**
+- 指令佔用上下文，擠壓使用者內容的空間
+- 相互衝突的指令讓模型混淆
+- 無法針對不同使用情境最佳化
+- 修改會產生不可預期的副作用
 
-**The fix:** Route to specialized handlers. Each handler has a focused prompt optimized for one task. The router itself can be simple (keyword-based) or smart (LLM-based for complex cases).
+**解決方法：** 路由至專門的處理器。每個處理器都有針對單一任務最佳化的聚焦提示。路由器本身可以很簡單（基於關鍵字）或更智慧（對複雜情況使用 LLM）。
 
-This applies beyond prompts. The general principle is: decompose complexity into specialized components rather than cramming everything into one monolith."
+這個原則不只適用於提示。通用原則是：將複雜性分解為專門的元件，而非將一切塞入單一巨型系統。」
 
-### Q: How do you avoid agent runaway costs?
+<a name="q-how-do-you-avoid-agent-runaway-costs"></a>
+### 問：如何避免代理人失控的成本？
 
-**Strong answer:**
+**優質回答範例：**
 
-"Multiple limits at different levels:
+「在不同層級設置多重限制：
 
-**Per-request limits:**
-- Maximum steps (e.g., 20)
-- Maximum tokens (e.g., 50K)
-- Maximum time (e.g., 5 minutes)
+**每次請求的限制：**
+- 最大步驟數（例如 20 步）
+- 最大 token 數（例如 50K）
+- 最大時間（例如 5 分鐘）
 
-**Per-session limits:**
-- Daily token budget
-- Daily cost cap
+**每個工作階段的限制：**
+- 每日 token 預算
+- 每日費用上限
 
-**Per-user limits:**
-- Rate limiting (requests per minute/hour/day)
-- Cost attribution and caps
+**每位使用者的限制：**
+- 速率限制（每分鐘／小時／天的請求數）
+- 成本歸因與上限
 
-**Monitoring:**
-- Real-time cost tracking
-- Alerts for anomalies (single request > $1)
-- Circuit breaker if costs spike
+**監控：**
+- 即時成本追蹤
+- 異常警報（單次請求超過 $1）
+- 成本飆升時的斷路器
 
-**Architecture:**
-- Cascade from cheap to expensive models
-- Cache common operations
-- Batch similar requests
+**架構：**
+- 從便宜到昂貴的模型進行層疊
+- 快取常見操作
+- 批次處理相似請求
 
-The key is assuming the agent will try to run forever. Build in hard stops at every level. I have seen agents run up $1000 bills in minutes without proper limits."
+關鍵在於假設代理人會試圖永遠運行。在每個層級都設置硬性停止條件。我曾見過代理人在沒有適當限制的情況下，在幾分鐘內累積高達 $1,000 的帳單。」
 
 ---
 
-*Previous: [Design Patterns](01-design-patterns.md)*
+*上一章：[設計模式](01-design-patterns.md)*

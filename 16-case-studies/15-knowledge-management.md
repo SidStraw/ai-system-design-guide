@@ -1,64 +1,70 @@
-# Case Study: Enterprise Knowledge Management
+<a id="case-study-enterprise-knowledge-management"></a>
+# 案例研究：企業知識管理
 
-## The Problem
+<a id="the-problem"></a>
+## 問題
 
-A consulting firm with **10,000 employees** has decades of project reports, methodology documents, and expertise scattered across SharePoint, Confluence, and file shares. They want an AI system where consultants can ask "How did we approach supply chain optimization for automotive clients?" and get answers synthesized from internal knowledge.
+一家有 **10,000 名員工** 的顧問公司，累積了數十年的專案報告、方法論文件與專業知識，散落在 SharePoint、Confluence 與檔案分享區中。他們想要一套 AI 系統，讓顧問可以詢問「我們過去如何為汽車客戶做供應鏈最佳化？」並取得從內部知識整合出的答案。
 
-**Constraints given in the interview:**
-- 2 million documents across 15 data sources
-- Access control: associates cannot see partner-level content
-- Must cite sources for every claim
-- Stale data handling: old methodologies should not override new ones
-- Knowledge gaps should be identified, not hallucinated
-
----
-
-## The Interview Question
-
-> "Design an internal knowledge assistant where a junior consultant can ask questions and get answers based only on documents they're authorized to see."
+**面試中給定的限制條件：**
+- 來自 15 個資料來源的 200 萬份文件
+- 存取控制：associate 不能看到 partner 等級內容
+- 每一項主張都必須引用來源
+- 舊資料處理：舊方法論不能蓋過新的方法論
+- 對知識缺口要能明確指出，而不是 hallucinate
 
 ---
 
-## Solution Architecture
+<a id="the-interview-question"></a>
+## 面試題目
+
+> 「設計一個內部知識助理，讓 junior consultant 只能根據自己有權查看的文件提出問題並取得答案。」
+
+---
+
+<a id="solution-architecture"></a>
+## 解決方案架構
 
 ```mermaid
 flowchart TB
-    subgraph Ingest["Multi-Source Ingestion"]
-        SP[SharePoint] --> SYNC[Incremental Sync]
+    subgraph Ingest["多來源匯入"]
+        SP[SharePoint] --> SYNC[增量同步]
         CONF[Confluence] --> SYNC
-        FS[File Shares] --> SYNC
-        SYNC --> PROCESS[Document Processor]
+        FS[檔案分享區] --> SYNC
+        SYNC --> PROCESS[文件處理器]
     end
 
-    subgraph Index["Secure Index"]
-        PROCESS --> CHUNK[Chunk + Embed]
-        CHUNK --> PERMISSIONS[Attach Permission Tags]
-        PERMISSIONS --> VECTOR[(Vector DB<br/>Per-Org Namespace)]
+    subgraph Index["安全索引"]
+        PROCESS --> CHUNK[切塊 + Embed]
+        CHUNK --> PERMISSIONS[附加權限標籤]
+        PERMISSIONS --> VECTOR[(Vector DB<br/>每組織 Namespace)]
     end
 
-    subgraph Query["Query with Access Control"]
-        USER[User Query] --> AUTH[Get User Permissions]
-        AUTH --> FILTER[Filter: docs user can access]
+    subgraph Query["具存取控制的查詢"]
+        USER[使用者查詢] --> AUTH[取得使用者權限]
+        AUTH --> FILTER[過濾：使用者可存取的文件]
         FILTER --> SEARCH[Vector Search]
-        SEARCH --> RERANK[Rerank by Recency]
+        SEARCH --> RERANK[依時效性重新排序]
     end
 
-    subgraph Generate["Answer Generation"]
+    subgraph Generate["答案生成"]
         RERANK --> LLM[Claude Sonnet 4.6]
-        LLM --> CITE[Add Citations]
-        CITE --> GAP{Knowledge Gap?}
-        GAP -->|Yes| ADMIT[Admit: 'No info found']
-        GAP -->|No| ANSWER[Answer + Sources]
+        LLM --> CITE[加入引用]
+        CITE --> GAP{有知識缺口？}
+        GAP -->|Yes| ADMIT[承認：'找不到資訊']
+        GAP -->|No| ANSWER[答案 + 來源]
     end
 ```
 
 ---
 
-## Key Design Decisions
+<a id="key-design-decisions"></a>
+## 關鍵設計決策
 
-### 1. Permission-Aware Retrieval
+<a id="1-permission-aware-retrieval"></a>
+### 1. 具權限意識的 Retrieval
 
-**Answer:** Every chunk carries its permission metadata from the source system:
+**答案：** 每個 chunk 都會攜帶來自來源系統的權限 metadata：
 
 ```python
 chunk = {
@@ -73,7 +79,7 @@ chunk = {
 }
 ```
 
-At query time, we filter before retrieval:
+查詢時，我們會先過濾再檢索：
 
 ```python
 def search(query: str, user: User):
@@ -87,9 +93,10 @@ def search(query: str, user: User):
     )
 ```
 
+<a id="2-recency-weighted-ranking"></a>
 ### 2. Recency-Weighted Ranking
 
-**Answer:** A 2024 methodology document should rank higher than a 2019 one for the same topic. We use a **decay function**:
+**答案：** 對同一個主題來說，2024 年的方法論文件應該排在 2019 年之前。我們使用 **decay function**：
 
 ```python
 def recency_boost(doc_date):
@@ -100,11 +107,12 @@ def recency_boost(doc_date):
 final_score = semantic_score * 0.7 + recency_boost(doc.date) * 0.3
 ```
 
-This prevents outdated practices from drowning out current guidance.
+這能避免過時做法淹沒最新指引。
 
-### 3. Knowledge Gap Detection
+<a id="3-knowledge-gap-detection"></a>
+### 3. 知識缺口偵測
 
-**Answer:** We must distinguish "I found nothing" from "I'm making something up":
+**答案：** 我們必須分清楚「我沒找到東西」和「我在亂編」：
 
 ```python
 def generate_answer(query: str, retrieved_docs: list):
@@ -122,36 +130,38 @@ def generate_answer(query: str, retrieved_docs: list):
 
 ---
 
-## Multi-Source Synchronization
+<a id="multi-source-synchronization"></a>
+## 多來源同步
 
 ```mermaid
 flowchart LR
-    subgraph Connectors["Source Connectors"]
+    subgraph Connectors["來源連接器"]
         C1[SharePoint Connector<br/>Graph API]
         C2[Confluence Connector<br/>REST API]
         C3[File Share Connector<br/>SMB/CIFS]
     end
 
-    subgraph Sync["Sync Strategy"]
+    subgraph Sync["同步策略"]
         C1 --> DELTA[Delta Sync<br/>Change Tokens]
         C2 --> DELTA
         C3 --> HASH[Hash-Based<br/>Change Detection]
     end
 
-    subgraph Queue["Processing Queue"]
+    subgraph Queue["處理佇列"]
         DELTA --> Q[Message Queue]
         HASH --> Q
-        Q --> WORKER[Processing Workers]
+        Q --> WORKER[處理 Workers]
     end
 ```
 
-**Key insight:** SharePoint and Confluence support change tokens (delta sync). File shares require hash comparison. Both feed into a unified processing queue.
+**關鍵洞察：** SharePoint 與 Confluence 支援 change tokens（delta sync）；file shares 則需要做 hash comparison。兩者最後都會匯入同一個處理佇列。
 
 ---
 
-## Handling Conflicting Information
+<a id="handling-conflicting-information"></a>
+## 處理相互衝突的資訊
 
-Different documents may have conflicting guidance. We surface this:
+不同文件可能給出互相衝突的指引，我們會將其明確呈現：
 
 ```python
 def detect_conflicts(retrieved_docs):
@@ -172,43 +182,46 @@ def detect_conflicts(retrieved_docs):
 
 ---
 
-## Cost Analysis
+<a id="cost-analysis"></a>
+## 成本分析
 
-| Component | Monthly Cost |
+| 元件 | 每月成本 |
 |-----------|--------------|
-| Embedding (2M docs × updates) | $500 |
-| Vector DB (Pinecone Enterprise) | $2,000 |
-| LLM generation (50K queries) | $3,000 |
-| Sync infrastructure (connectors) | $500 |
-| **Total** | **$6,000/month** |
+| Embedding（200 萬份文件 × 更新） | $500 |
+| Vector DB（Pinecone Enterprise） | $2,000 |
+| LLM generation（5 萬次查詢） | $3,000 |
+| 同步基礎設施（connectors） | $500 |
+| **總計** | **$6,000 / 月** |
 
-ROI: Consultants save an average of 2 hours/week searching for information. At 10,000 consultants × $100/hour × 2 hours × 4 weeks = $8M/month in productivity. System pays for itself 1,300x over.
-
----
-
-## Interview Follow-Up Questions
-
-**Q: How do you handle documents with mixed permissions?**
-
-A: We chunk at the section level, and each section inherits the most restrictive permission from its ancestors. A paragraph in a "confidential" section within an otherwise "internal" document is tagged "confidential."
-
-**Q: What about real-time collaboration documents (Google Docs, live Confluence pages)?**
-
-A: We have a separate "live document" pipeline with more frequent sync (every 5 minutes vs daily for static files). These documents are flagged as "draft" in search results until they are finalized.
-
-**Q: How do you prevent the system from becoming a leaky abstraction for unauthorized data?**
-
-A: We never include unauthorized content in the LLM context, even to say "I cannot show you this." The system behaves as if unauthorized documents do not exist. This prevents inference attacks where users probe "do you have info about X?" to discover the existence of confidential projects.
+ROI：顧問平均每週可少花 2 小時找資料。以 10,000 位顧問 × $100/小時 × 2 小時 × 4 週計算，等於每月增加 $8M 的生產力。系統投資回收超過 1,300 倍。
 
 ---
 
-## Key Takeaways for Interviews
+<a id="interview-follow-up-questions"></a>
+## 面試延伸追問
 
-1. **Permissions must be enforced at retrieval, not generation**: filter before the LLM sees content
-2. **Recency weighting prevents stale knowledge**: old documents decay in relevance
-3. **Admit gaps instead of hallucinating**: confidence thresholds and fallback messaging
-4. **Multi-source sync is complex**: different APIs need different strategies
+**Q：如何處理權限混合的文件？**
+
+A：我們以 section 為單位切塊，每個 section 會繼承祖先節點中最嚴格的權限。若一個整體為「internal」的文件中，有一段落位於「confidential」區段，該段落就會被標記為「confidential」。
+
+**Q：那即時協作文件（Google Docs、動態 Confluence 頁面）呢？**
+
+A：我們有獨立的「live document」流程，會更頻繁同步（每 5 分鐘一次，而非靜態檔案的每日同步）。在定稿前，這些文件在搜尋結果中會被標記為「draft」。
+
+**Q：如何避免系統成為未授權資料的 leaky abstraction？**
+
+A：我們絕不把未授權內容放進 LLM context，甚至不會用來說「我不能顯示這個」。系統會表現得像那些文件根本不存在。這可避免使用者透過反覆詢問「你有沒有 X 的資訊？」來推測機密專案是否存在的 inference attack。
 
 ---
 
-*Related chapters: [RAG Fundamentals](../06-retrieval-systems/01-rag-fundamentals.md), [Multi-Tenant Isolation](../12-security-and-access/04-multi-tenant-rag-isolation.md)*
+<a id="key-takeaways-for-interviews"></a>
+## 面試重點整理
+
+1. **權限必須在 retrieval 階段強制執行，而不是 generation**：在 LLM 看到內容前就先過濾
+2. **時效性加權可避免陳舊知識主導結果**：舊文件的相關性應衰減
+3. **要承認缺口，不要 hallucinate**：用信心閾值與 fallback 訊息處理
+4. **多來源同步本身就很複雜**：不同 API 需要不同策略
+
+---
+
+*相關章節： [RAG Fundamentals](../06-retrieval-systems/01-rag-fundamentals.md), [Multi-Tenant Isolation](../12-security-and-access/04-multi-tenant-rag-isolation.md)*
