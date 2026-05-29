@@ -1,42 +1,47 @@
-# Hybrid Search
+<a id="hybrid-search"></a>
+# 混合搜尋
 
-Hybrid search combines dense (semantic) and sparse (keyword) retrieval to get the benefits of both. It is the baseline for production RAG: Elasticsearch's `rrf` retriever, OpenSearch hybrid search, Weaviate, Qdrant, and Azure AI Search all ship native hybrid pipelines out of the box.
+Hybrid search 結合 dense（semantic）與 sparse（keyword）檢索，以同時取得兩者優勢。它已是正式環境 RAG 的基準線：Elasticsearch 的 `rrf` retriever、OpenSearch hybrid search、Weaviate、Qdrant 與 Azure AI Search，都原生提供 hybrid pipelines。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Why Hybrid Search](#why-hybrid-search)
-- [Dense vs Sparse Retrieval](#dense-vs-sparse-retrieval)
-- [Hybrid Search Architectures](#hybrid-search-architectures)
-- [Fusion Methods](#fusion-methods)
-- [Learned Sparse Embeddings (SPLADE)](#learned-sparse-embeddings-splade)
-- [Implementation Patterns](#implementation-patterns)
-- [Tuning and Optimization](#tuning-and-optimization)
-- [Production Considerations](#production-considerations)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [為什麼要用 Hybrid Search](#why-hybrid-search)
+- [Dense vs Sparse 檢索](#dense-vs-sparse-retrieval)
+- [Hybrid Search 架構](#hybrid-search-architectures)
+- [Fusion 方法](#fusion-methods)
+- [Learned Sparse Embeddings（SPLADE）](#learned-sparse-embeddings-splade)
+- [實作模式](#implementation-patterns)
+- [調校與最佳化](#tuning-and-optimization)
+- [正式環境考量](#production-considerations)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Why Hybrid Search
+<a id="why-hybrid-search"></a>
+## 為什麼要用 Hybrid Search
 
-Neither dense nor sparse retrieval is universally better. Each excels at different query types.
+Dense 與 sparse 檢索沒有誰能全面勝出；兩者各自在不同查詢類型上表現較強。
 
-### Query Type Analysis
+<a id="query-type-analysis"></a>
+### 查詢類型分析
 
-| Query Type | Example | Better Retrieval |
+| 查詢類型 | 範例 | 較佳檢索方式 |
 |------------|---------|------------------|
-| Conceptual | "How do transformers learn?" | Dense |
-| Keyword-specific | "GPT-4 API rate limits" | Sparse |
-| Named entities | "John Smith's research on BERT" | Sparse |
-| Acronyms/codes | "What does HTTP 429 mean?" | Sparse |
-| Paraphrased | "How to make AI faster" vs "LLM optimization" | Dense |
-| Mixed | "What is the cost of GPT-4o API?" | Hybrid |
+| 概念型 | "How do transformers learn?" | Dense |
+| 關鍵字明確型 | "GPT-4 API rate limits" | Sparse |
+| 命名實體 | "John Smith's research on BERT" | Sparse |
+| 縮寫／代碼 | "What does HTTP 429 mean?" | Sparse |
+| 改寫型 | "How to make AI faster" vs "LLM optimization" | Dense |
+| 混合型 | "What is the cost of GPT-4o API?" | Hybrid |
 
-**Nuance**: Dense-only retrieval fails on technical documentation where specific version numbers and function names carry 90% of the information value.
+**細節**：在技術文件中，若特定版本號與函式名稱承載了 90% 的資訊價值，dense-only retrieval 往往會失效。
 
-### The Gap Problem
+<a id="the-gap-problem"></a>
+### Gap 問題
 
-Dense retrieval can miss exact matches:
+Dense retrieval 可能漏掉精確匹配：
 
 ```
 Query: "Configure NVIDIA_VISIBLE_DEVICES"
@@ -48,15 +53,17 @@ Dense search may miss this because:
 - Training data may not have this specific term
 ```
 
-Sparse search (BM25) finds this immediately because of exact token match.
+Sparse search（BM25）則能因為精確 token match 立刻抓到它。
 
 ---
 
-## Dense vs Sparse Retrieval
+<a id="dense-vs-sparse-retrieval"></a>
+## Dense vs Sparse 檢索
 
-### Dense (Semantic) Retrieval
+<a id="dense-semantic-retrieval"></a>
+### Dense（語意）檢索
 
-Uses neural embeddings to match meaning.
+透過 neural embeddings 比對語意。
 
 ```python
 def dense_search(query: str, top_k: int = 10) -> list[Result]:
@@ -65,19 +72,20 @@ def dense_search(query: str, top_k: int = 10) -> list[Result]:
     return results
 ```
 
-**Strengths:**
-- Understands paraphrases and synonyms
-- Captures conceptual similarity
-- Works across languages (with multilingual models)
+**優勢：**
+- 能理解改寫與同義詞
+- 能捕捉概念相似度
+- 支援跨語言（搭配 multilingual models）
 
-**Weaknesses:**
-- May miss exact keyword matches
-- Struggles with entities, codes, acronyms
-- Requires embedding model
+**弱點：**
+- 可能漏掉精確關鍵字匹配
+- 不擅長 entities、codes、acronyms
+- 需要 embedding model
 
-### Sparse (Keyword) Retrieval
+<a id="sparse-keyword-retrieval"></a>
+### Sparse（關鍵字）檢索
 
-Uses term frequency and statistics (BM25, TF-IDF).
+使用詞頻與統計方法（BM25、TF-IDF）。
 
 ```python
 def sparse_search(query: str, top_k: int = 10) -> list[Result]:
@@ -86,33 +94,36 @@ def sparse_search(query: str, top_k: int = 10) -> list[Result]:
     return results
 ```
 
-**Strengths:**
-- Excellent for exact matches
-- Handles rare terms, codes, entities
-- Fast and interpretable
-- No training required
+**優勢：**
+- 非常適合精確匹配
+- 擅長處理罕見詞、代碼與命名實體
+- 快速且可解釋
+- 不需要訓練
 
-**Weaknesses:**
-- Misses semantic similarity
-- No synonym understanding
-- Sensitive to vocabulary mismatch
+**弱點：**
+- 抓不到語意相似
+- 不理解同義詞
+- 對 vocabulary mismatch 很敏感
 
-### Head-to-Head Comparison
+<a id="head-to-head-comparison"></a>
+### 正面比較
 
-| Aspect | Dense | Sparse | Hybrid |
+| 面向 | Dense | Sparse | Hybrid |
 |--------|-------|--------|--------|
-| Semantic matching | Best | Poor | Best |
-| Exact matching | Poor | Best | Best |
-| Rare terms | Poor | Best | Very Good |
-| Zero-shot domains | Very Good | Best | Best |
-| Latency | Medium | Fast | Medium |
-| Implementation | Medium | Simple | Complex |
+| 語意匹配 | 最佳 | 差 | 最佳 |
+| 精確匹配 | 差 | 最佳 | 最佳 |
+| 罕見詞 | 差 | 最佳 | 很好 |
+| Zero-shot domain | 很好 | 最佳 | 最佳 |
+| 延遲 | 中 | 快 | 中 |
+| 實作難度 | 中 | 簡單 | 複雜 |
 
 ---
 
-## Hybrid Search Architectures
+<a id="hybrid-search-architectures"></a>
+## Hybrid Search 架構
 
-### Architecture 1: Parallel Retrieval with Fusion
+<a id="architecture-1-parallel-retrieval-with-fusion"></a>
+### Architecture 1：平行檢索 + Fusion
 
 ```
                     +------------------+
@@ -139,12 +150,13 @@ def sparse_search(query: str, top_k: int = 10) -> list[Result]:
                     +-------------------+
 ```
 
-**Pros:** Clear separation, can use best-in-class for each (e.g., Pinecone + Algolia), tune independently
-**Cons:** Two separate systems to maintain, higher latency (must wait for the slower engine)
+**優點：**分工清楚，可對每一邊使用最強方案（例如 Pinecone + Algolia），也能獨立調校
+**缺點：**要維護兩套系統，延遲較高（必須等最慢的引擎）
 
-### Architecture 2: Native Hybrid (Single System)
+<a id="architecture-2-native-hybrid-single-system"></a>
+### Architecture 2：原生 Hybrid（單一系統）
 
-Some vector databases support hybrid natively:
+部分向量資料庫原生支援 hybrid：
 
 ```python
 # Weaviate
@@ -161,10 +173,11 @@ results = client.search(
 )
 ```
 
-**Pros:** Single system, simpler ops, lower latency
-**Cons:** Limited fusion customization, less flexibility in scaling keyword vs. vector infra
+**優點：**單一系統、維運較簡單、延遲較低
+**缺點：**Fusion 客製化有限，keyword 與 vector infra 在擴展上彈性較小
 
-### Architecture 3: Staged Retrieval
+<a id="architecture-3-staged-retrieval"></a>
+### Architecture 3：分階段檢索
 
 ```
 Query --> Sparse (fast, broad) --> Top 1000
@@ -176,16 +189,18 @@ Query --> Sparse (fast, broad) --> Top 1000
            Cross-encoder --> Top 10
 ```
 
-**Pros:** Efficient, each stage refines
-**Cons:** More complex, risk of early-stage errors
+**優點：**效率高，每一層都在精煉結果
+**缺點：**更複雜，且早期階段失誤會一路放大
 
 ---
 
-## Fusion Methods
+<a id="fusion-methods"></a>
+## Fusion 方法
 
-### Reciprocal Rank Fusion (RRF)
+<a id="reciprocal-rank-fusion-rrf"></a>
+### Reciprocal Rank Fusion（RRF）
 
-RRF is the gold standard for combining results from two different search engines. It does not look at the *score* (which is incomparable across engines). It looks at the **rank**.
+RRF 是整合兩種搜尋引擎結果的黃金標準。它不看 *score*（不同引擎的 score 無法直接比較），而是看 **rank**。
 
 ```python
 def reciprocal_rank_fusion(
@@ -202,17 +217,18 @@ def reciprocal_rank_fusion(
     return sorted_docs
 ```
 
-**Properties:**
-- Position-based, ignores raw scores
-- Robust to score scale differences -- prevents a single engine from "dominating" just because it has high numerical scores
-- k parameter controls rank sensitivity (higher k = less sensitive to position)
-- Simple to implement, no tuning beyond k
+**特性：**
+- 以排名為基礎，不看原始分數
+- 能抵抗 score scale 差異，避免某個引擎單純因分數數值高就「壓過」另一個引擎
+- k 參數控制對排名位置的敏感度（k 越高，對名次越不敏感）
+- 容易實作，除了 k 以外幾乎不用調參
 
-**Typical k values:** 60 (original paper), 10-100 in practice
+**常見 k 值：**60（原論文）、實務上常見 10-100
 
-### Weighted Score Fusion
+<a id="weighted-score-fusion"></a>
+### 加權分數 Fusion
 
-Combine normalized scores:
+把正規化後的分數加總：
 
 ```python
 def weighted_fusion(
@@ -247,14 +263,15 @@ def normalize_scores(results: list[Result]) -> list[Result]:
     ]
 ```
 
-**Properties:**
-- Uses actual scores (more information than rank)
-- Requires score normalization
-- Alpha controls dense vs sparse balance
+**特性：**
+- 使用實際分數（比單看排名資訊更多）
+- 需要做 score normalization
+- Alpha 控制 dense 與 sparse 的平衡
 
+<a id="relative-score-fusion"></a>
 ### Relative Score Fusion
 
-Account for score distribution:
+把分數分布納入考量：
 
 ```python
 def relative_score_fusion(
@@ -282,26 +299,29 @@ def z_score_normalize(results: list[Result]) -> list[Result]:
     return [Result(id=r.id, score=(r.score - mean) / std) for r in results]
 ```
 
-### Fusion Method Comparison
+<a id="fusion-method-comparison"></a>
+### Fusion 方法比較
 
-| Method | Uses Scores | Query Adaptive | Complexity |
+| 方法 | 使用分數 | Query Adaptive | 複雜度 |
 |--------|-------------|----------------|------------|
-| RRF | No (ranks only) | No | Low |
-| Weighted | Yes | No | Low |
-| Relative Score | Yes | Partially | Medium |
-| Learned | Yes | Yes | High |
+| RRF | 否（只看 ranks） | 否 | 低 |
+| Weighted | 是 | 否 | 低 |
+| Relative Score | 是 | 部分 | 中 |
+| Learned | 是 | 是 | 高 |
 
 ---
 
-## Learned Sparse Embeddings (SPLADE)
+<a id="learned-sparse-embeddings-splade"></a>
+## Learned Sparse Embeddings（SPLADE）
 
-Production stacks have moved beyond BM25 (simple word frequency) to **Learned Sparse Embeddings** for the sparse arm of hybrid search.
+正式環境的技術堆疊已不再只用 BM25（單純詞頻），而是開始把 **Learned Sparse Embeddings** 用在 hybrid search 的 sparse 支線。
 
-**Technique**: Models like **SPLADE v3** predict "importance weights" for every word in the dictionary.
+**技術**：像 **SPLADE v3** 這類模型，會為字典中的每個詞預測「importance weights」。
 
-**Why?**: SPLADE can "expand" queries. If you search for "CPU," it might automatically add a small weight to the term "processor," even if "processor" is not in your query. It combines the exact-match power of sparse search with the conceptual power of dense search in a single storage format.
+**為什麼重要？**SPLADE 能做 query expansion。若你搜尋「CPU」，它可能會自動對「processor」賦予一點權重，即使 query 中根本沒有這個詞。它把 sparse search 的精確匹配能力，與 dense search 的概念能力，結合在同一種儲存格式中。
 
-### SPLADE Implementation
+<a id="splade-implementation"></a>
+### SPLADE 實作
 
 ```python
 from transformers import AutoModelForMaskedLM, AutoTokenizer
@@ -332,13 +352,15 @@ class SpladeEncoder:
         return sparse_vec
 ```
 
-**When to use SPLADE over BM25 + Dense Hybrid:** SPLADE produces a sparse vector that can be stored in modern vector databases (like Milvus or Qdrant) alongside the dense vector, enabling hybrid search in a single pass without a separate Elasticsearch or BM25 index. Stick to BM25 if your dataset has extremely rare, non-linguistic tokens (like unique serial numbers) that a neural model might not have seen during training.
+**什麼時候選 SPLADE 而不是 BM25 + Dense Hybrid：**SPLADE 會產生可儲存在現代向量資料庫（如 Milvus 或 Qdrant）中的 sparse vector，能與 dense vector 一起單次完成 hybrid search，而不需要額外維護 Elasticsearch 或 BM25 索引。不過，如果你的資料集中有極度罕見、非語言型 token（例如唯一序號），而神經模型在訓練中沒見過它們，那就還是用 BM25。
 
 ---
 
-## Implementation Patterns
+<a id="implementation-patterns"></a>
+## 實作模式
 
-### Pattern 1: Elasticsearch + Vector DB
+<a id="pattern-1-elasticsearch-vector-db"></a>
+### Pattern 1：Elasticsearch + Vector DB
 
 ```python
 class HybridSearcher:
@@ -381,7 +403,8 @@ class HybridSearcher:
         ]
 ```
 
-### Pattern 2: Native Hybrid with Weaviate
+<a id="pattern-2-native-hybrid-with-weaviate"></a>
+### Pattern 2：以 Weaviate 實作原生 Hybrid
 
 ```python
 import weaviate
@@ -406,11 +429,13 @@ def hybrid_search_weaviate(
 
 ---
 
-## Tuning and Optimization
+<a id="tuning-and-optimization"></a>
+## 調校與最佳化
 
-### Alpha Tuning
+<a id="alpha-tuning"></a>
+### Alpha 調校
 
-The alpha parameter balances dense vs sparse:
+Alpha 參數用來平衡 dense 與 sparse：
 
 ```python
 def find_optimal_alpha(
@@ -435,14 +460,15 @@ def find_optimal_alpha(
     return best_alpha
 ```
 
-**Best practice / typical findings:**
-- Technical documentation and code: alpha 0.3-0.4 (keyword heavy)
-- General text: alpha 0.5 (balanced)
-- Chat and creative exploration: alpha 0.7-0.9 (semantic heavy)
+**最佳實務／常見結果：**
+- 技術文件與程式碼：alpha 0.3-0.4（關鍵字成分較重）
+- 一般文字：alpha 0.5（平衡）
+- 聊天與創意探索：alpha 0.7-0.9（語意成分較重）
 
+<a id="query-adaptive-alpha"></a>
 ### Query-Adaptive Alpha
 
-Predict optimal alpha per query:
+依每個 query 預測最佳 alpha：
 
 ```python
 def predict_alpha(query: str) -> float:
@@ -464,9 +490,10 @@ def predict_alpha(query: str) -> float:
     return 0.5  # Default balanced
 ```
 
-### Retrieval Depth
+<a id="retrieval-depth"></a>
+### 檢索深度
 
-How many results to fetch before fusion:
+在 fusion 前，應先取回多少結果：
 
 ```python
 # Rule of thumb: fetch 3-5x more from each source
@@ -482,9 +509,11 @@ def hybrid_search(query: str, final_k: int = 10):
 
 ---
 
-## Production Considerations
+<a id="production-considerations"></a>
+## 正式環境考量
 
-### Latency Budget
+<a id="latency-budget"></a>
+### 延遲預算
 
 ```
 Typical hybrid search latency breakdown:
@@ -496,13 +525,14 @@ Fusion:                    1-5ms
 Total:                   60-100ms
 ```
 
-**Optimizations:**
-- Run dense and sparse in parallel
-- Pre-compute embeddings for common queries
-- Use approximate search for both
-- Cache fusion results for repeated queries
+**最佳化方式：**
+- 讓 dense 與 sparse 平行執行
+- 為常見 query 預先計算 embeddings
+- 兩邊都使用 approximate search
+- 對重複 query 快取 fusion 結果
 
-### Caching Strategy
+<a id="caching-strategy"></a>
+### 快取策略
 
 ```python
 class HybridSearchCache:
@@ -525,7 +555,8 @@ class HybridSearchCache:
         ).hexdigest()
 ```
 
-### Fallback Strategy
+<a id="fallback-strategy"></a>
+### Fallback 策略
 
 ```python
 def hybrid_search_with_fallback(query: str, top_k: int = 10) -> list[Result]:
@@ -541,70 +572,76 @@ def hybrid_search_with_fallback(query: str, top_k: int = 10) -> list[Result]:
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: When would you use hybrid search over pure dense search?
+<a id="q-when-would-you-use-hybrid-search-over-pure-dense-search"></a>
+### Q：什麼情況下你會用 hybrid search，而不是純 dense search？
 
-**Strong answer:**
-I would use hybrid search when:
+**強回答：**
+我會在以下情況使用 hybrid search：
 
-1. **Queries contain specific terms:** Product codes, API names, error codes. Dense search may miss exact matches.
+1. **查詢包含特定詞彙：**產品代碼、API 名稱、錯誤碼。Dense search 可能漏掉精確匹配。
 
-2. **Domain has specialized vocabulary:** Technical documentation, legal, medical. Sparse captures specific terms.
+2. **領域詞彙非常專門：**技術文件、法律、醫療。Sparse 更能抓住精確術語。
 
-3. **Zero-shot retrieval:** New domain without fine-tuned embeddings. Sparse provides robust baseline.
+3. **Zero-shot retrieval：**新領域尚未有 fine-tuned embeddings。Sparse 能提供穩健基線。
 
-4. **Quality is critical:** Hybrid rarely performs worse than either alone, at cost of complexity.
+4. **品質非常重要：**Hybrid 的表現幾乎不會比單獨任一方法差，只是複雜度更高。
 
-**I would stick with pure dense when:**
-- Queries are purely conceptual/semantic
-- Latency budget is very tight
-- Simpler architecture is priority
-- Embedding model is well-tuned for domain
+**我會維持純 dense 的情況：**
+- 查詢本質上是概念型／語意型
+- 延遲預算非常嚴格
+- 更重視架構簡單
+- Embedding model 已對該領域充分調校
 
-The decision is empirical. I would A/B test hybrid vs dense on my actual query distribution.
+最後仍要以資料說話。我會用真實查詢分布對 hybrid 與 dense 做 A/B test。
 
-### Q: Why is Reciprocal Rank Fusion (RRF) safer than "Simple Score Addition"?
+<a id="q-why-is-reciprocal-rank-fusion-rrf-safer-than-simple-score-addition"></a>
+### Q：為什麼 Reciprocal Rank Fusion（RRF）比「Simple Score Addition」更安全？
 
-**Strong answer:**
-Simple score addition is dangerous because vector scores (e.g., Cosine Similarity: 0.0 to 1.0) and keyword scores (e.g., BM25: 0 to infinity) use completely different scales. An extremely high BM25 score for a lucky keyword match could "drown out" 10 highly relevant semantic matches. RRF ignores the absolute scores and only cares about the relative order (rank). This makes it mathematically robust to outliers and "score-drift" in different retrieval engines.
+**強回答：**
+Simple score addition 很危險，因為向量分數（例如 Cosine Similarity：0.0 到 1.0）與關鍵字分數（例如 BM25：0 到無限大）根本不在同一尺度。一次幸運的 BM25 關鍵字命中，可能用超高分數把 10 個高度相關的語意結果完全淹沒。RRF 忽略絕對分數，只看相對順序（rank），因此在數學上對 outliers 與不同引擎的 score drift 更穩健。
 
-### Q: When would you choose SPLADE over the standard BM25 + Dense Hybrid approach?
+<a id="q-when-would-you-choose-splade-over-the-standard-bm25-dense-hybrid-approach"></a>
+### Q：什麼情況下你會選 SPLADE，而不是標準的 BM25 + Dense Hybrid？
 
-**Strong answer:**
-I would choose SPLADE when I want to simplify my infrastructure. SPLADE produces a sparse vector that can be stored in many modern vector databases (like Milvus or Qdrant) alongside the dense vector. This allows the database to perform "Hybrid search" in a single pass without needing a separate Elasticsearch or BM25 index. However, I would stick to BM25 if my dataset has extremely rare, non-linguistic tokens (like unique serial numbers) that a neural model might not have seen during training.
+**強回答：**
+當我想簡化基礎設施時，我會選 SPLADE。SPLADE 會產生 sparse vector，能和 dense vector 一起存進許多現代向量資料庫（如 Milvus 或 Qdrant），因此資料庫可以單次完成「Hybrid search」，不需要額外的 Elasticsearch 或 BM25 索引。不過，如果資料集中有極度罕見、非語言型 token（例如唯一序號），而神經模型可能沒在訓練中見過，我還是會選 BM25。
 
-### Q: How do you balance dense vs sparse in hybrid search?
+<a id="q-how-do-you-balance-dense-vs-sparse-in-hybrid-search"></a>
+### Q：你如何在 hybrid search 中平衡 dense 與 sparse？
 
-**Strong answer:**
-The alpha parameter controls the balance (typically alpha for dense weight):
+**強回答：**
+Alpha 參數負責平衡（通常 alpha 代表 dense 權重）：
 
-**Tuning approach:**
-1. Start with alpha=0.5 (equal weight)
-2. Create evaluation set with queries and relevance labels
-3. Grid search alpha in [0.1, 0.3, 0.5, 0.7, 0.9]
-4. Measure NDCG or MRR at each setting
-5. Pick alpha that maximizes evaluation metric
+**調校方法：**
+1. 先從 alpha=0.5（等權）開始
+2. 建立含 queries 與 relevance labels 的評估集
+3. 對 [0.1, 0.3, 0.5, 0.7, 0.9] 做 grid search
+4. 在每個設定上量測 NDCG 或 MRR
+5. 選擇使評估指標最大的 alpha
 
-**Query-adaptive tuning:**
-- Detect query type (keyword-heavy, conceptual, mixed)
-- Adjust alpha per query
-- Can use simple heuristics or learned classifier
+**Query-adaptive tuning：**
+- 偵測 query 類型（keyword-heavy、conceptual、mixed）
+- 依 query 動態調整 alpha
+- 可用簡單 heuristics，也可用 learned classifier
 
-**Rule of thumb:**
-- Technical/code queries: alpha 0.3-0.4
-- General text: alpha 0.5
-- Conversational: alpha 0.7-0.8
+**經驗法則：**
+- 技術／程式碼查詢：alpha 0.3-0.4
+- 一般文字：alpha 0.5
+- 對話式查詢：alpha 0.7-0.8
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
-- Cormack et al. "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods" (2009)
-- Formal et al. "SPLADE: Sparse Lexical and Expansion Model for First Stage Ranking" (2021/2025)
+- Cormack et al.「Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods」（2009）
+- Formal et al.「SPLADE: Sparse Lexical and Expansion Model for First Stage Ranking」（2021/2025）
 - Weaviate Hybrid Search: https://weaviate.io/developers/weaviate/search/hybrid
 - Qdrant Hybrid Search: https://qdrant.tech/documentation/concepts/hybrid-queries/
 
 ---
 
-*Previous: [Vector Databases](04-vector-databases.md) | Next: [Reranking Strategies](06-reranking-strategies.md)*
+*上一篇：[向量資料庫](04-vector-databases.md) | 下一篇：[重排序策略](06-reranking-strategies.md)*

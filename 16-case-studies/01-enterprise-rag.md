@@ -1,74 +1,85 @@
-# Case Study: Enterprise RAG System
+<a id="case-study-enterprise-rag-system"></a>
+# 案例研究：企業級 RAG 系統
 
-This case study walks through designing a production RAG system for enterprise document search. It covers requirements gathering, architecture decisions, and implementation details.
+本案例研究詳細介紹如何為企業文件搜尋設計生產級 RAG 系統，涵蓋需求收集、架構決策與實作細節。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Problem Statement](#problem-statement)
-- [Requirements Analysis](#requirements-analysis)
-- [System Architecture](#system-architecture)
-- [Component Deep Dives](#component-deep-dives)
-- [Scaling Considerations](#scaling-considerations)
-- [Cost Analysis](#cost-analysis)
-- [Lessons Learned](#lessons-learned)
-- [Interview Walkthrough](#interview-walkthrough)
-
----
-
-## Problem Statement
-
-### Scenario
-
-A financial services company wants to build an AI-powered search system for their internal documentation:
-- 500,000 documents (policies, procedures, research reports)
-- 5,000 employees across multiple departments
-- Documents updated daily
-- Strict compliance and audit requirements
-- Need to answer questions with cited sources
-
-### Current Pain Points
-
-- Employees spend 2+ hours/day searching for information
-- Keyword search returns too many irrelevant results
-- Knowledge is siloed across departments
-- New employees take months to become productive
+- [問題陳述](#problem-statement)
+- [需求分析](#requirements-analysis)
+- [系統架構](#system-architecture)
+- [元件深度解析](#component-deep-dives)
+- [擴展考量](#scaling-considerations)
+- [成本分析](#cost-analysis)
+- [學到的經驗](#lessons-learned)
+- [面試演練](#interview-walkthrough)
 
 ---
 
-## Requirements Analysis
+<a id="problem-statement"></a>
+## 問題陳述
 
-### Functional Requirements
+<a id="scenario"></a>
+### 情境
 
-| Requirement | Priority | Notes |
-|-------------|----------|-------|
-| Natural language Q&A | P0 | Core feature |
-| Source citations | P0 | Compliance requirement |
-| Multi-document reasoning | P1 | Connect information across docs |
-| Follow-up questions | P1 | Conversational context |
-| Document summarization | P2 | Quick overview of long docs |
+一家金融服務公司希望為其內部文件建立 AI 驅動的搜尋系統：
+- 500,000 份文件（政策、程序、研究報告）
+- 5,000 名跨部門員工
+- 文件每日更新
+- 嚴格的合規與稽核要求
+- 需要以附引用來源的方式回答問題
 
-### Non-Functional Requirements
+<a id="current-pain-points"></a>
+### 現有痛點
 
-| Requirement | Target | Rationale |
-|-------------|--------|-----------|
-| Latency (P95) | < 5 seconds | User experience |
-| Accuracy | > 90% | Trust and adoption |
-| Availability | 99.9% | Business critical |
-| Concurrent users | 500 | Peak usage |
-| Document freshness | < 1 hour | Policy updates |
-
-### Security Requirements
-
-- Role-based access control (RBAC)
-- Audit logging of all queries
-- No data leaves company network
-- PII detection and handling
+- 員工每天花費 2 小時以上搜尋資訊
+- 關鍵字搜尋回傳過多不相關結果
+- 知識在各部門間形成孤島
+- 新員工需要數月才能上手
 
 ---
 
-## System Architecture
+<a id="requirements-analysis"></a>
+## 需求分析
 
-### High-Level Architecture
+<a id="functional-requirements"></a>
+### 功能需求
+
+| 需求 | 優先級 | 備註 |
+|------|--------|------|
+| 自然語言問答 | P0 | 核心功能 |
+| 來源引用 | P0 | 合規要求 |
+| 跨文件推理 | P1 | 連結跨文件資訊 |
+| 追問問題 | P1 | 對話上下文 |
+| 文件摘要 | P2 | 長文件快速概覽 |
+
+<a id="non-functional-requirements"></a>
+### 非功能需求
+
+| 需求 | 目標 | 理由 |
+|------|------|------|
+| 延遲（P95） | < 5 秒 | 使用者體驗 |
+| 準確度 | > 90% | 信任與採用 |
+| 可用性 | 99.9% | 業務關鍵 |
+| 同時線上使用者 | 500 | 尖峰使用量 |
+| 文件新鮮度 | < 1 小時 | 政策更新 |
+
+<a id="security-requirements"></a>
+### 安全需求
+
+- 角色型存取控制（RBAC）
+- 所有查詢的稽核日誌
+- 資料不離開公司網路
+- PII 偵測與處理
+
+---
+
+<a id="system-architecture"></a>
+## 系統架構
+
+<a id="high-level-architecture"></a>
+### 高層架構
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -117,7 +128,7 @@ A financial services company wants to build an AI-powered search system for thei
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-Rendered as a flow diagram (the layered system fans out through the query pipeline and converges through the data layer):
+以流程圖呈現（分層系統在查詢管道中展開，並透過資料層匯聚）：
 
 ```mermaid
 flowchart TD
@@ -151,25 +162,28 @@ flowchart TD
     GS --> UI
 ```
 
-### Technology Choices (Dec 2025 Update)
+<a id="technology-choices-dec-2025-update"></a>
+### 技術選型（2025 年 12 月更新）
 
-| Component | Choice | Rationale |
-|-----------|--------|-----------|
-| **Primary LLM** | Gemini 3.0 Pro | **2.5M context** natively handles 100+ documents without fragmentation |
-| **Agentic LLM** | GPT-5.2 | Industry-leading tool-use accuracy for complex cross-doc analysis |
-| **Retriever** | Gemini 3 Flash | Low-cost retrieval over massive context windows |
-| **Embeddings** | text-embedding-3-large | Proven quality and cost-efficient |
-| **Vector DB** | Qdrant (Self-hosted) | Performance, filtering, and on-prem compliance |
-| **Reranker** | BGE-Reranker-v2-X | Open-source SoTA for on-prem isolation |
+| 元件 | 選擇 | 理由 |
+|------|------|------|
+| **主要 LLM** | Gemini 3.0 Pro | 原生 **250 萬 token 上下文**，可直接處理 100+ 份文件而不需切割 |
+| **代理人 LLM** | GPT-5.2 | 業界領先的工具使用準確度，適合複雜跨文件分析 |
+| **檢索器** | Gemini 3 Flash | 在大量上下文視窗上低成本檢索 |
+| **嵌入** | text-embedding-3-large | 品質經驗證且具成本效益 |
+| **向量資料庫** | Qdrant（自行託管） | 效能、過濾能力與本地合規需求 |
+| **重排序器** | BGE-Reranker-v2-X | 適合本地隔離的開源最佳模型 |
 
 > [!NOTE]
-> **Shift:** Production teams have moved from "Small Chunk RAG" to **"Balanced Context RAG"**. With 1M-2M token contexts on every major frontier model, we no longer need to find the "perfect 512-token chunk." We retrieve entire document segments (10k-50k tokens) and let the model's native attention handle the needle.
+> **趨勢轉變：** 生產團隊已從「小型區塊 RAG」轉向**「均衡上下文 RAG」**。所有主流前沿模型都具備 1M–2M token 的上下文視窗，我們不再需要找到「完美的 512 token 區塊」。我們改為檢索整個文件片段（10k–50k token），讓模型原生的注意力機制來處理細節。
 
 ---
 
-## Component Deep Dives
+<a id="component-deep-dives"></a>
+## 元件深度解析
 
-### Document Ingestion Pipeline
+<a id="document-ingestion-pipeline"></a>
+### 文件攝取管道
 
 ```python
 class IngestionPipeline:
@@ -229,7 +243,7 @@ class IngestionPipeline:
         )
 ```
 
-The code reads as a linear sequence, but four of the writes happen in parallel. A sequence diagram makes the fanout explicit, which matters for understanding partial-failure modes:
+程式碼看起來是線性序列，但有四個寫入操作是平行進行的。用時序圖呈現分流更清楚，有助於理解部分失敗的模式：
 
 ```mermaid
 sequenceDiagram
@@ -254,7 +268,8 @@ sequenceDiagram
     Note over V,M: Document is queryable only<br/>after all four writes commit
 ```
 
-### Query Processing
+<a id="query-processing"></a>
+### 查詢處理
 
 ```python
 class QueryService:
@@ -329,7 +344,8 @@ class QueryService:
         }
 ```
 
-### Hybrid Retrieval
+<a id="hybrid-retrieval"></a>
+### 混合式檢索
 
 ```python
 class HybridRetriever:
@@ -397,7 +413,7 @@ class HybridRetriever:
         return [docs[id] for id in sorted_ids]
 ```
 
-The hybrid retrieval flow at a glance. Two parallel retrievers, then RRF fuses them with weighted ranks, then a cross-encoder reranks the top candidates before context formatting:
+混合式檢索流程一覽。兩個平行檢索器，再由 RRF 以加權排名融合，接著由交叉編碼器對前幾名候選進行重排序，最後進行上下文格式化：
 
 ```mermaid
 flowchart LR
@@ -415,7 +431,8 @@ flowchart LR
     CTX --> LLM[Generation<br/>Gemini 3 Pro 2.5M ctx]
 ```
 
-### Generation with Massive Context (Dec 2025)
+<a id="generation-with-massive-context-dec-2025"></a>
+### 大規模上下文生成（2025 年 12 月）
 
 ```python
 class GeminiGenerator:
@@ -446,20 +463,22 @@ class GeminiGenerator:
 ```
 
 > [!TIP]
-> **Production Choice vs. Bleeding Edge**
-> While Gemini 3.1 Pro offers a 1M-token window, many production systems still default to **Claude Sonnet 4.6** or **GPT-5.5** as their primary generators.
+> **生產選擇 vs. 前沿技術**
+> 雖然 Gemini 3.1 Pro 提供 100 萬 token 的上下文視窗，許多生產系統仍以 **Claude Sonnet 4.6** 或 **GPT-5.5** 作為主要生成器。
 > 
-> **Why?**
-> - **Maturity**: 12+ months of production track record.
-> - **Predictability**: Known latency patterns and fewer "hallucination spikes" on long-tail requests.
-> - **SDK Stability**: Deep integration with frameworks like LangGraph and LlamaIndex.
-> - **Cost**: Optimized pricing for high-volume standard RAG.
+> **原因：**
+> - **成熟度**：超過 12 個月的生產追蹤記錄。
+> - **可預測性**：已知的延遲模式，長尾請求上較少出現「幻覺飆升」。
+> - **SDK 穩定性**：與 LangGraph 和 LlamaIndex 等框架深度整合。
+> - **成本**：針對高量標準 RAG 最佳化的定價。
 
 ---
 
-## Scaling Considerations
+<a id="scaling-considerations"></a>
+## 擴展考量
 
-### Handling 500K Documents
+<a id="handling-500k-documents"></a>
+### 處理 50 萬份文件
 
 ```python
 # Sharding strategy for Qdrant
@@ -477,7 +496,8 @@ qdrant_config = {
 }
 ```
 
-### Handling 500 Concurrent Users
+<a id="handling-500-concurrent-users"></a>
+### 處理 500 位同時線上使用者
 
 ```
 Load Balancer
@@ -492,7 +512,8 @@ Load Balancer
             └──► Elasticsearch (3-node cluster)
 ```
 
-### Caching Strategy
+<a id="caching-strategy"></a>
+### 快取策略
 
 ```python
 class QueryCache:
@@ -524,87 +545,96 @@ class QueryCache:
 
 ---
 
-## Cost Analysis
+<a id="cost-analysis"></a>
+## 成本分析
 
-### Monthly Cost Estimate (500 Users, 100 Queries/User/Day)
+<a id="monthly-cost-estimate-500-users-100-queriesuserday"></a>
+### 每月成本估算（500 位使用者，每人每天 100 次查詢）
 
-| Component | Calculation | Monthly Cost |
-|-----------|-------------|--------------|
-| LLM (Claude Sonnet) | 1.5M queries × 2K tokens × $3/1M in + 500 tokens × $15/1M out | ~$20,250 |
-| Embeddings | 1.5M queries × $0.13/1M | ~$200 |
-| Reranking (Cohere) | 1.5M × 50 docs × $0.001/1K | ~$75 |
-| Vector DB (Qdrant Cloud) | 3-node cluster | ~$1,500 |
-| Elasticsearch | 3-node cluster | ~$2,000 |
-| Compute (Query Service) | 4 instances | ~$1,000 |
-| **Total** | | **~$25,000/month** |
+| 元件 | 計算方式 | 每月成本 |
+|------|----------|----------|
+| LLM（Claude Sonnet） | 150 萬次查詢 × 2K token × $3/1M 輸入 + 500 token × $15/1M 輸出 | ~$20,250 |
+| 嵌入 | 150 萬次查詢 × $0.13/1M | ~$200 |
+| 重排序（Cohere） | 150 萬 × 50 份文件 × $0.001/1K | ~$75 |
+| 向量資料庫（Qdrant Cloud） | 3 節點叢集 | ~$1,500 |
+| Elasticsearch | 3 節點叢集 | ~$2,000 |
+| 運算（查詢服務） | 4 個執行個體 | ~$1,000 |
+| **合計** | | **~$25,000/月** |
 
-### Cost Optimization Opportunities
+<a id="cost-optimization-opportunities"></a>
+### 成本最佳化機會
 
-1. **Caching**: 30% cache hit rate → $6K savings on LLM
-2. **Model routing**: Route simple queries to cheaper model → 40% savings
-3. **Batch embeddings**: Use async batching → 20% savings
-4. **Self-hosted reranker**: Replace Cohere with open source → Eliminate $75
-
----
-
-## Lessons Learned
-
-### What Worked Well
-
-1. **Hybrid search**: Combined semantic + keyword significantly improved recall
-2. **Reranking**: 15% improvement in top-5 precision
-3. **Clear citations**: Built trust with users
-4. **Permission filtering at retrieval**: No post-hoc filtering needed
-
-### Challenges Encountered
-
-1. **Table extraction**: PDFs with complex tables required custom parsing
-2. **Acronyms**: Domain-specific acronyms needed expansion
-3. **Freshness**: 1-hour freshness required streaming ingestion
-4. **Long documents**: 100+ page documents needed hierarchical chunking
-
-### What We Would Do Differently
-
-1. Start with better document parsing earlier
-2. Build evaluation pipeline before scaling
-3. Implement query logging from day one
-4. Create feedback loop with users sooner
+1. **快取**：30% 快取命中率 → LLM 節省 $6K
+2. **模型路由**：將簡單查詢路由至較便宜的模型 → 節省 40%
+3. **批次嵌入**：使用非同步批次處理 → 節省 20%
+4. **自行託管重排序器**：以開源替換 Cohere → 消除 $75
 
 ---
 
-## Interview Walkthrough
+<a id="lessons-learned"></a>
+## 學到的經驗
 
-### How to Present This in an Interview
+<a id="what-worked-well"></a>
+### 成效良好之處
 
-**Opening (2 min):**
-"I will design an enterprise RAG system for internal document search. Let me clarify a few requirements first..."
+1. **混合式搜尋**：結合語意 + 關鍵字顯著提升召回率
+2. **重排序**：前 5 名精確度提升 15%
+3. **清晰的引用**：建立使用者信任
+4. **在檢索時進行權限過濾**：無需事後過濾
 
-**Requirements (3 min):**
-- Ask about scale, latency, accuracy targets
-- Clarify security requirements
-- Understand document types and update frequency
+<a id="challenges-encountered"></a>
+### 遭遇的挑戰
 
-**High-Level Design (5 min):**
-- Draw the architecture diagram
-- Explain key components
-- Justify technology choices
+1. **表格擷取**：含複雜表格的 PDF 需要自訂解析
+2. **縮寫詞**：特定領域縮寫需要展開處理
+3. **新鮮度**：1 小時的新鮮度要求需要串流攝取
+4. **長文件**：超過 100 頁的文件需要層次化分塊
 
-**Deep Dive (10 min):**
-- Retrieval strategy (hybrid search, why)
-- Security (permission filtering at query time)
-- Generation (prompt engineering, citations)
-- Scaling (sharding, caching, replicas)
+<a id="what-we-would-do-differently"></a>
+### 如果重來會有哪些不同
 
-**Tradeoffs (5 min):**
-- Cost vs latency (model selection)
-- Accuracy vs latency (reranking adds time)
-- Freshness vs cost (streaming vs batch)
-
-**Monitoring (2 min):**
-- Key metrics (latency, accuracy, user feedback)
-- How to detect issues
-- Continuous improvement loop
+1. 更早建立更好的文件解析
+2. 在擴展之前先建立評估管道
+3. 從第一天起就實作查詢日誌
+4. 更快與使用者建立回饋迴圈
 
 ---
 
-*Next: [Case Study: Conversational AI Agent](02-conversational-agent.md)*
+<a id="interview-walkthrough"></a>
+## 面試演練
+
+<a id="how-to-present-this-in-an-interview"></a>
+### 如何在面試中呈現
+
+**開場（2 分鐘）：**
+「我將設計一個用於內部文件搜尋的企業級 RAG 系統。讓我先釐清幾個需求……」
+
+**需求（3 分鐘）：**
+- 詢問規模、延遲、準確度目標
+- 釐清安全需求
+- 了解文件類型與更新頻率
+
+**高層設計（5 分鐘）：**
+- 繪製架構圖
+- 說明關鍵元件
+- 說明技術選型理由
+
+**深度解析（10 分鐘）：**
+- 檢索策略（混合式搜尋，原因）
+- 安全性（查詢時進行權限過濾）
+- 生成（提示工程、引用）
+- 擴展性（分片、快取、副本）
+
+**取捨（5 分鐘）：**
+- 成本 vs. 延遲（模型選擇）
+- 準確度 vs. 延遲（重排序增加時間）
+- 新鮮度 vs. 成本（串流 vs. 批次）
+
+**監控（2 分鐘）：**
+- 關鍵指標（延遲、準確度、使用者回饋）
+- 如何偵測問題
+- 持續改善迴圈
+
+---
+
+*下一章：[案例研究：對話式 AI 代理人](02-conversational-agent.md)*

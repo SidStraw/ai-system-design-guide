@@ -1,28 +1,31 @@
+<a id="contextual-retrieval"></a>
 # Contextual Retrieval
 
-Contextual Retrieval is an ingestion-time technique that solves the #1 cause of RAG failure: **chunks that lose meaning when separated from their source document**. Pioneered by Anthropic in late 2024, it is now a production standard for high-precision retrieval. Anthropic's own measurements show a 49% reduction in retrieval failures with hybrid search alone, and 67% reduction when combined with reranking.
+Contextual Retrieval 是一種在 ingestion 階段執行的技術，用來解決 RAG 失敗的頭號原因：**chunk 一旦脫離原始文件，就會失去語意**。這個方法由 Anthropic 在 2024 年底率先推廣，如今已成為高精度檢索的正式環境標準。Anthropic 自家的量測顯示：僅用 hybrid search 就能讓檢索失敗減少 49%；若再結合 reranking，則可減少 67%。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [The Problem: Context Dilution](#context-dilution)
-- [How Contextual Retrieval Works](#how-it-works)
+- [問題：Context Dilution](#the-problem-context-dilution)
+- [Contextual Retrieval 如何運作](#how-contextual-retrieval-works)
 - [Contextual Embeddings](#contextual-embeddings)
 - [Contextual BM25](#contextual-bm25)
-- [The Full Pipeline: Hybrid + Reranking](#full-pipeline)
-- [Implementation Patterns](#implementation)
-- [Cost Considerations](#cost)
-- [Contextual Retrieval vs. Other Approaches](#comparison)
-- [Production Architecture](#production)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [完整 Pipeline：Hybrid + Reranking](#the-full-pipeline-hybrid-reranking)
+- [實作模式](#implementation-patterns)
+- [成本考量](#cost-considerations)
+- [Contextual Retrieval 與其他方法的比較](#contextual-retrieval-vs-other-approaches)
+- [正式環境架構](#production-architecture)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## The Problem: Context Dilution
+<a id="the-problem-context-dilution"></a>
+## 問題：Context Dilution
 
-When we chunk documents for RAG, individual chunks lose the surrounding context that gives them meaning.
+當我們為 RAG 對文件做 chunking 時，單一 chunk 會失去原本包圍它、賦予意義的上下文。
 
-**Example of Context Dilution:**
+**Context Dilution 範例：**
 
 ```
 Original Document: "Acme Corp Q3 2025 Financial Report"
@@ -38,15 +41,16 @@ Chunk 18: "The Enterprise plan includes SSO and audit
            logs for $800/month."
 ```
 
-**The problem with Chunk 17**: A user searching "How much does Acme Standard plan cost?" will likely miss this chunk because it contains no mention of "Acme," "Standard," or "plan." The embedding of "It costs $200/month" is semantically distant from the query.
+**Chunk 17 的問題**：如果使用者搜尋「Acme Standard plan 多少錢？」，很可能會漏掉這個 chunk，因為它完全沒有提到「Acme」、「Standard」或「plan」。`It costs $200/month` 的 embedding 在語意上離這個 query 很遠。
 
-**Insight**: Anthropic's research showed that traditional chunking causes a **5.7% retrieval failure rate** on the top-20 retrieved chunks. That means roughly 1 in 18 queries fails to retrieve the relevant information, even when it exists in the knowledge base.
+**洞見**：Anthropic 的研究顯示，傳統 chunking 會讓 top-20 檢索結果出現 **5.7% 的檢索失敗率**。也就是說，大約每 18 個 query 就有 1 個，即使相關資訊明明存在於 knowledge base 中，也抓不出來。
 
 ---
 
-## How Contextual Retrieval Works
+<a id="how-contextual-retrieval-works"></a>
+## Contextual Retrieval 如何運作
 
-The core idea is simple: **before embedding a chunk, prepend a short context string that explains what the chunk is about within the full document**.
+核心概念很簡單：**在為 chunk 建立 embedding 之前，先加上一段簡短的上下文字串，說明這個 chunk 在完整文件中的意義。**
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -68,7 +72,7 @@ The core idea is simple: **before embedding a chunk, prepend a short context str
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**The contextualization step** sends the full document + individual chunk to an LLM with this prompt:
+**Contextualization 步驟**會把完整文件 + 單一 chunk 一起送給 LLM，prompt 如下：
 
 ```
 <document>
@@ -86,7 +90,7 @@ search retrieval of the chunk. Answer only with the succinct
 context and nothing else.
 ```
 
-**Result for Chunk 17**:
+**Chunk 17 的結果**：
 
 ```
 Before: "It costs $200/month."
@@ -97,25 +101,28 @@ After:  "This chunk is from the Acme Corp Q3 2025 Financial
          It costs $200/month."
 ```
 
-Now the embedding of this chunk contains "Acme," "Standard plan," and "Product Pricing" -- all the terms a user would naturally search for.
+現在，這個 chunk 的 embedding 已包含「Acme」、「Standard plan」與「Product Pricing」等使用者自然會搜尋的詞彙。
 
 ---
 
+<a id="contextual-embeddings"></a>
 ## Contextual Embeddings
 
-Contextual Embeddings is the first sub-technique: embedding the contextualized chunk instead of the raw chunk.
+Contextual Embeddings 是第一個子技術：不是嵌入原始 chunk，而是嵌入 contextualized chunk。
 
-### How It Improves Retrieval
+<a id="how-it-improves-retrieval"></a>
+### 它如何改善檢索
 
-| Scenario | Raw Chunk Embedding | Contextual Embedding |
+| 情境 | 原始 Chunk Embedding | Contextual Embedding |
 |----------|--------------------|-----------------------|
-| User asks about "Acme pricing" | Misses "It costs $200" | Matches "Acme...Standard plan...costs $200" |
-| User asks about "SSO features" | Matches "SSO and audit logs" | Matches with added context of "Enterprise plan" |
-| User asks about "Q3 financials" | No match (no mention of Q3) | Matches via prepended "Q3 2025 Financial Report" |
+| 使用者問「Acme pricing」 | 會漏掉「It costs $200」 | 可匹配「Acme...Standard plan...costs $200」 |
+| 使用者問「SSO features」 | 只匹配「SSO and audit logs」 | 還會帶上「Enterprise plan」的補充上下文 |
+| 使用者問「Q3 financials」 | 不會匹配（沒提到 Q3） | 可透過前綴的「Q3 2025 Financial Report」匹配 |
 
-**Performance**: Contextual Embeddings alone reduce top-20 retrieval failure from **5.7% to 3.7%** -- a **35% reduction** in retrieval failures.
+**效能**：單靠 Contextual Embeddings，就能把 top-20 檢索失敗率從 **5.7% 降到 3.7%**，也就是 **35% 的失敗減幅**。
 
-### The Vector Space Shift
+<a id="the-vector-space-shift"></a>
+### 向量空間位移
 
 ```
                     ▲ Dimension 2
@@ -134,35 +141,39 @@ Contextual Embeddings is the first sub-technique: embedding the contextualized c
 
 ---
 
+<a id="contextual-bm25"></a>
 ## Contextual BM25
 
-The second sub-technique applies the same contextualization to create a **BM25 keyword index** over the enriched chunks.
+第二個子技術，是把同樣的 contextualization 用在 enriched chunks 上建立 **BM25 keyword index**。
 
-### Why BM25 Still Matters
+<a id="why-bm25-still-matters"></a>
+### 為什麼 BM25 仍然重要
 
-Dense embeddings excel at semantic similarity but fail on:
-- **Exact terms**: Product IDs, version numbers, acronyms
-- **Rare tokens**: Domain-specific jargon that embedding models under-represent
-- **Proper nouns**: Company names, people, places
+Dense embeddings 很擅長語意相似度，但對下列情況仍不理想：
+- **精確詞彙**：產品 ID、版本號、縮寫
+- **稀有 token**：embedding 模型較難充分表達的領域術語
+- **專有名詞**：公司名、人名、地名
 
-**Example**: A user searching "Widget-X pricing" would get zero BM25 matches on the raw chunk "It costs $200/month" because "Widget-X" never appears. With contextual BM25, the prepended context includes "Widget-X" as a keyword, enabling the BM25 match.
+**範例**：使用者搜尋「Widget-X pricing」時，原始 chunk `It costs $200/month` 在 BM25 上完全不會命中，因為裡面根本沒有「Widget-X」。但若有 contextual BM25，前綴上下文就會包含「Widget-X」，從而啟用 BM25 命中。
 
-### Performance Gains (Cumulative)
+<a id="performance-gains-cumulative"></a>
+### 效能提升（累積）
 
-| Configuration | Failure Rate | Reduction vs. Baseline |
+| 配置 | 失敗率 | 相對基準的降幅 |
 |---------------|-------------|----------------------|
-| Traditional embeddings (baseline) | 5.7% | -- |
-| Contextual Embeddings only | 3.7% | 35% |
+| 傳統 embeddings（基準） | 5.7% | -- |
+| 僅 Contextual Embeddings | 3.7% | 35% |
 | Contextual Embeddings + Contextual BM25 | 2.9% | **49%** |
 | Contextual Embeddings + Contextual BM25 + Reranking | 1.9% | **67%** |
 
-**Takeaway**: The combination of contextual embeddings + contextual BM25 is the highest-leverage single change you can make to a RAG pipeline. Adding a reranker on top gets you to 67% fewer failures.
+**重點**：Contextual Embeddings + Contextual BM25 的組合，是你能對 RAG pipeline 做出的最高槓桿單一改動。再加上 reranker，就能把失敗率降低 67%。
 
 ---
 
-## The Full Pipeline: Hybrid + Reranking
+<a id="the-full-pipeline-hybrid-reranking"></a>
+## 完整 Pipeline：Hybrid + Reranking
 
-The production-grade Contextual Retrieval pipeline has four stages:
+正式環境級的 Contextual Retrieval pipeline 有四個階段：
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -195,9 +206,10 @@ The production-grade Contextual Retrieval pipeline has four stages:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Reciprocal Rank Fusion (RRF) for Combining Results
+<a id="reciprocal-rank-fusion-rrf-for-combining-results"></a>
+### 使用 Reciprocal Rank Fusion（RRF）合併結果
 
-The same RRF technique used in standard hybrid search applies here:
+這裡使用的 RRF 技術，與標準 hybrid search 中的做法相同：
 
 ```
 RRF_Score(doc) = sum( 1 / (k + rank_in_list) )
@@ -208,9 +220,11 @@ k = 60 (standard smoothing constant)
 
 ---
 
-## Implementation Patterns
+<a id="implementation-patterns"></a>
+## 實作模式
 
-### Pattern 1: Basic Contextual Retrieval (Python)
+<a id="pattern-1-basic-contextual-retrieval-python"></a>
+### 模式 1：基礎 Contextual Retrieval（Python）
 
 ```python
 import anthropic
@@ -263,9 +277,10 @@ def process_document(document: str, chunks: List[str]) -> List[str]:
     return contextualized
 ```
 
-### Pattern 2: Cost-Optimized with Prompt Caching
+<a id="pattern-2-cost-optimized-with-prompt-caching"></a>
+### 模式 2：使用 Prompt Caching 進行成本最佳化
 
-The biggest cost driver is sending the full document with every chunk. **Prompt Caching** solves this:
+最大的成本來源，是每個 chunk 都要重送一次完整文件。**Prompt Caching** 就是用來解決這個問題：
 
 ```python
 def contextualize_with_caching(
@@ -312,11 +327,12 @@ def contextualize_with_caching(
     return results
 ```
 
-**Cost Impact of Prompt Caching**: For a 10,000-token document split into 30 chunks, prompt caching reduces the contextualization cost by up to **90%** because the document prefix is cached after the first call.
+**Prompt Caching 的成本影響**：對於一份 10,000 token、切成 30 個 chunks 的文件來說，prompt caching 可把 contextualization 成本降低高達 **90%**，因為文件前綴會在第一次呼叫後被快取。
 
-### Pattern 3: Contextual Chunk Headers (Lightweight Alternative)
+<a id="pattern-3-contextual-chunk-headers-lightweight-alternative"></a>
+### 模式 3：Contextual Chunk Headers（輕量替代方案）
 
-If LLM-based contextualization is too expensive, use **Contextual Chunk Headers (CCH)** as a deterministic alternative:
+如果基於 LLM 的 contextualization 太昂貴，可以改用 **Contextual Chunk Headers（CCH）** 作為決定性的替代方案：
 
 ```python
 def add_chunk_headers(
@@ -337,7 +353,6 @@ def add_chunk_headers(
     header = "\n".join(header_parts)
     return f"{header}\n\n{chunk}"
 
-
 # Example usage:
 contextualized = add_chunk_headers(
     document_title="Acme Corp Q3 2025 Financial Report",
@@ -354,62 +369,67 @@ contextualized = add_chunk_headers(
 # It costs $200/month.
 ```
 
-**When to use CCH vs. LLM Contextualization:**
+**何時使用 CCH、何時使用 LLM Contextualization：**
 
-| Factor | Chunk Headers (CCH) | LLM Contextualization |
+| 因素 | Chunk Headers（CCH） | LLM Contextualization |
 |--------|--------------------|-----------------------|
-| **Cost** | Free (no LLM calls) | $1-5 per 1M tokens |
-| **Quality** | Good for structured docs | Excellent for all docs |
-| **Speed** | Instant | 50-200ms per chunk |
-| **Best for** | Markdown, HTML, PDFs with clear headers | Unstructured text, legal, medical |
+| **成本** | 免費（無 LLM 呼叫） | 每 1M tokens 約 $1-5 |
+| **品質** | 對結構化文件效果佳 | 對所有文件都很強 |
+| **速度** | 即時 | 每個 chunk 50-200ms |
+| **最適合** | Markdown、HTML、具清楚標題的 PDF | 非結構化文字、法律、醫療 |
 
 ---
 
-## Cost Considerations
+<a id="cost-considerations"></a>
+## 成本考量
 
-### Contextualization Costs
+<a id="contextualization-costs"></a>
+### Contextualization 成本
 
-For a knowledge base of 10,000 chunks (avg 400 tokens each):
+對一個含有 10,000 個 chunks（平均每個 400 tokens）的 knowledge base：
 
-| Model | Cost per Chunk | Total Cost | Quality |
+| 模型 | 每個 Chunk 成本 | 總成本 | 品質 |
 |-------|---------------|------------|---------|
-| Claude Haiku (fast, cheap) | ~$0.0003 | ~$3 | Good |
-| Claude Sonnet (balanced) | ~$0.002 | ~$20 | Very Good |
-| Claude Opus (highest quality) | ~$0.01 | ~$100 | Excellent |
+| Claude Haiku（快、便宜） | ~$0.0003 | ~$3 | Good |
+| Claude Sonnet（平衡） | ~$0.002 | ~$20 | Very Good |
+| Claude Opus（最高品質） | ~$0.01 | ~$100 | Excellent |
 
-**Best practice**: Use Haiku (or another fast, cheap model) for contextualization. The context strings are short and factual, so you do not need a frontier model. Combine with prompt caching for ~90% cost reduction on the document body that gets passed in repeatedly.
+**最佳實務**：對 contextualization 使用 Haiku（或其他快速便宜的模型）即可。因為這些 context strings 很短、偏事實性，不需要 frontier model。再搭配 prompt caching，就能把反覆傳入的文件本文成本再降約 90%。
 
-### When to Use Contextual Retrieval
+<a id="when-to-use-contextual-retrieval"></a>
+### 何時使用 Contextual Retrieval
 
-**Use it when:**
-- Your corpus has fragmented documents where chunks lose meaning in isolation
-- You have domain-specific jargon that embedding models struggle with
-- Your retrieval failure rate exceeds 3-5%
-- You can afford the one-time ingestion cost
+**適合使用的情況：**
+- 你的語料包含許多碎片化文件，chunk 單獨存在時會失去意義
+- 你有 embedding 模型難以掌握的領域術語
+- 你的檢索失敗率超過 3-5%
+- 你能負擔一次性的 ingestion 成本
 
-**Skip it when:**
-- Your chunks are already self-contained (e.g., FAQ pairs, product descriptions)
-- Your corpus is tiny (< 100 chunks) -- just use long-context instead
-- You need real-time ingestion (< 1s per document) and cannot batch
+**不適合使用的情況：**
+- 你的 chunks 已經自成一體（例如 FAQ 配對、產品描述）
+- 你的語料非常小（<100 個 chunks）——直接用 long-context 即可
+- 你需要即時 ingestion（每份文件 <1 秒），而且無法做 batch
 
 ---
 
-## Contextual Retrieval vs. Other Approaches
+<a id="contextual-retrieval-vs-other-approaches"></a>
+## Contextual Retrieval 與其他方法的比較
 
-| Approach | How It Works | Retrieval Improvement | Cost | Complexity |
+| 方法 | 運作方式 | 檢索改善 | 成本 | 複雜度 |
 |----------|-------------|----------------------|------|------------|
-| **Naive Chunking** | Fixed-size splits, embed raw | Baseline | None | Low |
-| **Chunk Headers (CCH)** | Prepend doc/section titles | 10-20% | None | Low |
-| **Contextual Retrieval** | LLM-generated context per chunk | 35-49% | $3-20 per 10k chunks | Medium |
-| **Contextual + Reranking** | Above + cross-encoder rerank | 67% | $5-30 per 10k chunks | Medium-High |
-| **HyDE** | Hypothetical doc generation at query time | 20-40% | Per-query LLM cost | Medium |
-| **Parent-Child Chunking** | Embed children, retrieve parents | 15-30% | None | Medium |
+| **Naive Chunking** | 固定大小切分，直接嵌入原文 | 基準 | 無 | 低 |
+| **Chunk Headers（CCH）** | 在前面加上文件／章節標題 | 10-20% | 無 | 低 |
+| **Contextual Retrieval** | 每個 chunk 由 LLM 產生 context | 35-49% | 每 10k chunks 約 $3-20 | 中 |
+| **Contextual + Reranking** | 上述方法 + cross-encoder rerank | 67% | 每 10k chunks 約 $5-30 | 中高 |
+| **HyDE** | 在 query time 產生假想文件 | 20-40% | 每 query 的 LLM 成本 | 中 |
+| **Parent-Child Chunking** | 嵌入 children、檢索 parents | 15-30% | 無 | 中 |
 
-**Key Distinction**: Contextual Retrieval is an **ingestion-time** technique (pay once), while HyDE is a **query-time** technique (pay per query). For high-volume systems, Contextual Retrieval amortizes much better.
+**關鍵差異**：Contextual Retrieval 是 **ingestion-time** 技術（付一次），HyDE 則是 **query-time** 技術（每次查詢都付）。對高流量系統而言，Contextual Retrieval 的攤提效果好得多。
 
-### Contextual Retrieval vs. Late Chunking
+<a id="contextual-retrieval-vs-late-chunking"></a>
+### Contextual Retrieval 與 Late Chunking 的比較
 
-**Late Chunking** (Jina, 2024) is a related but distinct approach:
+**Late Chunking**（Jina，2024）是相關但不同的方法：
 
 ```
 Contextual Retrieval:
@@ -420,13 +440,15 @@ Late Chunking:
   ──► THEN chunk the token embeddings (preserving context)
 ```
 
-Late Chunking requires a long-context embedding model (e.g., Jina v3) and avoids LLM calls entirely. It preserves context through the embedding model's attention mechanism rather than explicit text prepending. The tradeoff is that Late Chunking does not help BM25 search, only dense retrieval.
+Late Chunking 需要 long-context embedding model（例如 Jina v3），完全不需要 LLM calls。它是透過 embedding model 的 attention mechanism 保留上下文，而不是明確地在文字前加前綴。取捨在於：Late Chunking 只幫 dense retrieval，對 BM25 搜尋沒有幫助。
 
 ---
 
-## Production Architecture
+<a id="production-architecture"></a>
+## 正式環境架構
 
-### Reference Architecture: Contextual RAG at Scale
+<a id="reference-architecture-contextual-rag-at-scale"></a>
+### 參考架構：大規模 Contextual RAG
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -470,45 +492,51 @@ Late Chunking requires a long-context embedding model (e.g., Jina v3) and avoids
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Scaling Considerations
+<a id="scaling-considerations"></a>
+### 擴充性考量
 
-| Concern | Solution |
+| 關注點 | 解法 |
 |---------|----------|
-| **Ingestion throughput** | Parallelize LLM calls (50-100 concurrent) with async workers |
-| **Document updates** | Re-contextualize only changed chunks; store raw + context separately |
-| **Cost at scale** | Use Haiku + prompt caching; batch documents by size |
-| **Quality monitoring** | Sample 1% of chunks and human-evaluate context quality |
-| **Index consistency** | Update vector DB + BM25 index atomically per document |
+| **Ingestion 吞吐量** | 以 async workers 平行 LLM calls（50-100 個並行） |
+| **文件更新** | 只重新 contextualize 有變更的 chunks；分開存 raw 與 context |
+| **大規模成本** | 使用 Haiku + prompt caching；依文件大小批次處理 |
+| **品質監控** | 抽樣 1% chunks，由人工評估 context 品質 |
+| **索引一致性** | 以文件為單位，原子性更新 vector DB + BM25 index |
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: Explain Anthropic's Contextual Retrieval. When would you use it and when would you skip it?
+<a id="q-explain-anthropics-contextual-retrieval-when-would-you-use-it-and-when-would-you-skip-it"></a>
+### Q：請解釋 Anthropic 的 Contextual Retrieval。什麼情況會使用，什麼情況會跳過？
 
-**Strong answer:**
-Contextual Retrieval solves the "context dilution" problem in RAG. When documents are chunked, individual chunks lose the surrounding context that gives them meaning -- a chunk saying "It costs $200" is useless without knowing *what* costs $200. The technique uses an LLM at ingestion time to generate a short context string (50-100 tokens) per chunk, explaining what that chunk is about within the document. This context is prepended to the chunk before embedding and BM25 indexing.
+**強答：**
+Contextual Retrieval 解決的是 RAG 中的「context dilution」問題。當文件被切成 chunks 後，單一 chunk 會失去原本賦予它意義的上下文——例如一個 chunk 只寫著「It costs $200」，若不知道是什麼東西要 200 美元，這段資訊幾乎沒有價值。這個技術會在 ingestion 階段，讓 LLM 為每個 chunk 生成一段 50-100 token 的短上下文，說明它在整份文件中的位置與意義。接著，這段 context 會先被 prepend 到 chunk 前面，再做 embedding 與 BM25 indexing。
 
-The key results: Contextual Embeddings alone reduce retrieval failures by 35%. Adding Contextual BM25 achieves 49% reduction. Adding a reranker reaches 67% reduction.
+關鍵結果如下：單靠 Contextual Embeddings 就能減少 35% 的檢索失敗；加上 Contextual BM25 可達 49%；再加上 reranker 則可達 67%。
 
-I would use it when chunks regularly lose meaning in isolation -- legal contracts, financial reports, technical manuals. I would skip it when chunks are already self-contained (FAQs, product cards) or when the corpus is small enough for long-context RAG.
+如果 chunk 常常單獨失去意義——例如法律合約、財報、技術手冊——我會使用它。若 chunks 本來就自成一體（FAQ、商品卡片），或語料小到可以直接做 long-context RAG，我就會跳過。
 
-### Q: A knowledge base of 50,000 documents needs Contextual Retrieval. How do you manage the ingestion cost?
+<a id="q-a-knowledge-base-of-50000-documents-needs-contextual-retrieval-how-do-you-manage-the-ingestion-cost"></a>
+### Q：一個有 50,000 份文件的 knowledge base 需要 Contextual Retrieval。你如何管理 ingestion 成本？
 
-**Strong answer:**
-Three strategies:
-1. **Model selection**: Use a small, fast model (Claude Haiku-class) for contextualization. The output is short factual text, not creative writing -- a frontier model adds cost without quality gain.
-2. **Prompt caching**: Cache the full document text across all chunk contextualization calls. For a 10,000-token document with 30 chunks, this reduces input token costs by approximately 90%.
-3. **Tiered approach**: Not every document needs LLM contextualization. For well-structured documents (Markdown, HTML with headers), use deterministic Contextual Chunk Headers (prepending doc title + section hierarchy) which is free. Reserve LLM contextualization for unstructured or ambiguous documents.
+**強答：**
+有三個策略：
+1. **模型選型**：用小而快的模型（如 Claude Haiku 級別）做 contextualization。輸出只是短小、偏事實的文字，不是創意寫作——frontier model 只會增加成本，不會帶來相應品質收益。
+2. **Prompt caching**：在所有 chunk contextualization calls 間快取完整文件文字。對 10,000 token、30 個 chunks 的文件來說，這可讓輸入 token 成本下降約 90%。
+3. **分層策略**：不是每份文件都需要 LLM contextualization。對於結構良好的文件（Markdown、HTML、有標題的文件），可用決定性的 Contextual Chunk Headers（prepend 文件標題 + 章節階層），成本為零。只把 LLM contextualization 留給非結構化或語意模糊的文件。
 
-### Q: How does Contextual Retrieval compare to HyDE for improving retrieval quality?
+<a id="q-how-does-contextual-retrieval-compare-to-hyde-for-improving-retrieval-quality"></a>
+### Q：Contextual Retrieval 與 HyDE 在提升檢索品質上有何不同？
 
-**Strong answer:**
-They solve different sides of the same problem. Contextual Retrieval enriches **documents** at ingestion time (pay once), while HyDE enriches **queries** at search time (pay per query). For a system handling 10,000 queries/day against a 50,000-chunk corpus, Contextual Retrieval is dramatically cheaper because the ingestion cost is amortized. HyDE also has a hallucination risk -- the hypothetical document might pull in wrong data. In practice, the strongest systems use both: Contextual Retrieval for ingestion enrichment and HyDE (or multi-query expansion) for complex queries that need query-side help.
+**強答：**
+它們解的是同一個問題的不同面向。Contextual Retrieval 在 ingestion 時增豐的是 **documents**（付一次），HyDE 在搜尋時增豐的是 **queries**（每次查詢都付）。對一個每天 10,000 次查詢、語料有 50,000 個 chunks 的系統來說，Contextual Retrieval 會便宜得多，因為 ingestion 成本可以被攤提。HyDE 也帶有幻覺風險——假想文件可能把錯誤資料拉進來。實務上，最強的系統通常兩者並用：用 Contextual Retrieval 增豐文件端，再用 HyDE（或 multi-query expansion）處理需要 query 端補強的複雜查詢。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 - Anthropic. "Contextual Retrieval" (September 2024)
 - Jina AI. "Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models" (2024)
 - Voyage AI. "voyage-context-3: Contextualized Chunk Embeddings" (2025)
@@ -516,4 +544,4 @@ They solve different sides of the same problem. Contextual Retrieval enriches **
 
 ---
 
-*Previous: [Advanced Retrieval Patterns](09-advanced-retrieval-patterns.md) | Next: [Late Interaction & ColBERT](11-late-interaction-colbert.md)*
+*上一節：[Advanced Retrieval Patterns](09-advanced-retrieval-patterns.md) | 下一節：[Late Interaction & ColBERT](11-late-interaction-colbert.md)*

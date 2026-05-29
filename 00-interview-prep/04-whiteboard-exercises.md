@@ -1,57 +1,65 @@
-# Whiteboard Exercises for AI System Design
+<a id="whiteboard-exercises-for-ai-system-design"></a>
+# AI 系統設計白板練習
 
-This chapter provides detailed walkthroughs of system design exercises commonly asked in AI-focused interviews. Each exercise includes the full problem statement, a structured solution approach, and discussion points that distinguish strong candidates.
+本章提供 AI 面向面試中常見系統設計題的詳細解析。每個練習都包含完整題目敘述、結構化解題方式，以及能區分優秀候選人的討論重點。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Exercise 1: Enterprise RAG System](#exercise-1-enterprise-rag-system)
-- [Exercise 2: Customer Support Chatbot](#exercise-2-customer-support-chatbot)
-- [Exercise 3: Code Review Assistant](#exercise-3-code-review-assistant)
-- [Exercise 4: Document Processing Pipeline](#exercise-4-document-processing-pipeline)
-- [Exercise 5: Real-Time Content Moderation](#exercise-5-real-time-content-moderation)
-- [Exercise 6: Multi-Tenant AI Platform](#exercise-6-multi-tenant-ai-platform)
-- [Exercise 7: Semantic Search at Scale](#exercise-7-semantic-search-at-scale)
-- [Tips for Whiteboard Exercises](#tips-for-whiteboard-exercises)
+- [練習 1：企業級 RAG 系統](#exercise-1-enterprise-rag-system)
+- [練習 2：客戶支援聊天機器人](#exercise-2-customer-support-chatbot)
+- [練習 3：程式碼審查助理](#exercise-3-code-review-assistant)
+- [練習 4：文件處理管線](#exercise-4-document-processing-pipeline)
+- [練習 5：即時內容審核](#exercise-5-real-time-content-moderation)
+- [練習 6：多租戶 AI 平台](#exercise-6-multi-tenant-ai-platform)
+- [練習 7：大規模語意搜尋](#exercise-7-semantic-search-at-scale)
+- [白板練習技巧](#tips-for-whiteboard-exercises)
 
 ---
 
-## Exercise 1: Enterprise RAG System
+<a id="exercise-1-enterprise-rag-system"></a>
+## 練習 1：企業級 RAG 系統
 
-### Problem Statement
+<a id="problem-statement"></a>
+### 題目敘述
 
-Design a RAG-based knowledge assistant for a large enterprise with the following requirements:
+為一家大型企業設計一個以 RAG 為基礎的知識助理，需求如下：
 
-- 10 million documents from multiple sources (SharePoint, Confluence, Google Drive, internal wikis)
-- 50,000 employees with role-based access
-- Documents update continuously
-- Must respect document permissions at query time
-- Sub-3 second response time for 95% of queries
-- Support for multiple languages (English, Spanish, Mandarin)
+- 來自多個來源的 1,000 萬份文件（SharePoint、Confluence、Google Drive、內部 wiki）
+- 5 萬名員工，具備角色式存取控制
+- 文件會持續更新
+- 查詢時必須遵守文件權限
+- 95% 查詢的回應時間需低於 3 秒
+- 支援多語言（English、Spanish、Mandarin）
 
-### Time Allocation (35 minutes)
+<a id="time-allocation-35-minutes"></a>
+### 時間分配（35 分鐘）
 
-| Phase | Time | Focus |
+| 階段 | 時間 | 重點 |
 |-------|------|-------|
-| Clarification | 3 min | Scope, priorities, constraints |
-| High-level architecture | 7 min | Components and data flow |
-| Data pipeline | 8 min | Ingestion, chunking, indexing |
-| Query pipeline | 8 min | Retrieval, generation, permissions |
-| Reliability and scale | 5 min | Failure handling, scaling |
-| Evaluation | 4 min | Metrics and monitoring |
+| 釐清問題 | 3 分鐘 | 範圍、優先順序、限制 |
+| 高階架構 | 7 分鐘 | 元件與資料流 |
+| 資料管線 | 8 分鐘 | 擷取、切塊、索引 |
+| 查詢管線 | 8 分鐘 | 檢索、生成、權限 |
+| 可靠性與擴展性 | 5 分鐘 | 故障處理、擴展 |
+| 評估 | 4 分鐘 | 指標與監控 |
 
-### Solution Walkthrough
+<a id="solution-walkthrough"></a>
+### 解題走讀
 
-#### Clarification Questions
+<a id="clarification-questions"></a>
+#### 釐清問題
 
 ```
-1. What is the document size distribution? (PDFs, wikis, code?)
-2. How often do permissions change? (Impacts caching strategy)
-3. Is conversation history required or single-turn Q&A?
-4. What is the accuracy bar? (Can we say "I don't know"?)
-5. Are there compliance requirements? (Audit, data residency)
+1. 文件大小分布為何？（PDF、wiki、程式碼？）
+2. 權限多久變更一次？（會影響快取策略）
+3. 需要對話歷史，還是單輪問答即可？
+4. 準確度門檻是什麼？（可以回答「我不知道」嗎？）
+5. 是否有合規要求？（稽核、資料駐留）
 ```
 
-#### High-Level Architecture
+<a id="high-level-architecture"></a>
+#### 高階架構
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -87,23 +95,24 @@ Design a RAG-based knowledge assistant for a large enterprise with the following
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-#### Data Pipeline Deep Dive
+<a id="data-pipeline-deep-dive"></a>
+#### 資料管線深入解析
 
-**1. Connectors:**
+**1. 連接器：**
 ```
-Each source has a dedicated connector:
-- SharePoint: Graph API with delta sync
-- Confluence: REST API with webhooks
-- Google Drive: Drive API with push notifications
+每個來源都有專屬連接器：
+- SharePoint：使用 Graph API 搭配 delta sync
+- Confluence：使用 REST API 搭配 webhook
+- Google Drive：使用 Drive API 搭配 push notification
 
-Connector responsibilities:
-- Fetch document content and metadata
-- Track change events (create, update, delete)
-- Extract permissions from source system
-- Normalize to common document schema
+連接器職責：
+- 擷取文件內容與中繼資料
+- 追蹤變更事件（create、update、delete）
+- 從來源系統擷取權限資訊
+- 正規化為通用文件 schema
 ```
 
-**2. Document Schema:**
+**2. 文件 Schema：**
 ```json
 {
   "doc_id": "uuid",
@@ -127,81 +136,82 @@ Connector responsibilities:
 }
 ```
 
-**3. Chunking Strategy:**
+**3. 切塊策略：**
 ```
-Given mixed document types, use adaptive chunking:
+面對混合型文件，可採用自適應切塊：
 
-- Markdown/HTML: Semantic chunking by headers
-- PDFs: Layout-aware chunking using document AI
-- Wiki pages: Section-based chunking
+- Markdown/HTML：依標題做語意切塊
+- PDF：使用 document AI 做版面感知切塊
+- Wiki 頁面：依章節切塊
 
-Chunk parameters:
-- Target size: 512 tokens
-- Overlap: 50 tokens
-- Preserve: headers, tables, code blocks
+切塊參數：
+- 目標大小：512 tokens
+- 重疊：50 tokens
+- 保留：標題、表格、程式碼區塊
 
-Each chunk inherits parent document permissions.
-```
-
-**4. Embedding:**
-```
-Multilingual requirement suggests:
-- Model: Cohere embed-v3 (multilingual, good quality)
-- Alternative: OpenAI text-embedding-3-large
-
-Batch embedding:
-- Process in batches of 100 chunks
-- Rate limit handling with exponential backoff
-- Store embedding with chunk in vector DB
+每個 chunk 會繼承母文件的權限。
 ```
 
-**5. Vector Database Choice:**
+**4. Embedding：**
 ```
-Pinecone or Qdrant for this scale.
+多語需求代表可考慮：
+- 模型：Cohere embed-v3（多語、品質佳）
+- 替代方案：OpenAI text-embedding-3-large
 
-Selection criteria:
-- Metadata filtering: Critical for permissions
-- Scale: 10M docs × 5 chunks = 50M vectors
-- Hybrid search: Needed for keyword queries
-
-Schema:
-- Vector: embedding
-- Metadata: doc_id, chunk_id, language, permissions, source
+批次 embedding：
+- 每批處理 100 個 chunks
+- 使用 exponential backoff 處理 rate limit
+- 將 embedding 與 chunk 一起存入 vector DB
 ```
 
-#### Query Pipeline Deep Dive
+**5. 向量資料庫選型：**
+```
+以這個規模來看，Pinecone 或 Qdrant 都合適。
 
-**1. Permission Resolution:**
+選擇標準：
+- Metadata filtering：對權限控管至關重要
+- 規模：10M 文件 × 5 chunks = 50M vectors
+- Hybrid search：關鍵字查詢會用到
+
+Schema：
+- Vector：embedding
+- Metadata：doc_id、chunk_id、language、permissions、source
+```
+
+<a id="query-pipeline-deep-dive"></a>
+#### 查詢管線深入解析
+
+**1. 權限解析：**
 ```python
 def get_user_permissions(user_id: str) -> PermissionSet:
     """
-    Resolve all documents user can access.
-    Returns set of:
-    - Direct user grants
-    - Group memberships expanded
-    - Public document access
-    
-    CACHED with 5-minute TTL since permissions change infrequently.
+    解析使用者可存取的所有文件。
+    回傳集合包含：
+    - 直接授權給使用者的文件
+    - 展開後的群組成員資格
+    - 公開文件存取權
+
+    使用 5 分鐘 TTL 快取，因為權限變更通常不頻繁。
     """
     cache_key = f"permissions:{user_id}"
     if cached := cache.get(cache_key):
         return cached
-    
+
     perms = permission_service.resolve(user_id)
     cache.set(cache_key, perms, ttl=300)
     return perms
 ```
 
-**2. Retrieval with Filtering:**
+**2. 帶過濾條件的檢索：**
 ```python
 def retrieve(query: str, user_id: str, top_k: int = 20) -> List[Chunk]:
     perms = get_user_permissions(user_id)
-    
-    # Detect language for query
+
+    # 偵測查詢語言
     lang = detect_language(query)
-    
-    # Build permission filter
-    # User can see: public docs, their own, or groups they belong to
+
+    # 建立權限過濾條件
+    # 使用者可看到：公開文件、自己的文件，或所屬群組文件
     filter = {
         "$or": [
             {"visibility": "public"},
@@ -209,11 +219,11 @@ def retrieve(query: str, user_id: str, top_k: int = 20) -> List[Chunk]:
             {"groups": {"$in": perms.groups}}
         ]
     }
-    
-    # Optional: boost same-language content
+
+    # 可選：提高同語言內容權重
     if lang != "en":
         filter["language"] = lang
-    
+
     results = vector_db.search(
         query_embedding=embed(query),
         top_k=top_k,
@@ -222,18 +232,18 @@ def retrieve(query: str, user_id: str, top_k: int = 20) -> List[Chunk]:
     return results
 ```
 
-**3. Reranking:**
+**3. 重排序：**
 ```
-Rerank top-20 to get top-5 with cross-encoder.
-Model: bge-reranker-v2-m3 (multilingual)
-Latency budget: ~100ms
+將 top-20 重新排序，選出 top-5，使用 cross-encoder。
+模型：bge-reranker-v2-m3（多語）
+延遲預算：約 100ms
 ```
 
-**4. Generation:**
+**4. 生成：**
 ```python
 def generate(query: str, chunks: List[Chunk], user_id: str) -> Response:
     context = format_chunks_with_citations(chunks)
-    
+
     prompt = f"""You are a knowledge assistant for [Company].
 Answer the question using ONLY the provided context.
 If the context does not contain the answer, say "I could not find information about that in our knowledge base."
@@ -244,90 +254,95 @@ CONTEXT:
 
 QUESTION: {query}
 """
-    
+
     response = llm.generate(
         prompt=prompt,
         model="gpt-4o",
         temperature=0.1
     )
-    
+
     return format_with_source_links(response, chunks)
 ```
 
-#### Scaling and Reliability
+<a id="scaling-and-reliability"></a>
+#### 擴展性與可靠性
 
-**Latency Budget (p95 < 3s):**
+**延遲預算（p95 < 3s）：**
 ```
-Permission resolution:   50ms  (cached)
-Embedding:              100ms
-Vector search:          100ms
-Reranking:              150ms
-LLM generation:        1500ms
-Network/overhead:       100ms
+權限解析：          50ms  （已快取）
+Embedding：        100ms
+向量搜尋：          100ms
+重排序：            150ms
+LLM 生成：         1500ms
+網路／額外開銷：    100ms
 ─────────────────────────────
-Total:                 2000ms (buffer for P95)
+總計：             2000ms（保留 P95 緩衝）
 ```
 
-**Scaling Considerations:**
+**擴展考量：**
 ```
-- Vector DB: Sharded by source or hash
-- Embedding service: Horizontal scale, stateless
-- LLM calls: Multiple providers for redundancy
-- Cache: Redis cluster for permissions and responses
-```
-
-**Failure Handling:**
-```
-- Vector DB down: Return cached results + degraded warning
-- LLM down: Fallback to secondary provider
-- Rate limiting: Queue with backpressure
-- Embedding service: Batch retries with circuit breaker
+- Vector DB：依來源或 hash 分片
+- Embedding service：水平擴展、無狀態
+- LLM calls：多供應商備援
+- Cache：以 Redis cluster 快取權限與回應
 ```
 
-#### Evaluation Approach
-
-**Offline Metrics:**
+**故障處理：**
 ```
-- Retrieval: Precision@5, Recall@5, MRR
-- Generation: RAGAS (faithfulness, relevance)
-- End-to-end: Answer correctness on test set
-```
-
-**Online Metrics:**
-```
-- User feedback: Thumbs up/down
-- Query reformulation rate: User rephrasing indicates failure
-- Citation click-through: Are sources useful?
+- Vector DB 當機：回傳快取結果 + 降級警告
+- LLM 當機：切換至次要供應商
+- Rate limiting：以佇列搭配 backpressure
+- Embedding service：批次重試搭配 circuit breaker
 ```
 
-**Monitoring:**
+<a id="evaluation-approach"></a>
+#### 評估方式
+
+**離線指標：**
 ```
-- Latency dashboards by percentile
+- Retrieval：Precision@5、Recall@5、MRR
+- Generation：RAGAS（faithfulness、relevance）
+- End-to-end：測試集上的答案正確率
+```
+
+**線上指標：**
+```
+- 使用者回饋：Thumbs up/down
+- Query reformulation rate：使用者反覆改寫代表失敗
+- Citation click-through：來源是否真的有幫助？
+```
+
+**監控：**
+```
+- 依 percentile 劃分的延遲儀表板
 - Permission filter hit rate
-- Empty result rate by source
-- Cost per query
+- 各來源的空結果比例
+- 每次查詢成本
 ```
 
 ---
 
-## Exercise 2: Customer Support Chatbot
+<a id="exercise-2-customer-support-chatbot"></a>
+## 練習 2：客戶支援聊天機器人
 
-### Problem Statement
+<a id="problem-statement-1"></a>
+### 題目敘述
 
-Design an AI-powered customer support system for an e-commerce company:
+為一家電商公司設計 AI 驅動的客戶支援系統：
 
-- Handle 10,000 conversations per day
-- Access to product catalog (1M products), order history, FAQs
-- Goal: Resolve 70% of tickets without human handoff
-- Support order lookup, returns, product questions
-- Multilingual support (3 languages)
-- Integration with existing Zendesk ticketing
+- 每天處理 10,000 段對話
+- 可存取商品目錄（100 萬項商品）、訂單歷史、FAQ
+- 目標：70% 工單無需人工交接即可解決
+- 支援訂單查詢、退貨、商品問題
+- 多語支援（3 種語言）
+- 與既有 Zendesk 工單系統整合
 
-### Solution Highlights
+<a id="solution-highlights"></a>
+### 解法亮點
 
-**Key Architectural Decisions:**
+**關鍵架構決策：**
 
-1. **Agent Architecture with Flow Control:**
+1. **具流程控制的 Agent 架構：**
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
@@ -350,7 +365,7 @@ Design an AI-powered customer support system for an e-commerce company:
 └─────────────────────────────────────────────────────────┘
 ```
 
-2. **Tool Design:**
+2. **工具設計：**
 ```python
 tools = [
     {
@@ -390,125 +405,131 @@ tools = [
 ]
 ```
 
-3. **Escalation Criteria:**
+3. **升級給人工的條件：**
 ```
-Escalate to human when:
-- Customer explicitly requests human
-- Sentiment is highly negative (detected by classifier)
-- Issue involves payment disputes
-- Agent confidence is low after 2 attempts
-- Complex multi-order issues
-- Refund above threshold amount
+以下情況升級給人工：
+- 客戶明確要求人工服務
+- 情緒極度負面（由分類器偵測）
+- 問題涉及付款爭議
+- Agent 兩次嘗試後信心仍低
+- 複雜的多訂單問題
+- 退款金額超過門檻
 ```
 
-4. **Integration Pattern:**
+4. **整合模式：**
 ```
-Zendesk integration:
-- Webhook receives new tickets
-- AI handles via API
-- Resolution → close ticket
-- Escalation → assign to queue with context summary
-- All interactions logged to ticket timeline
+Zendesk 整合：
+- Webhook 接收新工單
+- AI 透過 API 處理
+- 解決後 → 關閉工單
+- 升級處理 → 附帶摘要指派到佇列
+- 所有互動都記錄到工單時間軸
 ```
 
 ---
 
-## Exercise 3: Code Review Assistant
+<a id="exercise-3-code-review-assistant"></a>
+## 練習 3：程式碼審查助理
 
-### Problem Statement
+<a id="problem-statement-2"></a>
+### 題目敘述
 
-Design a code review assistant for a development platform:
+為一個開發平台設計程式碼審查助理：
 
-- Reviews pull requests automatically
-- Provides specific, actionable feedback
-- Respects repository style guides and conventions
-- Can suggest code fixes
-- Integration with GitHub/GitLab
-- Handles 50,000 PRs per day
+- 自動審查 pull request
+- 提供具體、可執行的回饋
+- 遵守 repository 的 style guide 與慣例
+- 可以建議程式碼修正
+- 與 GitHub/GitLab 整合
+- 每天處理 50,000 個 PR
 
-### Solution Highlights
+<a id="solution-highlights-1"></a>
+### 解法亮點
 
-**Key Technical Choices:**
+**關鍵技術選擇：**
 
-1. **Context Assembly:**
+1. **內容脈絡組裝：**
 ```
-For each changed file, assemble context:
-- The diff (changed lines)
-- Full file content (for understanding)
-- Related files (imports, tests, types)
-- Repository conventions (.eslintrc, .editorconfig)
-- Previous review comments (learn from feedback)
+對每個變更檔案，組裝以下脈絡：
+- Diff（變更行）
+- 完整檔案內容（幫助理解）
+- 相關檔案（imports、tests、types）
+- Repository 慣例（.eslintrc、.editorconfig）
+- 過往審查評論（從回饋中學習）
 ```
 
-2. **Review Categories:**
+2. **審查類別：**
 ```python
 review_types = [
-    "bug_risk",           # Potential bugs
-    "security",           # Security issues
-    "performance",        # Performance concerns
-    "maintainability",    # Code quality
-    "style",              # Style guide violations
-    "test_coverage"       # Missing tests
+    "bug_risk",           # 潛在 bug
+    "security",           # 安全問題
+    "performance",        # 效能疑慮
+    "maintainability",    # 可維護性
+    "style",              # 風格規範違反
+    "test_coverage"       # 測試不足
 ]
 ```
 
-3. **Model Selection:**
+3. **模型選擇：**
 ```
-Primary: Claude 3.5 Sonnet (best for code understanding)
-Fallback: GPT-4o
+主要：Claude 3.5 Sonnet（最擅長理解程式碼）
+備援：GPT-4o
 
-Specialized models:
-- Security scanning: CodeQL + LLM review
-- Style: Linters + LLM explanation
+專用模型：
+- Security scanning：CodeQL + LLM review
+- Style：Linters + LLM explanation
 ```
 
-4. **Output Format:**
+4. **輸出格式：**
 ```markdown
-## Review Summary
+## 審查摘要
 
-### Critical Issues (must fix)
-- **Line 45**: SQL injection vulnerability in user query
+### 嚴重問題（必修）
+- **第 45 行**：user query 存在 SQL injection 漏洞
   ```python
-  # Instead of:
+  # 不要這樣：
   query = f"SELECT * FROM users WHERE id = {user_id}"
-  # Use:
+  # 請改成：
   query = "SELECT * FROM users WHERE id = ?"
   cursor.execute(query, (user_id,))
   ```
 
-### Suggestions (consider fixing)
-- **Line 78-82**: This loop could be simplified using list comprehension
+### 建議（可考慮修正）
+- **第 78-82 行**：這段迴圈可改用 list comprehension 簡化
 ...
 ```
 
-5. **Latency Strategy:**
+5. **延遲策略：**
 ```
-Target: Review ready within 2 minutes of PR creation
+目標：在 PR 建立後 2 分鐘內完成可閱讀的審查結果
 
-Strategy:
-- Queue PR for processing
-- Parallel processing of files
-- Stream results as available
-- Cache repository conventions
+策略：
+- 將 PR 放入佇列處理
+- 檔案平行處理
+- 結果可用時即串流輸出
+- 快取 repository 慣例
 ```
 
 ---
 
-## Exercise 4: Document Processing Pipeline
+<a id="exercise-4-document-processing-pipeline"></a>
+## 練習 4：文件處理管線
 
-### Problem Statement
+<a id="problem-statement-3"></a>
+### 題目敘述
 
-Design a document processing pipeline for financial services:
+為金融服務設計文件處理管線：
 
-- Process 100,000 documents per day (invoices, contracts, forms)
-- Extract structured data with 99% accuracy
-- Handle PDFs, scanned documents, handwritten notes
-- HIPAA/SOC2 compliance
-- Human review for low-confidence extractions
+- 每天處理 100,000 份文件（發票、合約、表單）
+- 以 99% 準確率擷取結構化資料
+- 處理 PDF、掃描文件、手寫筆記
+- 符合 HIPAA/SOC2
+- 低信心擷取結果需人工覆核
 
-### Solution Highlights
+<a id="solution-highlights-2"></a>
+### 解法亮點
 
-**Pipeline Architecture:**
+**管線架構：**
 
 ```
 ┌────────┐   ┌───────────┐   ┌────────────┐   ┌────────────┐
@@ -522,35 +543,35 @@ Design a document processing pipeline for financial services:
                               └──────────┘   └──────────┘   └──────────┘
 ```
 
-**Key Components:**
+**關鍵元件：**
 
-1. **Document Classification:**
+1. **文件分類：**
 ```
-Fine-tuned classifier on document types:
-- Invoice, Contract, Receipt, Form, ID, Other
+針對文件類型微調分類器：
+- Invoice、Contract、Receipt、Form、ID、Other
 
-Model: LayoutLMv3 or fine-tuned ViT
-Confidence threshold: 0.95 for auto-routing
-```
-
-2. **Extraction Strategy:**
-```
-Tiered extraction based on document type:
-
-Tier 1: Document AI (Textract/Azure)
-- Good for structured forms
-- Fast and cheap
-- Returns confidence scores
-
-Tier 2: Vision LLM (GPT-4V/Claude)
-- Fallback for complex layouts
-- Better for unstructured text
-- More expensive
-
-Combine outputs and cross-validate.
+模型：LayoutLMv3 或微調後的 ViT
+自動路由的信心門檻：0.95
 ```
 
-3. **Validation Rules:**
+2. **擷取策略：**
+```
+依文件類型採用分層擷取：
+
+第 1 層：Document AI（Textract/Azure）
+- 適合結構化表單
+- 快且便宜
+- 會回傳 confidence scores
+
+第 2 層：Vision LLM（GPT-4V/Claude）
+- 作為複雜版面的備援
+- 更適合非結構化文字
+- 成本較高
+
+整合兩層輸出並交叉驗證。
+```
+
+3. **驗證規則：**
 ```python
 validation_rules = {
     "invoice": [
@@ -567,44 +588,47 @@ validation_rules = {
 }
 ```
 
-4. **Human Review Interface:**
+4. **人工審查介面：**
 ```
-Reviewer sees:
-- Original document image
-- Extracted fields with confidence scores
-- Validation errors highlighted
-- Suggested corrections from LLM
-- One-click approval or field-level corrections
+審查者可看到：
+- 原始文件影像
+- 含 confidence score 的擷取欄位
+- 已標示的驗證錯誤
+- LLM 提供的修正建議
+- 一鍵核准或逐欄修正
 ```
 
-5. **Compliance Measures:**
+5. **合規措施：**
 ```
-HIPAA/SOC2 requirements:
-- All documents encrypted at rest (AES-256)
-- TLS 1.3 in transit
-- Audit log for all access and changes
-- PHI detection and masking
-- Retention policies enforced
-- Access controls with MFA
+HIPAA/SOC2 要求：
+- 所有文件靜態加密（AES-256）
+- 傳輸中使用 TLS 1.3
+- 所有存取與變更皆保留 audit log
+- PHI 偵測與遮罩
+- 強制執行保留政策
+- 使用 MFA 的存取控制
 ```
 
 ---
 
-## Exercise 5: Real-Time Content Moderation
+<a id="exercise-5-real-time-content-moderation"></a>
+## 練習 5：即時內容審核
 
-### Problem Statement
+<a id="problem-statement-4"></a>
+### 題目敘述
 
-Design a content moderation system for a social platform:
+為一個社群平台設計內容審核系統：
 
-- 1 million posts per day (text, images, video)
-- Latency requirement: under 500ms for posts to be visible
-- Detect: hate speech, violence, adult content, spam
-- Appeal workflow for false positives
-- Support 10 languages
+- 每天 100 萬則貼文（文字、圖片、影片）
+- 延遲要求：貼文在 500ms 內可見
+- 偵測：仇恨言論、暴力、成人內容、垃圾訊息
+- 需有誤判申訴流程
+- 支援 10 種語言
 
-### Solution Highlights
+<a id="solution-highlights-3"></a>
+### 解法亮點
 
-**Architecture Pattern: Multi-Stage Cascade**
+**架構模式：多階段級聯（Multi-Stage Cascade）**
 
 ```
          ┌───────────────────────────────────────────┐
@@ -630,34 +654,34 @@ Design a content moderation system for a social platform:
          └───────────────────────────────────────────┘
 ```
 
-**Key Design Decisions:**
+**關鍵設計決策：**
 
-1. **Latency Optimization:**
+1. **延遲最佳化：**
 ```
-Target: 500ms total
+目標：總延遲 500ms
 
-Stage 1 (Fast): 20ms
+第 1 階段（Fast）：20ms
 - Regex patterns
-- Known hash matching (PhotoDNA)
+- 已知 hash 比對（PhotoDNA）
 - Blocklist lookup
 
-Stage 2 (ML): 80ms
-- Batched inference on GPU
-- Small specialized models
-- Parallel text/image processing
+第 2 階段（ML）：80ms
+- GPU 批次推論
+- 小型專用模型
+- 文字／圖片平行處理
 
-Stage 3 (LLM): 400ms (async for borderline)
-- Only 5% of content reaches here
-- Used for nuanced decisions
+第 3 階段（LLM）：400ms（邊界案例採 async）
+- 只有 5% 內容會進到這裡
+- 用於細緻判斷
 ```
 
-2. **Threshold Strategy:**
+2. **門檻策略：**
 ```python
 class ModerationDecision:
-    BLOCK = "block"          # High confidence violation
-    ALLOW = "allow"          # High confidence safe
-    LIMIT = "limit"          # Reduce distribution
-    REVIEW = "human_review"  # Queue for human
+    BLOCK = "block"          # 高信心違規
+    ALLOW = "allow"          # 高信心安全
+    LIMIT = "limit"          # 降低分發
+    REVIEW = "human_review"  # 送人工審查
 
 thresholds = {
     "hate_speech": {
@@ -666,43 +690,46 @@ thresholds = {
         "review": 0.60
     },
     "adult_content": {
-        "block": 0.98,  # Higher threshold, legal implications
+        "block": 0.98,  # 門檻更高，涉及法律風險
         "limit": 0.90,
         "review": 0.70
     }
 }
 ```
 
-3. **Appeal Workflow:**
+3. **申訴流程：**
 ```
-1. User submits appeal
-2. Content queued for human review
-3. Different reviewer than original (blind review)
-4. Decision logged with reasoning
-5. If overturned:
-   - Content restored
-   - Original decision added to training data as negative
-   - Model retrained periodically
+1. 使用者提出申訴
+2. 內容進入人工審查佇列
+3. 由不同於原判定者的人員複審（blind review）
+4. 決策與理由記錄留存
+5. 若被推翻：
+   - 恢復內容
+   - 原決策作為負樣本加入訓練資料
+   - 定期重新訓練模型
 ```
 
 ---
 
-## Exercise 6: Multi-Tenant AI Platform
+<a id="exercise-6-multi-tenant-ai-platform"></a>
+## 練習 6：多租戶 AI 平台
 
-### Problem Statement
+<a id="problem-statement-5"></a>
+### 題目敘述
 
-Design a multi-tenant AI platform (AI-as-a-Service):
+設計一個多租戶 AI 平台（AI-as-a-Service）：
 
-- Serve 500+ enterprise customers
-- Each customer has their own documents and models
-- Complete data isolation between tenants
-- Per-tenant usage tracking and billing
-- Different pricing tiers with different capabilities
-- SOC2 compliance required
+- 服務 500+ 家企業客戶
+- 每個客戶都有自己的文件與模型
+- 租戶之間必須完全資料隔離
+- 支援按租戶追蹤用量與計費
+- 不同價格方案具備不同能力
+- 必須符合 SOC2
 
-### Solution Highlights
+<a id="solution-highlights-4"></a>
+### 解法亮點
 
-**Tenant Isolation Architecture:**
+**租戶隔離架構：**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -734,22 +761,22 @@ Design a multi-tenant AI platform (AI-as-a-Service):
                                         └─────────────────┘
 ```
 
-**Critical Isolation Points:**
+**關鍵隔離點：**
 
 ```python
 class TenantContext:
     tenant_id: str
     user_id: str
     tier: str  # "starter" | "pro" | "enterprise"
-    
+
     def __enter__(self):
-        # Set tenant context for all downstream calls
+        # 為所有下游呼叫設定 tenant context
         _tenant_context.set(self)
-        
+
     def __exit__(self, *args):
         _tenant_context.set(None)
 
-# Middleware ensures tenant context on every request
+# Middleware 確保每個 request 都有 tenant context
 @middleware
 def enforce_tenant_context(request, call_next):
     tenant_id = extract_tenant_from_token(request.headers["Authorization"])
@@ -760,7 +787,7 @@ def enforce_tenant_context(request, call_next):
     return response
 ```
 
-**Billing and Usage Tracking:**
+**計費與用量追蹤：**
 
 ```python
 usage_schema = {
@@ -774,49 +801,52 @@ usage_schema = {
     "cost_cents": "decimal"
 }
 
-# Real-time usage aggregation
+# 即時用量彙總
 async def track_usage(tenant_id: str, operation: Usage):
-    # Append to time-series DB
+    # 追加寫入 time-series DB
     await timeseries.write("usage", {
         "tenant_id": tenant_id,
         **operation.dict()
     })
-    
-    # Update real-time counter for rate limiting
+
+    # 更新 rate limiting 用的即時計數器
     await redis.incr(f"usage:{tenant_id}:{today()}", operation.tokens)
 ```
 
 ---
 
-## Exercise 7: Semantic Search at Scale
+<a id="exercise-7-semantic-search-at-scale"></a>
+## 練習 7：大規模語意搜尋
 
-### Problem Statement
+<a id="problem-statement-6"></a>
+### 題目敘述
 
-Design a semantic search system for an e-commerce site:
+為電商網站設計語意搜尋系統：
 
-- 50 million products
-- 100 million queries per day
-- P99 latency under 100ms
-- Support filters (price, category, brand, ratings)
-- Personalization based on user history
-- Real-time inventory updates
+- 5,000 萬項商品
+- 每天 1 億筆查詢
+- P99 延遲低於 100ms
+- 支援篩選條件（價格、類別、品牌、評分）
+- 根據使用者歷史做個人化
+- 即時庫存更新
 
-### Solution Highlights
+<a id="solution-highlights-5"></a>
+### 解法亮點
 
-**Key Challenge: 100ms at 100M queries/day**
+**關鍵挑戰：在 100M queries/day 下維持 100ms**
 
 ```
-100M queries/day = 1,157 QPS average
-Peak: 5,000-10,000 QPS
+100M queries/day = 平均 1,157 QPS
+尖峰：5,000-10,000 QPS
 
-At 100ms latency, need:
+在 100ms 延遲下，需要：
 - Edge caching
-- Pre-computed embeddings
-- Optimized retrieval
-- Minimal LLM involvement
+- 預先計算 embeddings
+- 最佳化檢索
+- 最小化 LLM 參與
 ```
 
-**Architecture:**
+**架構：**
 
 ```
 ┌────────────────────────────────────────────────────────────┐
@@ -841,25 +871,25 @@ At 100ms latency, need:
 └────────────────────────────────────────────────────────────┘
 ```
 
-**Latency Budget:**
+**延遲預算：**
 
 ```
 Edge cache check:    5ms
-Embedding lookup:   10ms (cached) or 30ms (compute)
+Embedding lookup:   10ms（已快取）或 30ms（即時計算）
 Vector search:      30ms
 Filtering:          10ms
 Personalization:    10ms
 Serialization:      10ms
 Network overhead:   25ms
 ─────────────────────
-Total:              100ms target (with cache hit)
+Total:              100ms 目標（快取命中時）
 ```
 
-**Hybrid Search Strategy:**
+**混合搜尋策略：**
 
 ```python
 def search(query: str, filters: dict, user_id: str) -> List[Product]:
-    # Determine search strategy based on query
+    # 根據查詢內容決定搜尋策略
     if is_keyword_heavy(query):
         # "nike air max 90 size 10"
         sparse_weight = 0.7
@@ -868,74 +898,79 @@ def search(query: str, filters: dict, user_id: str) -> List[Product]:
         # "comfortable running shoes for flat feet"
         sparse_weight = 0.3
         dense_weight = 0.7
-    
-    # Parallel retrieval
+
+    # 平行檢索
     dense_results = vector_db.search(embed(query), top_k=100, filter=filters)
     sparse_results = elastic.search(query, top_k=100, filter=filters)
-    
+
     # Reciprocal rank fusion
     combined = rrf_merge(
         [dense_results, sparse_results],
         weights=[dense_weight, sparse_weight]
     )
-    
-    # Personalization boost
+
+    # 個人化加權
     personalized = apply_user_preferences(combined, user_id)
-    
+
     return personalized[:20]
 ```
 
-**Real-Time Updates:**
+**即時更新：**
 
 ```
-Product updates (price, inventory) flow:
-1. Change event published to Kafka
-2. Consumer updates vector DB metadata
-3. Search reflects change within seconds
+商品更新（價格、庫存）流程：
+1. 變更事件發布到 Kafka
+2. Consumer 更新 vector DB metadata
+3. 搜尋結果在數秒內反映變更
 
-Reindexing (description changes):
-1. Full re-embed required
-2. Run as async job
-3. Swap index when complete
+重新索引（描述變更）：
+1. 需要完整重新 embedding
+2. 以 async job 執行
+3. 完成後交換索引
 ```
 
 ---
 
-## Tips for Whiteboard Exercises
+<a id="tips-for-whiteboard-exercises"></a>
+## 白板練習技巧
 
-### Drawing Tips
+<a id="drawing-tips"></a>
+### 繪圖技巧
 
-1. **Start with boxes and labels** before connecting with arrows
-2. **Use consistent notation**: rectangles for services, cylinders for databases, arrows for data flow
-3. **Label data on arrows**: what flows between components
-4. **Leave space** for additions as you discuss
+1. **先畫方塊與標籤**，再用箭頭連接
+2. **使用一致記號**：矩形代表服務、圓柱代表資料庫、箭頭代表資料流
+3. **在箭頭上標示資料**：說明元件之間流動的是什麼
+4. **預留空間**，方便討論時補充
 
-### Common Patterns to Know
+<a id="common-patterns-to-know"></a>
+### 常見架構模式
 
-| Pattern | When to Use | Draw As |
+| 模式 | 何時使用 | 畫法 |
 |---------|-------------|---------|
-| Load balancer + service fleet | Any scaled service | LB → multiple boxes |
-| Queue + workers | Async processing | Queue → worker pool |
-| Cache layer | Read-heavy, latency-sensitive | Diamond before service |
-| CDC/streaming | Real-time updates | Kafka/stream icon |
-| Sidecar | Cross-cutting concerns | Small box attached to service |
+| Load balancer + service fleet | 任何需要擴展的服務 | LB → 多個方塊 |
+| Queue + workers | 非同步處理 | Queue → worker pool |
+| Cache layer | 讀多寫少、延遲敏感 | 服務前一個菱形 |
+| CDC/streaming | 即時更新 | Kafka/stream 圖示 |
+| Sidecar | 橫切式關注點 | 附在服務旁的小方塊 |
 
-### Phrases That Signal Strong Candidates
+<a id="phrases-that-signal-strong-candidates"></a>
+### 能展現強候選人特質的說法
 
-- "Before I design this, let me understand the scale..."
-- "The tradeoff here is..."
-- "In production, we would also need..."
-- "One failure mode to consider is..."
-- "Let me walk you through the latency budget..."
-- "For evaluation, I would measure..."
+- 「在我開始設計之前，先讓我理解一下規模……」
+- 「這裡的權衡是……」
+- 「在正式上線時，我們還需要……」
+- 「一個值得考慮的 failure mode 是……」
+- 「讓我帶你看一下延遲預算……」
+- 「在評估方面，我會衡量……」
 
-### Time Management
+<a id="time-management"></a>
+### 時間管理
 
-- Do not spend more than 5 minutes on clarification
-- Draw the complete high-level picture before deep diving
-- Leave time for reliability and evaluation
-- Check in with the interviewer on focus areas
+- 釐清問題不要超過 5 分鐘
+- 先畫完整的高階圖，再深入細節
+- 為可靠性與評估預留時間
+- 針對重點領域與面試官同步
 
 ---
 
-*See also: [Question Bank](01-question-bank.md) | [Answer Frameworks](02-answer-frameworks.md) | [Common Pitfalls](03-common-pitfalls.md)*
+*另請參閱：[題庫](01-question-bank.md) | [回答框架](02-answer-frameworks.md) | [常見陷阱](03-common-pitfalls.md)*

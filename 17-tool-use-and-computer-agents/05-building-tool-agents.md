@@ -1,30 +1,34 @@
-# Building Tool-Use Agents
+<a id="building-tool-use-agents"></a>
+# 建構 Tool-Use Agents
 
-This chapter covers the practical engineering of tool-use agents: designing tool schemas that LLMs can call reliably, building MCP servers to host those tools, composing tools into workflows, and testing the entire system. These are the patterns that separate a demo from a production deployment.
+本章涵蓋 Tool-Use Agents 的實務工程：設計讓 LLM 能可靠呼叫的工具 schema、建置用來託管這些工具的 MCP server、將工具組合成工作流程，以及測試整個系統。這些模式正是區分示範與正式上線部署的關鍵。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Designing Tool Schemas for LLMs](#designing-tool-schemas-for-llms)
-- [MCP Server Creation](#mcp-server-creation)
-- [Tool Registration and Discovery](#tool-registration-and-discovery)
-- [Input Validation and Output Formatting](#input-validation-and-output-formatting)
-- [Tool Composition: Chaining Tools](#tool-composition-chaining-tools)
-- [Building Custom Agent Skills](#building-custom-agent-skills)
-- [Creating Function-Calling Endpoints](#creating-function-calling-endpoints)
-- [Testing Tool-Use Agents](#testing-tool-use-agents)
-- [Observability for Tool Use](#observability-for-tool-use)
-- [Common Mistakes and Anti-Patterns](#common-mistakes-and-anti-patterns)
-- [Tool Versioning and Backwards Compatibility](#tool-versioning-and-backwards-compatibility)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [設計給 LLM 的 Tool Schemas](#designing-tool-schemas-for-llms)
+- [建立 MCP Server](#mcp-server-creation)
+- [工具註冊與探索](#tool-registration-and-discovery)
+- [輸入驗證與輸出格式化](#input-validation-and-output-formatting)
+- [工具組合：串接工具](#tool-composition-chaining-tools)
+- [建構自訂 Agent Skills](#building-custom-agent-skills)
+- [建立 Function-Calling Endpoints](#creating-function-calling-endpoints)
+- [測試 Tool-Use Agents](#testing-tool-use-agents)
+- [Tool Use 的可觀測性](#observability-for-tool-use)
+- [常見錯誤與 Anti-Patterns](#common-mistakes-and-anti-patterns)
+- [工具版本管理與向後相容性](#tool-versioning-and-backwards-compatibility)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Designing Tool Schemas for LLMs
+<a id="designing-tool-schemas-for-llms"></a>
+## 設計給 LLM 的 Tool Schemas
 
-The tool schema is the contract between the LLM and your system. A well-designed schema reduces hallucinated arguments, prevents misuse, and makes the model's tool selection more reliable.
+Tool schema 是 LLM 與你的系統之間的契約。設計良好的 schema 能減少幻覺參數、避免誤用，並讓模型在選擇工具時更可靠。
 
-### Anatomy of a Good Tool Definition
+<a id="anatomy-of-a-good-tool-definition"></a>
+### 良好 Tool Definition 的結構
 
 ```json
 {
@@ -50,19 +54,20 @@ The tool schema is the contract between the LLM and your system. A well-designed
 }
 ```
 
-### Schema Design Rules
+<a id="schema-design-rules"></a>
+### Schema 設計規則
 
-**1. Name precisely**: Use `verb_noun` format. `search_customers` not `search` or `customer_tool`.
+**1. 精確命名**：使用 `verb_noun` 格式。用 `search_customers`，不要用 `search` 或 `customer_tool`。
 
-**2. Describe when NOT to use**: The model needs negative examples. "Do NOT use for aggregate queries" prevents misuse better than only listing valid uses.
+**2. 描述何時不要使用**：模型需要反例。與其只列出可用情境，加入「Do NOT use for aggregate queries」這類說明，更能防止誤用。
 
-**3. Give argument examples**: Include example values in the description string. The model uses these to calibrate its outputs.
+**3. 提供參數範例**：在 description 字串中包含範例值。模型會利用這些範例來校準輸出。
 
-**4. Constrain ranges**: Use `minimum`, `maximum`, `enum`, and `pattern` to prevent invalid arguments at the schema level rather than in your handler.
+**4. 限制範圍**：使用 `minimum`、`maximum`、`enum` 與 `pattern`，在 schema 層就防止無效參數，而不是等到 handler 才處理。
 
-**5. Keep tools atomic**: One tool does one thing. Avoid a `manage_customer` tool that creates, reads, updates, and deletes -- split into four tools.
+**5. 讓工具保持原子性**：一個工具只做一件事。避免建立同時負責建立、讀取、更新、刪除的 `manage_customer` 工具，應拆成四個工具。
 
-**6. Use `strict: true`**: Anthropic's strict mode guarantees the model output matches the schema exactly. Always enable it in production.
+**6. 使用 `strict: true`**：Anthropic 的 strict mode 可保證模型輸出與 schema 完全一致。正式環境中務必啟用。
 
 ```
 Good Tool Design:                    Bad Tool Design:
@@ -84,11 +89,13 @@ Good Tool Design:                    Bad Tool Design:
 
 ---
 
-## MCP Server Creation
+<a id="mcp-server-creation"></a>
+## 建立 MCP Server
 
-An MCP server is a standalone process that exposes tools, resources, and prompts to any MCP-compatible client (Claude, GPT, Llama-based agents). You write the server once and any LLM can use it.
+MCP server 是一個獨立程序，會向任何相容 MCP 的 client（Claude、GPT、Llama-based agents）暴露 tools、resources 與 prompts。你只需要撰寫一次 server，任何 LLM 都能使用它。
 
-### MCP Architecture
+<a id="mcp-architecture"></a>
+### MCP 架構
 
 ```
 +------------------+          JSON-RPC           +------------------+
@@ -103,6 +110,7 @@ An MCP server is a standalone process that exposes tools, resources, and prompts
 +------------------+                             +------------------+
 ```
 
+<a id="typescript-mcp-server"></a>
 ### TypeScript MCP Server
 
 ```typescript
@@ -129,6 +137,7 @@ const transport = new StdioServerTransport();
 await server.connect(transport);
 ```
 
+<a id="python-mcp-server-fastmcp"></a>
 ### Python MCP Server (FastMCP)
 
 ```python
@@ -146,39 +155,46 @@ async def search_customers(query: str, limit: int = 5) -> str:
     return json.dumps(await db.customers.search(query, limit), indent=2)
 ```
 
-Both SDKs follow the same pattern: create a server, register tools with typed schemas, connect a transport. The TypeScript SDK uses Zod for validation; Python uses type hints and docstrings.
+這兩個 SDK 都遵循相同模式：建立 server、以型別化 schema 註冊工具，然後連接 transport。TypeScript SDK 使用 Zod 做驗證；Python 則使用 type hints 與 docstrings。
 
-### Deployment Modes
+<a id="deployment-modes"></a>
+### 部署模式
 
-| Mode | Transport | Use Case |
+| 模式 | Transport | 使用情境 |
 |------|-----------|----------|
-| Local (stdio) | stdin/stdout pipe | Desktop tools, IDE plugins |
-| Remote (Streamable HTTP) | HTTP + SSE | Cloud services, shared servers |
-| Hybrid | Both | Develop local, deploy remote |
+| 本機（stdio） | stdin/stdout pipe | 桌面工具、IDE 外掛 |
+| 遠端（Streamable HTTP） | HTTP + SSE | 雲端服務、共享 servers |
+| 混合 | Both | 本機開發、遠端部署 |
 
 ---
 
-## Tool Registration and Discovery
+<a id="tool-registration-and-discovery"></a>
+## 工具註冊與探索
 
-In production, agents need to discover available tools dynamically rather than hardcoding them.
+在正式環境中，agent 需要動態探索可用工具，而不是把它們硬編碼進去。
 
-### Static Registration
+<a id="static-registration"></a>
+### 靜態註冊
 
-Declare MCP servers in a config file (e.g., `claude_desktop_config.json`). Each entry maps a server name to a command, args, and optional env vars. Simple but inflexible -- every server loads on startup regardless of relevance.
+在設定檔（例如 `claude_desktop_config.json`）中宣告 MCP servers。每個項目會把 server 名稱對應到 command、args 與可選的 env vars。這種方式簡單，但不夠靈活——不論是否相關，所有 server 都會在啟動時載入。
 
-### Dynamic Discovery (Tool Search)
+<a id="dynamic-discovery-tool-search"></a>
+### 動態探索（Tool Search）
 
-Anthropic's Tool Search (2025) solves schema overload. Instead of loading 200 tool schemas into context (which degrades reasoning), the agent sends a lightweight search query and receives only the 3-5 relevant tool schemas. This keeps the context window focused on reasoning rather than parsing unused schemas.
+Anthropic 的 Tool Search（2025）解決了 schema overload 問題。與其把 200 個工具 schema 全部載入 context（這會降低推理品質），agent 會先送出輕量搜尋查詢，只接收 3-5 個最相關的工具 schema。這能讓 context window 聚焦在推理，而不是解析未使用的 schemas。
 
+<a id="mcp-discovery-protocol"></a>
 ### MCP Discovery Protocol
 
-MCP clients discover capabilities via standard JSON-RPC methods: `tools/list` returns available tools, `resources/list` returns data resources, `prompts/list` returns prompt templates. This enables runtime discovery without hardcoding.
+MCP clients 會透過標準 JSON-RPC methods 探索能力：`tools/list` 回傳可用工具、`resources/list` 回傳資料資源、`prompts/list` 回傳 prompt templates。這讓系統在執行期能探索能力，而不需要硬編碼。
 
 ---
 
-## Input Validation and Output Formatting
+<a id="input-validation-and-output-formatting"></a>
+## 輸入驗證與輸出格式化
 
-### Input Validation Layers
+<a id="input-validation-layers"></a>
+### 輸入驗證層次
 
 ```
 +---------------------+
@@ -198,7 +214,7 @@ MCP clients discover capabilities via standard JSON-RPC methods: `tools/list` re
 +---------------------+
 ```
 
-Always validate at both layers. Schema validation catches malformed input. Business validation catches semantically invalid input.
+務必在兩層都做驗證。Schema validation 會攔下格式錯誤的輸入；Business validation 會攔下語意上無效的輸入。
 
 ```python
 @mcp.tool()
@@ -227,9 +243,10 @@ async def transfer_funds(
     return f"Transferred ${amount:.2f}. Confirmation: {result.id}"
 ```
 
-### Output Formatting
+<a id="output-formatting"></a>
+### 輸出格式化
 
-Return structured data when the model needs to reason about it. Return human-readable text when the result is final.
+當模型還需要對結果進一步推理時，請回傳結構化資料。當結果已是最終答案時，則回傳人類可讀的文字。
 
 ```python
 # Good: structured for further reasoning
@@ -248,13 +265,15 @@ return "Found Jane Smith (ACC-123, jane@acme.com) and John Doe (ACC-456, john@ac
 
 ---
 
-## Tool Composition: Chaining Tools
+<a id="tool-composition-chaining-tools"></a>
+## 工具組合：串接工具
 
-Real tasks require multiple tools called in sequence. There are two composition patterns:
+真實任務通常需要依序呼叫多個工具。常見有兩種組合模式：
 
-### Pattern 1: LLM-Orchestrated Chaining
+<a id="pattern-1-llm-orchestrated-chaining"></a>
+### 模式 1：由 LLM 協調的串接
 
-The LLM decides which tool to call next based on previous results:
+LLM 會根據前一步結果，決定接下來要呼叫哪個工具：
 
 ```
 User: "Find customer Jane Smith and create a high-priority ticket for her billing issue"
@@ -268,11 +287,12 @@ Turn 2:  LLM -> create_ticket("ACC-123", "Billing issue", "...", "high")
 Turn 3:  LLM -> "I found Jane Smith (ACC-123) and created ticket TK-789."
 ```
 
-Each tool call is a separate API round-trip. The model reasons about results between calls.
+每次工具呼叫都是一次獨立的 API round-trip。模型會在每次呼叫之間根據結果進行推理。
 
-### Pattern 2: Programmatic Tool Calling
+<a id="pattern-2-programmatic-tool-calling"></a>
+### 模式 2：程式化 Tool Calling
 
-Anthropic's programmatic tool calling (2025) lets the model write code that chains tools without round-trips:
+Anthropic 的 programmatic tool calling（2025）讓模型能直接撰寫程式碼來串接工具，而不需要多次 round-trip：
 
 ```
 LLM generates code:
@@ -284,25 +304,28 @@ LLM generates code:
     return "Customer not found"
 ```
 
-This executes as a single API call, reducing latency from 3 round-trips to 1.
+這會以單次 API 呼叫完成，把延遲從 3 次 round-trip 降到 1 次。
 
-### Pattern 3: Server-Side Composition
+<a id="pattern-3-server-side-composition"></a>
+### 模式 3：Server-Side Composition
 
-Compose tools inside the MCP server itself -- a single `resolve_customer_issue` tool internally calls search and create_ticket, hiding the multi-step logic from the LLM. Use this for fixed, well-defined workflows where the LLM does not need to reason between steps.
+把工具組合邏輯放在 MCP server 內部——單一的 `resolve_customer_issue` 工具會在內部呼叫 search 與 create_ticket，將多步驟邏輯對 LLM 隱藏起來。這適用於固定、明確定義的工作流程，且 LLM 不需要在步驟間進行推理的情境。
 
-### When to Use Each
+<a id="when-to-use-each"></a>
+### 何時使用哪一種
 
-| Pattern | Latency | Flexibility | Best For |
+| 模式 | 延遲 | 彈性 | 最適合 |
 |---------|---------|-------------|----------|
-| LLM-orchestrated | High (N round-trips) | Very high | Complex, branching logic |
-| Programmatic | Low (1 round-trip) | High | Linear chains, batches |
-| Server-side | Lowest | Low | Fixed, common workflows |
+| LLM-orchestrated | 高（N 次 round-trips） | 很高 | 複雜、分支型邏輯 |
+| Programmatic | 低（1 次 round-trip） | 高 | 線性串接、批次處理 |
+| Server-side | 最低 | 低 | 固定且常見的工作流程 |
 
 ---
 
-## Building Custom Agent Skills
+<a id="building-custom-agent-skills"></a>
+## 建構自訂 Agent Skills
 
-Agent Skills (Anthropic, 2025) are bundled sets of instructions, tools, and resources that an agent loads dynamically. A skill is a folder:
+Agent Skills（Anthropic, 2025）是由 instructions、tools 與 resources 打包而成、可由 agent 動態載入的集合。一個 skill 就是一個資料夾：
 
 ```
 my-skill/
@@ -312,19 +335,22 @@ my-skill/
   tests/            # Evaluation cases
 ```
 
-At runtime, a SkillManager registers available skills and activates them on demand -- injecting the skill's instructions into the system prompt and adding its tools to the available tool set. This keeps the base agent lightweight while enabling deep specialization.
+在執行期，SkillManager 會註冊可用 skills，並在需要時啟用——把 skill 的 instructions 注入 system prompt，並將其工具加入可用工具集合。這讓基礎 agent 保持輕量，同時仍能支援深度專精。
 
 ---
 
-## Creating Function-Calling Endpoints
+<a id="creating-function-calling-endpoints"></a>
+## 建立 Function-Calling Endpoints
 
-To make your API callable by any LLM, expose it via FastAPI with Pydantic models. The auto-generated OpenAPI spec (`/openapi.json`) doubles as a tool schema for function calling. Alternatively, wrap the same logic in an MCP server for direct integration with Claude, GPT, or other MCP-compatible clients.
+若要讓你的 API 能被任何 LLM 呼叫，可透過搭配 Pydantic models 的 FastAPI 來暴露它。自動產生的 OpenAPI spec（`/openapi.json`）也能兼作 function calling 的 tool schema。或者，你也可以把相同邏輯包裝成 MCP server，直接整合到 Claude、GPT 或其他相容 MCP 的 clients。
 
 ---
 
-## Testing Tool-Use Agents
+<a id="testing-tool-use-agents"></a>
+## 測試 Tool-Use Agents
 
-### Three Testing Layers
+<a id="three-testing-layers"></a>
+### 三層測試
 
 ```
 +---------------------------+
@@ -343,13 +369,15 @@ To make your API callable by any LLM, expose it via FastAPI with Pydantic models
 +---------------------------+
 ```
 
-### Unit Tests for Tools
+<a id="unit-tests-for-tools"></a>
+### 工具的 Unit Tests
 
-Test each tool handler in isolation with mocked dependencies. Cover: input validation edge cases (out-of-range values, missing fields), error message quality (does it guide the model to recover?), and output format (valid JSON, correct schema).
+以 mocked dependencies 將每個 tool handler 獨立測試。要涵蓋：輸入驗證邊界情況（超出範圍的值、缺漏欄位）、錯誤訊息品質（是否有引導模型恢復？），以及輸出格式（有效 JSON、正確 schema）。
 
-### Eval Suites for Agent Behavior
+<a id="eval-suites-for-agent-behavior"></a>
+### Agent 行為的 Eval Suites
 
-Build a dataset of 100+ realistic queries with expected outcomes:
+建立一組包含 100+ 個真實查詢與預期結果的資料集：
 
 ```python
 eval_cases = [
@@ -366,26 +394,29 @@ eval_cases = [
 ]
 ```
 
-For each case, measure: tool selection accuracy (right tool?), argument quality (correct args?), task completion rate, and efficiency (number of tool calls). Run evals on every model version change and every tool schema change.
+針對每個案例，衡量：工具選擇正確率（工具選對了嗎？）、參數品質（args 正確嗎？）、任務完成率，以及效率（工具呼叫次數）。每次 model version 變更與 tool schema 變更時，都要重新跑 evals。
 
 ---
 
-## Observability for Tool Use
+<a id="observability-for-tool-use"></a>
+## Tool Use 的可觀測性
 
-Every tool call should log: trace/span IDs, timestamp, tool name, input args, output size, latency, status, model used, token usage, and session ID.
+每次工具呼叫都應記錄：trace/span IDs、timestamp、tool name、input args、output size、latency、status、使用的 model、token usage 與 session ID。
 
-### Key Metrics
+<a id="key-metrics"></a>
+### 關鍵指標
 
-| Metric | What It Measures | Alert Threshold |
+| 指標 | 衡量內容 | 警示門檻 |
 |--------|-----------------|-----------------|
-| Tool call success rate | % of calls returning valid results | < 95% |
-| Tool selection accuracy | Was the right tool chosen? | < 90% |
-| Avg tool calls per task | Efficiency of tool use | > 2x baseline |
-| Latency per tool call | Response time of tool handlers | > 5s (p99) |
-| Hallucinated arguments | Invalid args despite schema | > 2% |
-| Cost per task | Total LLM + tool execution cost | > budget |
+| Tool call success rate | 回傳有效結果的呼叫百分比 | < 95% |
+| Tool selection accuracy | 是否選對工具？ | < 90% |
+| Avg tool calls per task | Tool Use 的效率 | > 2x baseline |
+| Latency per tool call | Tool handler 的回應時間 | > 5s (p99) |
+| Hallucinated arguments | 即使有 schema 仍出現無效 args | > 2% |
+| Cost per task | LLM + 工具執行的總成本 | > budget |
 
-### Tracing Architecture
+<a id="tracing-architecture"></a>
+### Tracing 架構
 
 ```
 +-------------+     +----------------+     +--------------+
@@ -410,57 +441,63 @@ Every tool call should log: trace/span IDs, timestamp, tool name, input args, ou
 
 ---
 
-## Common Mistakes and Anti-Patterns
+<a id="common-mistakes-and-anti-patterns"></a>
+## 常見錯誤與 Anti-Patterns
 
-| Anti-Pattern | Problem | Fix |
+| Anti-Pattern | 問題 | 修正方式 |
 |-------------|---------|-----|
-| Tool overload | 50+ tools degrades selection accuracy | Dynamic discovery, load 5-10 per turn |
-| Vague descriptions | "Handles customer operations" -- too vague | Include when to use, when NOT to use, examples |
-| God tools | One tool with `action` param does everything | Split into atomic tools, one operation each |
-| Missing error context | Tool returns "Error" with no details | Actionable messages: "ACC-999 not found. Use search_customers..." |
-| Unstructured output | Tool returns prose the model must parse | Return JSON for structured reasoning |
-| No idempotency | `create_ticket` called twice creates duplicates | Accept idempotency key, check before creating |
-| Exposing internal IDs | Tool requires database UUIDs model cannot know | Accept human-readable identifiers, resolve internally |
-| Ignoring rate limits | Agent loops 100 API calls, gets throttled | Backoff in handlers, return "retry in X seconds" |
+| Tool overload | 50+ 個工具會降低選擇正確率 | 動態探索，每回合只載入 5-10 個 |
+| Vague descriptions | 「Handles customer operations」——太模糊 | 加入何時使用、何時不要使用、範例 |
+| God tools | 一個帶有 `action` 參數的工具包辦所有事情 | 拆成原子工具，每個只負責一種操作 |
+| Missing error context | 工具只回傳「Error」而沒有細節 | 使用可操作訊息：「ACC-999 not found. Use search_customers...」 |
+| Unstructured output | 工具回傳需要模型自行解析的 prose | 以 JSON 回傳，利於結構化推理 |
+| No idempotency | `create_ticket` 呼叫兩次就建立重複資料 | 接受 idempotency key，建立前先檢查 |
+| Exposing internal IDs | 工具要求模型不可能知道的資料庫 UUIDs | 接受人類可讀識別子，並在內部解析 |
+| Ignoring rate limits | Agent 連續打 100 次 API calls 而被限流 | 在 handlers 中實作 backoff，回傳「retry in X seconds」 |
 
 ---
 
-## Tool Versioning and Backwards Compatibility
+<a id="tool-versioning-and-backwards-compatibility"></a>
+## 工具版本管理與向後相容性
 
-As tools evolve, you must maintain compatibility with agents that depend on them.
+隨著工具演進，你必須維持與依賴它們的 agents 相容。
 
-**Rules:**
-1. **Additive changes** (new optional params): No version bump needed. Old calls still work.
-2. **Breaking changes** (rename, remove param, change semantics): Create a new tool name with the new schema. Keep the old tool running and add "DEPRECATED: Use new_tool instead" to its description. Log every deprecated call for monitoring.
-3. **Never remove a tool** until you verify no active agents depend on it.
-
----
-
-## Interview Questions
-
-### Q: You need to give an LLM agent access to 200 internal tools. How do you handle schema overload?
-
-**Strong answer:**
-I would not load all 200 tool schemas into the context. Instead, I would implement a two-phase approach. First, a tool discovery phase where the agent describes what it needs to do, and a lightweight search (embedding similarity or keyword match) returns the 5-10 most relevant tool schemas. Second, a tool execution phase where only the selected tools are included in the context for the actual LLM call.
-
-This mirrors Anthropic's Tool Search pattern. The discovery step can be a separate, cheaper LLM call or even a non-LLM search. The key insight is that context window space used by irrelevant tool schemas directly reduces the model's reasoning quality. I would measure tool selection accuracy as a key metric -- if the agent calls `search_customers` when it should call `get_customer_by_id`, the discovery phase needs tuning.
-
-For the MCP implementation, I would group tools into domain-specific servers (customer-service, billing, analytics) and only connect to the servers relevant to the current conversation.
-
-### Q: Design a testing strategy for a tool-use agent that handles customer support.
-
-**Strong answer:**
-I would test at three layers. First, unit tests for each tool handler: validate input edge cases, error messages, and output format. These run in CI on every commit with mocked dependencies.
-
-Second, integration tests that verify tools work against real (staging) databases. For example, `create_ticket` actually creates a record and `search_customers` returns it. These catch schema drift between the tool and the backend.
-
-Third, eval suites that test the full agent -- LLM plus tools. I would build a dataset of 100+ realistic customer queries with expected tool call sequences and output criteria. The eval measures tool selection accuracy (did it pick the right tool?), argument quality (were the arguments correct?), task completion rate (did it solve the problem?), and efficiency (how many tool calls did it take?).
-
-I would run evals on every model version change and every tool schema change. A 2% drop in tool selection accuracy after a schema change means the description needs revision, not the model.
+**規則：**
+1. **Additive changes**（新增可選參數）：不需要升版。舊呼叫依然可用。
+2. **Breaking changes**（重新命名、移除參數、改變語意）：請用新 schema 建立新的工具名稱。保留舊工具繼續運作，並在其 description 中加入「DEPRECATED: Use new_tool instead」。同時記錄每次 deprecated call 以供監控。
+3. **在確認沒有任何活躍 agent 依賴前，絕不要移除工具**。
 
 ---
 
-## References
+<a id="interview-questions"></a>
+## 面試題
+
+<a id="q-you-need-to-give-an-llm-agent-access-to-200-internal-tools-how-do-you-handle-schema-overload"></a>
+### Q: 你需要讓一個 LLM agent 存取 200 個內部工具。你會如何處理 schema overload？
+
+**強答：**
+我不會把 200 個工具 schema 全部載入 context。相反地，我會採用兩階段方法。第一階段是工具探索，agent 先描述它需要完成的事，再透過輕量搜尋（embedding similarity 或 keyword match）回傳 5-10 個最相關的工具 schema。第二階段是工具執行，只有被選中的工具會被放入 context，供實際的 LLM 呼叫使用。
+
+這與 Anthropic 的 Tool Search 模式一致。探索步驟可以是一次獨立、成本更低的 LLM 呼叫，甚至可以是不使用 LLM 的搜尋。關鍵洞見在於：context window 若被不相關的工具 schemas 佔用，會直接降低模型的推理品質。我會把工具選擇正確率當作核心指標——如果 agent 在應該呼叫 `get_customer_by_id` 時卻呼叫了 `search_customers`，那就表示探索階段需要調校。
+
+在 MCP 實作上，我會依領域把工具分組成不同 servers（customer-service、billing、analytics），並且只連線到與目前對話相關的 servers。
+
+<a id="q-design-a-testing-strategy-for-a-tool-use-agent-that-handles-customer-support"></a>
+### Q: 為處理客戶支援的 tool-use agent 設計一套測試策略。
+
+**強答：**
+我會在三個層次測試。第一，為每個 tool handler 撰寫 unit tests：驗證輸入邊界情況、錯誤訊息，以及輸出格式。這些測試會在每次 commit 時，以 mocked dependencies 在 CI 中執行。
+
+第二，使用 integration tests 驗證工具能對真實（staging）資料庫正確運作。例如，`create_ticket` 真的會建立紀錄，而 `search_customers` 也真的能查到它。這能抓出工具與後端之間的 schema drift。
+
+第三，建立測試完整 agent 的 eval suites——也就是 LLM 加上工具。我會建立一組包含 100+ 個真實客戶查詢的資料集，並定義預期的工具呼叫序列與輸出標準。Eval 會衡量工具選擇正確率（有沒有選對工具？）、參數品質（參數是否正確？）、任務完成率（是否真的解決問題？），以及效率（總共用了多少次工具呼叫？）。
+
+每次 model version 變更與 tool schema 變更時，我都會重新跑 evals。如果 schema 變更後工具選擇正確率下降 2%，那代表該修的是 description，而不是模型。
+
+---
+
+<a id="references"></a>
+## 參考資料
 
 - Anthropic. "Tool Use with Claude" API Documentation (2025)
 - Model Context Protocol. "Build an MCP Server" (2025)
@@ -471,4 +508,4 @@ I would run evals on every model version change and every tool schema change. A 
 
 ---
 
-*Previous: [Computer-Use Agents](04-computer-use-agents.md)*
+*上一篇：[Computer-Use Agents](04-computer-use-agents.md)*

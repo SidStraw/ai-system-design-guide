@@ -1,235 +1,256 @@
-# 🎓 Recommended AI Courses & Learning Paths
+<a id="recommended-ai-courses--learning-paths"></a>
+# 🎓 推薦的 AI 課程與學習路徑
 
-A curated list of **reliable, trusted, and up-to-date** online courses for AI engineers, ML practitioners, and product teams. Every course here is verified as of **May 2026**, no fluff, no outdated MOOCs.
-
----
-
-## Table of Contents
-
-- [Foundation: LLMs & Transformers](#foundation)
-- [RAG Pipelines](#rag)
-- [Agentic AI & Multi-Agent Systems](#agents)
-- [Context & Memory Management](#context-memory)
-- [AI Evaluations & Observability](#evals)
-- [Prompt Engineering & Context Engineering](#prompting)
-- [Fine-tuning & Adaptation](#finetuning)
-- [Inference Optimization & MLOps](#mlops)
-- [AI Safety & Guardrails](#safety)
-- [Coding Agents & Developer AI Tools](#coding-agents)
-- [For PMs & Non-Engineers](#pm-track)
-- [YouTube Channels & Free Content](#free)
-- [Learning Path Suggestions](#paths)
+為 AI 工程師、ML 實務者與產品團隊精選的 **可靠、值得信賴且內容最新** 線上課程清單。這裡列出的每門課都已於 **2026 年 3 月** 驗證 —— 沒有灌水內容，也沒有過時的 MOOC。
 
 ---
 
-## Foundation: LLMs & Transformers <a name="foundation"></a>
+<a id="table-of-contents"></a>
+## 目錄
 
-| Course | Provider | Cost | Why It's Trusted |
+- [基礎：LLMs 與 Transformers](#foundation)
+- [RAG 流程](#rag)
+- [Agentic AI 與多代理系統](#agents)
+- [上下文與記憶管理](#context-memory)
+- [AI 評估與可觀測性](#evals)
+- [提示工程與上下文工程](#prompting)
+- [微調與適配](#finetuning)
+- [推論最佳化與 MLOps](#mlops)
+- [AI 安全與 Guardrails](#safety)
+- [Coding Agents 與開發者 AI 工具](#coding-agents)
+- [給 PM 與非工程人員](#pm-track)
+- [YouTube 頻道與免費內容](#free)
+- [學習路徑建議](#paths)
+
+---
+
+<a id="foundation-llms--transformers"></a>
+## 基礎：LLMs 與 Transformers <a name="foundation"></a>
+
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[Neural Networks: Zero to Hero](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ)** | Andrej Karpathy (YouTube) | Free | The definitive from-scratch series by an OpenAI/Tesla legend. Builds GPT from scratch. |
-| **[CS324: Large Language Models](https://stanford-cs324.github.io/winter2022/)** | Stanford | Free | Stanford-quality lecture notes covering LLM fundamentals, scaling laws, alignment. |
-| **[Generative AI with LLMs](https://www.coursera.org/learn/generative-ai-with-llms)** | DeepLearning.AI + AWS (Coursera) | ~$50 | Hands-on intro to LLMs, covering training, fine-tuning, RLHF. By Andrew Ng's team. |
-| **[Practical Deep Learning for Coders](https://course.fast.ai/)** | fast.ai | Free | Bottom-up, code-first approach. Best for engineers who learn by doing. |
+| **[Neural Networks: Zero to Hero](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ)** | Andrej Karpathy (YouTube) | 免費 | 由 OpenAI／Tesla 傳奇人物打造、從零開始的經典系列，會帶你親手做出 GPT。 |
+| **[CS324: Large Language Models](https://stanford-cs324.github.io/winter2022/)** | Stanford | 免費 | Stanford 等級的課程講義，涵蓋 LLM 基礎、scaling laws 與 alignment。 |
+| **[Generative AI with LLMs](https://www.coursera.org/learn/generative-ai-with-llms)** | DeepLearning.AI + AWS (Coursera) | 約 $50 | LLM 的實作入門，涵蓋訓練、fine-tuning 與 RLHF，由 Andrew Ng 團隊製作。 |
+| **[Practical Deep Learning for Coders](https://course.fast.ai/)** | fast.ai | 免費 | 自下而上、以程式碼為核心的方法，非常適合喜歡邊做邊學的工程師。 |
 
 ---
 
-## RAG Pipelines <a name="rag"></a>
+<a id="rag-pipelines"></a>
+## RAG 流程 <a name="rag"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[Building and Evaluating Advanced RAG](https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/)** | DeepLearning.AI + LlamaIndex | Free | Covers sentence-window retrieval, auto-merging, RAG evaluation with TruLens. |
-| **[Vector Databases: from Embeddings to Applications](https://www.deeplearning.ai/short-courses/vector-databases-embeddings-applications/)** | DeepLearning.AI + Weaviate | Free | Practical walkthrough of embeddings, vector stores, and hybrid search. |
-| **[Building RAG Agents with LLMs](https://courses.nvidia.com/courses/course-v1:DLI+S-FX-15+V1/)** | NVIDIA Deep Learning Institute | Free | Enterprise-grade RAG with NVIDIA NIM. Covers chunking, reranking, evaluation. |
-| **[LlamaIndex — Documentation: Learning](https://docs.llamaindex.ai/en/stable/understanding/)** | LlamaIndex | Free | Official LlamaIndex learning path — best for deep RAG pipeline mastery. |
-| **[RAG Fundamentals (Haystack)](https://haystack.deepset.ai/tutorials)** | deepset / Haystack | Free | Hands-on tutorials for pipeline-based RAG using the Haystack framework. |
+| **[Building and Evaluating Advanced RAG](https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/)** | DeepLearning.AI + LlamaIndex | 免費 | 涵蓋 sentence-window retrieval、auto-merging，以及使用 TruLens 進行 RAG 評估。 |
+| **[Vector Databases: from Embeddings to Applications](https://www.deeplearning.ai/short-courses/vector-databases-embeddings-applications/)** | DeepLearning.AI + Weaviate | 免費 | 以實作方式帶你理解 embeddings、vector stores 與 hybrid search。 |
+| **[Building RAG Agents with LLMs](https://courses.nvidia.com/courses/course-v1:DLI+S-FX-15+V1/)** | NVIDIA Deep Learning Institute | 免費 | 使用 NVIDIA NIM 建立企業級 RAG，涵蓋 chunking、reranking 與 evaluation。 |
+| **[LlamaIndex — Documentation: Learning](https://docs.llamaindex.ai/en/stable/understanding/)** | LlamaIndex | 免費 | 官方 LlamaIndex 學習路徑，是深入掌握進階 RAG 流程的最佳資源。 |
+| **[RAG Fundamentals (Haystack)](https://haystack.deepset.ai/tutorials)** | deepset / Haystack | 免費 | 使用 Haystack framework 實作 pipeline-based RAG 的教學。 |
 
 ---
 
-## Agentic AI & Multi-Agent Systems <a name="agents"></a>
+<a id="agentic-ai--multi-agent-systems"></a>
+## Agentic AI 與多代理系統 <a name="agents"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[AI Agents in LangGraph](https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/)** | DeepLearning.AI + LangChain | Free | LangGraph by the creators. Covers ReAct, persistence, human-in-the-loop, multi-agent. |
-| **[Multi AI Agent Systems with crewAI](https://www.deeplearning.ai/short-courses/multi-ai-agent-systems-with-crewai/)** | DeepLearning.AI + crewAI | Free | Official CrewAI course. Covers Crews, Flows, and real-world business automations. |
-| **[Building Agentic RAG with LlamaIndex](https://www.deeplearning.ai/short-courses/building-agentic-rag-with-llamaindex/)** | DeepLearning.AI + LlamaIndex | Free | Routing, tool-calling agents, and multi-document agentic retrieval. |
-| **[Functions, Tools and Agents with LangChain](https://www.deeplearning.ai/short-courses/functions-tools-agents-langchain/)** | DeepLearning.AI + LangChain | Free | Tool-calling, OpenAI function calling, building from scratch. |
-| **[Developing AI Agents using AutoGen](https://www.deeplearning.ai/short-courses/ai-agentic-design-patterns-with-autogen/)** | DeepLearning.AI + Microsoft | Free | AutoGen multi-agent patterns. Covers debate, tool-use, and code execution agents. |
-| **[CS294/194-196: LLM Agents (Berkeley)](https://rdi.berkeley.edu/llm-agents/f24)** | UC Berkeley | Free | Graduate-level course on LLM agents. Covers memory, planning, safety, evaluation. |
+| **[AI Agents in LangGraph](https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/)** | DeepLearning.AI + LangChain | 免費 | 由 LangGraph 團隊帶你學習，涵蓋 ReAct、persistence、human-in-the-loop 與多代理。 |
+| **[Multi AI Agent Systems with crewAI](https://www.deeplearning.ai/short-courses/multi-ai-agent-systems-with-crewai/)** | DeepLearning.AI + crewAI | 免費 | 官方 crewAI 課程，涵蓋 Crews、Flows 與真實世界的商業自動化。 |
+| **[Building Agentic RAG with LlamaIndex](https://www.deeplearning.ai/short-courses/building-agentic-rag-with-llamaindex/)** | DeepLearning.AI + LlamaIndex | 免費 | 介紹 routing、tool-calling agents 與多文件 agentic retrieval。 |
+| **[Functions, Tools and Agents with LangChain](https://www.deeplearning.ai/short-courses/functions-tools-agents-langchain/)** | DeepLearning.AI + LangChain | 免費 | 涵蓋 tool-calling、OpenAI function calling，以及從零開始建構 agents。 |
+| **[Developing AI Agents using AutoGen](https://www.deeplearning.ai/short-courses/ai-agentic-design-patterns-with-autogen/)** | DeepLearning.AI + Microsoft | 免費 | AutoGen 多代理模式教學，涵蓋 debate、tool-use 與 code execution agents。 |
+| **[CS294/194-196: LLM Agents (Berkeley)](https://rdi.berkeley.edu/llm-agents/f24)** | UC Berkeley | 免費 | 研究所等級的 LLM agents 課程，涵蓋 memory、planning、safety 與 evaluation。 |
 
 ---
 
-## Context & Memory Management <a name="context-memory"></a>
+<a id="context--memory-management"></a>
+## 上下文與記憶管理 <a name="context-memory"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[Building Systems with the ChatGPT API](https://www.deeplearning.ai/short-courses/building-systems-with-chatgpt/)** | DeepLearning.AI + OpenAI | Free | Covers multi-turn conversation state, context management, moderation chains. |
-| **[Prompt Engineering with Llama 2](https://www.deeplearning.ai/short-courses/prompt-engineering-with-llama-2/)** | DeepLearning.AI + Meta | Free | Shows context window tradeoffs and system prompt management with Llama 2. |
-| **[Reasoning with o1](https://www.deeplearning.ai/short-courses/reasoning-with-o1/)** | DeepLearning.AI + OpenAI | Free | Deep dive into o1 reasoning, budget tokens, thinking modes. Directly applicable to o3 and Claude 3.7 Extended Thinking. |
-| **[Mem0 Documentation](https://docs.mem0.ai/)** | Mem0 (official) | Free | Definitive reference for multi-tier memory in production agents. |
+| **[Building Systems with the ChatGPT API](https://www.deeplearning.ai/short-courses/building-systems-with-chatgpt/)** | DeepLearning.AI + OpenAI | 免費 | 涵蓋多輪對話狀態、上下文管理與 moderation chains。 |
+| **[Prompt Engineering with Llama 2](https://www.deeplearning.ai/short-courses/prompt-engineering-with-llama-2/)** | DeepLearning.AI + Meta | 免費 | 展示 context window 的取捨，以及如何在 Llama 2 中管理 system prompt。 |
+| **[Reasoning with o1](https://www.deeplearning.ai/short-courses/reasoning-with-o1/)** | DeepLearning.AI + OpenAI | 免費 | 深入介紹 o1 reasoning、budget tokens 與 thinking modes，也可直接應用到 o3 與 Claude 3.7 Extended Thinking。 |
+| **[Mem0 Documentation](https://docs.mem0.ai/)** | Mem0 (official) | 免費 | 生產環境 agents 中 multi-tier memory 的權威參考資料。 |
 
 ---
 
-## AI Evaluations & Observability <a name="evals"></a>
+<a id="ai-evaluations--observability"></a>
+## AI 評估與可觀測性 <a name="evals"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[Evals for AI: Maven Course](https://maven.com/hamel-shreya/evals-for-ai)** | Hamel Husain & Shreya Shankar (Maven) | Paid (~$400) | Industry gold standard for AI evals. Used in production at dozens of companies. Our repo's evals guides are based on this course. |
-| **[Evaluating and Debugging Generative AI](https://www.deeplearning.ai/short-courses/evaluating-debugging-generative-ai/)** | DeepLearning.AI + W&B | Free | Covers tracing, evaluation with W&B Weave, and experiment tracking. |
-| **[Quality and Safety for LLM Applications](https://www.deeplearning.ai/short-courses/quality-safety-llm-applications/)** | DeepLearning.AI + WhyLabs | Free | Covers hallucination detection, toxicity, bias evaluation, and drift monitoring. |
-| **[LangSmith Evaluation Tutorials](https://docs.smith.langchain.com/evaluation)** | LangChain | Free | Official LangSmith docs are the best hands-on eval reference if you use the LangChain ecosystem. |
-| **[Phoenix + Langfuse official docs](https://docs.arize.com/phoenix)** | Arize Phoenix | Free | Hands-on tutorials for open-source evals using Phoenix. |
+| **[Evals for AI: Maven Course](https://maven.com/hamel-shreya/evals-for-ai)** | Hamel Husain & Shreya Shankar (Maven) | 付費（約 $400） | 業界公認的 AI evals 黃金標準，已在數十家公司投入生產環境；本 repo 的 evals 指南也以此課程為基礎。 |
+| **[Evaluating and Debugging Generative AI](https://www.deeplearning.ai/short-courses/evaluating-debugging-generative-ai/)** | DeepLearning.AI + W&B | 免費 | 涵蓋 tracing、使用 W&B Weave 進行評估，以及 experiment tracking。 |
+| **[Quality and Safety for LLM Applications](https://www.deeplearning.ai/short-courses/quality-safety-llm-applications/)** | DeepLearning.AI + WhyLabs | 免費 | 涵蓋 hallucination detection、toxicity、bias evaluation 與 drift monitoring。 |
+| **[LangSmith Evaluation Tutorials](https://docs.smith.langchain.com/evaluation)** | LangChain | 免費 | 若你使用 LangChain 生態系，官方 LangSmith 文件會是最好的實作型 eval 參考。 |
+| **[Phoenix + Langfuse official docs](https://docs.arize.com/phoenix)** | Arize Phoenix | 免費 | 使用 Phoenix 進行開源 evals 的實作教學。 |
 
-> 📖 Also see this repo's companion guides:
+> 📖 另請參考本 repo 的配套指南：
 > - [AI Evals: Comprehensive Study Guide (Phoenix + Langfuse)](ai_evals_comprehensive_study_guide.md)
 > - [AI Evals: LangWatch + Langfuse Guide](ai_evals_complete_guide_langwatch_langfuse.md)
 
 ---
 
-## Prompt Engineering & Context Engineering <a name="prompting"></a>
+<a id="prompt-engineering--context-engineering"></a>
+## 提示工程與上下文工程 <a name="prompting"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[ChatGPT Prompt Engineering for Developers](https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/)** | DeepLearning.AI + OpenAI | Free | The foundational prompt engineering course. By Isa Fulford & Andrew Ng. |
-| **[Prompting Fundamentals (Anthropic)](https://www.anthropic.com/learn)** | Anthropic | Free | Straight from the Claude team. Covers prompt design, XML tags, chain-of-thought. |
-| **[DSPy: Building Optimizable Pipelines](https://github.com/stanfordnlp/dspy)** | Stanford NLP (GitHub) | Free | Not a course but the DSPy repo's notebooks are the best way to learn programmatic prompting. |
-| **[Prompt Engineering Guide](https://www.promptingguide.ai/)** | DAIR.AI | Free | Comprehensive, community-maintained reference covering all major prompting techniques. |
+| **[ChatGPT Prompt Engineering for Developers](https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/)** | DeepLearning.AI + OpenAI | 免費 | 提示工程的基礎課程，由 Isa Fulford 與 Andrew Ng 講授。 |
+| **[Prompting Fundamentals (Anthropic)](https://www.anthropic.com/learn)** | Anthropic | 免費 | 直接來自 Claude 團隊，涵蓋 prompt design、XML tags 與 chain-of-thought。 |
+| **[DSPy: Building Optimizable Pipelines](https://github.com/stanfordnlp/dspy)** | Stanford NLP (GitHub) | 免費 | 雖然不是正式課程，但 DSPy repo 裡的 notebooks 是學習程式化 prompting 的最佳方式。 |
+| **[Prompt Engineering Guide](https://www.promptingguide.ai/)** | DAIR.AI | 免費 | 由社群維護的完整參考資料，涵蓋各種主流 prompting 技術。 |
 
 ---
 
-## Fine-tuning & Adaptation <a name="finetuning"></a>
+<a id="fine-tuning--adaptation"></a>
+## 微調與適配 <a name="finetuning"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[Finetuning Large Language Models](https://www.deeplearning.ai/short-courses/finetuning-large-language-models/)** | DeepLearning.AI + Lamini | Free | Covers LoRA, full fine-tuning, dataset preparation, evaluation. Concise and practical. |
-| **[Reinforcement Learning from Human Feedback](https://www.deeplearning.ai/short-courses/reinforcement-learning-from-human-feedback/)** | DeepLearning.AI + AWS | Free | Deep dive into RLHF: reward models, PPO, preference datasets. |
-| **[Hugging Face NLP Course](https://huggingface.co/learn/nlp-course/chapter1/1)** | Hugging Face | Free | The best free course for fine-tuning transformers with the HF ecosystem (Trainer, PEFT, etc). |
-| **[How Diffusion Models Work](https://www.deeplearning.ai/short-courses/how-diffusion-models-work/)** | DeepLearning.AI | Free | For image model fine-tuning (stable diffusion, LoRA for images). |
+| **[Finetuning Large Language Models](https://www.deeplearning.ai/short-courses/finetuning-large-language-models/)** | DeepLearning.AI + Lamini | 免費 | 涵蓋 LoRA、完整 fine-tuning、資料集準備與 evaluation，內容精簡而實用。 |
+| **[Reinforcement Learning from Human Feedback](https://www.deeplearning.ai/short-courses/reinforcement-learning-from-human-feedback/)** | DeepLearning.AI + AWS | 免費 | 深入介紹 RLHF：reward models、PPO 與 preference datasets。 |
+| **[Hugging Face NLP Course](https://huggingface.co/learn/nlp-course/chapter1/1)** | Hugging Face | 免費 | 使用 HF 生態系（Trainer、PEFT 等）進行 transformer fine-tuning 的最佳免費課程。 |
+| **[How Diffusion Models Work](https://www.deeplearning.ai/short-courses/how-diffusion-models-work/)** | DeepLearning.AI | 免費 | 適合學習影像模型 fine-tuning（stable diffusion、LoRA for images）。 |
 
 ---
 
-## Inference Optimization & MLOps <a name="mlops"></a>
+<a id="inference-optimization--mlops"></a>
+## 推論最佳化與 MLOps <a name="mlops"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[ML Engineering for Production (MLOps)](https://www.coursera.org/specializations/machine-learning-engineering-for-production-mlops)** | DeepLearning.AI (Coursera) | Paid | 4-course specialization on production ML: deployment, monitoring, pipelines. |
-| **[Efficiently Serving LLMs](https://www.deeplearning.ai/short-courses/efficiently-serving-llms/)** | DeepLearning.AI + Predibase | Free | Covers vLLM, PagedAttention, quantization, LoRA serving. Exactly what this guide covers. |
-| **[vLLM Documentation & Tutorial](https://docs.vllm.ai/en/latest/)** | vLLM | Free | The official vLLM docs are the most up-to-date reference for high-throughput serving. |
+| **[ML Engineering for Production (MLOps)](https://www.coursera.org/specializations/machine-learning-engineering-for-production-mlops)** | DeepLearning.AI (Coursera) | 付費 | 聚焦生產環境 ML 的 4 門課專項課程，涵蓋 deployment、monitoring 與 pipelines。 |
+| **[Efficiently Serving LLMs](https://www.deeplearning.ai/short-courses/efficiently-serving-llms/)** | DeepLearning.AI + Predibase | 免費 | 涵蓋 vLLM、PagedAttention、quantization 與 LoRA serving，正是本指南關注的主題。 |
+| **[vLLM Documentation & Tutorial](https://docs.vllm.ai/en/latest/)** | vLLM | 免費 | 官方 vLLM 文件是高吞吐 serving 最新、最完整的參考資料。 |
 
 ---
 
-## AI Safety & Guardrails <a name="safety"></a>
+<a id="ai-safety--guardrails"></a>
+## AI 安全與 Guardrails <a name="safety"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[Red Teaming LLM Applications](https://www.deeplearning.ai/short-courses/red-teaming-llm-applications/)** | DeepLearning.AI + Giskard | Free | Hands-on red teaming, prompt injection, jailbreak detection, bias testing. |
-| **[AI Safety Fundamentals](https://aisafetyfundamentals.com/alignment-fast-track/)** | BlueDot Impact | Free | Most trusted free course on AI alignment and safety. Used by professionals at Anthropic, DeepMind. |
-| **[NVIDIA AI Red Team (NEMO Guardrails)](https://github.com/NVIDIA/NeMo-Guardrails)** | NVIDIA | Free | Hands-on notebooks for building production guardrails with NeMo Guardrails. |
+| **[Red Teaming LLM Applications](https://www.deeplearning.ai/short-courses/red-teaming-llm-applications/)** | DeepLearning.AI + Giskard | 免費 | 涵蓋實作型 red teaming、prompt injection、jailbreak detection 與 bias testing。 |
+| **[AI Safety Fundamentals](https://aisafetyfundamentals.com/alignment-fast-track/)** | BlueDot Impact | 免費 | 最受信賴的免費 AI alignment 與 safety 課程之一，也被 Anthropic、DeepMind 的專業人士採用。 |
+| **[NVIDIA AI Red Team (NEMO Guardrails)](https://github.com/NVIDIA/NeMo-Guardrails)** | NVIDIA | 免費 | 使用 NeMo Guardrails 建立生產級 guardrails 的實作 notebooks。 |
 
 ---
 
-## Coding Agents & Developer AI Tools <a name="coding-agents"></a>
+<a id="coding-agents--developer-ai-tools"></a>
+## Coding Agents 與開發者 AI 工具 <a name="coding-agents"></a>
 
-| Course | Provider | Cost | Why It's Trusted |
+| 課程 | 提供者 | 費用 | 為何值得信賴 |
 |--------|----------|------|-----------------|
-| **[Claude Code — Official Docs](https://docs.anthropic.com/en/home)** | Anthropic | Free | The definitive starting point for Claude Code. Covers CLAUDE.md, SDK, and permissions. |
-| **[Building Code Agents (Hugging Face)](https://huggingface.co/learn/agents-course/unit1/introduction)** | Hugging Face | Free | HuggingFace's official agents course — includes a unit on building code-execution agents. |
-| **[Introduction to OpenHands](https://github.com/All-Hands-AI/OpenHands/blob/main/docs/getting-started.md)** | All-Hands AI | Free | Official getting-started guide for OpenHands autonomous coding agent. |
+| **[Claude Code — Official Docs](https://docs.anthropic.com/en/home)** | Anthropic | 免費 | Claude Code 最權威的起點，涵蓋 CLAUDE.md、SDK 與 permissions。 |
+| **[Building Code Agents (Hugging Face)](https://huggingface.co/learn/agents-course/unit1/introduction)** | Hugging Face | 免費 | Hugging Face 官方 agents 課程，包含建構 code-execution agents 的單元。 |
+| **[Introduction to OpenHands](https://github.com/All-Hands-AI/OpenHands/blob/main/docs/getting-started.md)** | All-Hands AI | 免費 | OpenHands 自主 coding agent 的官方入門指南。 |
 
-> 📖 Also see this repo's guides: [Claude Code Guide](09-frameworks-and-tools/09-claude-code.md) and [OpenCoder Landscape](09-frameworks-and-tools/10-opencoderguide.md)
+> 📖 另請參考本 repo 的指南：[Claude Code Guide](09-frameworks-and-tools/09-claude-code.md) 與 [OpenCoder Landscape](09-frameworks-and-tools/10-opencoderguide.md)
 
 ---
 
-## For PMs & Non-Engineers <a name="pm-track"></a>
+<a id="for-pms--non-engineers"></a>
+## 給 PM 與非工程人員 <a name="pm-track"></a>
 
-These require no Python experience:
+這些內容不需要 Python 經驗：
 
-| Course | Provider | Cost | Why It's Good |
+| 課程 | 提供者 | 費用 | 為何值得推薦 |
 |--------|----------|------|--------------|
-| **[AI for Everyone](https://www.coursera.org/learn/ai-for-everyone)** | DeepLearning.AI (Coursera) | Free | Andrew Ng's course for non-technical roles. Covers what AI can/can't do, project leadership. |
-| **[Prompt Engineering for Everyone](https://learnprompting.org/)** | Learn Prompting | Free | Plain-English guide to prompt engineering for non-engineers. |
-| **[Evals for AI (Maven)](https://maven.com/hamel-shreya/evals-for-ai)** | Hamel Husain & Shreya Shankar | Paid | Despite having code, this course is designed for PMs and QAs, not just engineers. Highly recommended. |
-| **[AI Product Management](https://www.productschool.com/blog/product-management/ai-product-manager/)** | Product School | Free (blog) | Practical guide for PMs building AI-powered products. |
-| **[Google: Introduction to Generative AI](https://cloud.google.com/learn/training/machinelearning-ai)** | Google Cloud Skills Boost | Free | No-code introduction to generative AI, LLMs, and responsible AI. |
+| **[AI for Everyone](https://www.coursera.org/learn/ai-for-everyone)** | DeepLearning.AI (Coursera) | 免費 | Andrew Ng 為非技術角色設計的課程，涵蓋 AI 能做／不能做什麼，以及如何帶領專案。 |
+| **[Prompt Engineering for Everyone](https://learnprompting.org/)** | Learn Prompting | 免費 | 以白話方式介紹 prompt engineering，適合非工程背景讀者。 |
+| **[Evals for AI (Maven)](https://maven.com/hamel-shreya/evals-for-ai)** | Hamel Husain & Shreya Shankar | 付費 | 雖然課程中有程式碼，但它是為 PM 與 QA 設計，不只適合工程師，十分推薦。 |
+| **[AI Product Management](https://www.productschool.com/blog/product-management/ai-product-manager/)** | Product School | 免費（部落格） | 提供 PM 打造 AI 驅動產品的實用指南。 |
+| **[Google: Introduction to Generative AI](https://cloud.google.com/learn/training/machinelearning-ai)** | Google Cloud Skills Boost | 免費 | 以無程式碼方式介紹 generative AI、LLMs 與 responsible AI。 |
 
 ---
 
-## YouTube Channels & Free Content <a name="free"></a>
+<a id="youtube-channels--free-content"></a>
+## YouTube 頻道與免費內容 <a name="free"></a>
 
-| Channel / Resource | Focus | Why Follow |
+| 頻道 / 資源 | 焦點 | 為何值得追蹤 |
 |-------------------|-------|------------|
-| **[Andrej Karpathy](https://www.youtube.com/@AndrejKarpathy)** | Foundations, transformers | Best explanations of how LLMs actually work |
-| **[Yannic Kilcher](https://www.youtube.com/@YannicKilcher)** | Paper reviews | Clear walkthroughs of latest ML research papers |
-| **[Aleksa Gordić - The AI Epiphany](https://www.youtube.com/@TheAIEpiphany)** | Paper reviews | Deep technical paper breakdowns |
-| **[AI Jason](https://www.youtube.com/@AIJasonZ)** | Agents, LangChain, practical | Great intro videos for agentic frameworks |
-| **[Sam Witteveen](https://www.youtube.com/@samwitteveenai)** | Gemini, RAG, agents | One of the best practical AI YouTubers |
-| **[Matt Wolfe](https://www.youtube.com/@mreflow)** | AI news, product demos | Best for staying current on AI news and tools |
-| **[Hamel Husain (blog)](https://hamel.dev/)** | Evals, production AI, LLMs | Real production insights from the author of the evals maven course |
-| **[Simon Willison (blog)](https://simonwillison.net/)** | LLM news, tools, coding | The most trustworthy daily AI news source |
-| **[The Latent Space podcast](https://www.latent.space/)** | Technical AI interviews | Best technical AI podcast — deep dives with researchers |
-| **[Lex Fridman Podcast](https://lexfridman.com/podcast/)** | Broad AI/ML interviews | Long-form interviews with leading AI researchers |
+| **[Andrej Karpathy](https://www.youtube.com/@AndrejKarpathy)** | 基礎、transformers | 最能清楚解釋 LLM 實際如何運作的人之一 |
+| **[Yannic Kilcher](https://www.youtube.com/@YannicKilcher)** | 論文解讀 | 能清楚帶你讀懂最新 ML 研究論文 |
+| **[Aleksa Gordić - The AI Epiphany](https://www.youtube.com/@TheAIEpiphany)** | 論文解讀 | 深入且技術導向的論文拆解 |
+| **[AI Jason](https://www.youtube.com/@AIJasonZ)** | Agents、LangChain、實務應用 | 很適合拿來入門 agentic frameworks |
+| **[Sam Witteveen](https://www.youtube.com/@samwitteveenai)** | Gemini、RAG、agents | 最優秀的實戰型 AI YouTuber 之一 |
+| **[Matt Wolfe](https://www.youtube.com/@mreflow)** | AI 新聞、產品展示 | 最適合追蹤最新 AI 新聞與工具 |
+| **[Hamel Husain (blog)](https://hamel.dev/)** | Evals、生產環境 AI、LLMs | 由 evals maven 課程作者分享真實的生產經驗 |
+| **[Simon Willison (blog)](https://simonwillison.net/)** | LLM 新聞、工具、coding | 最值得信賴的每日 AI 新聞來源 |
+| **[The Latent Space podcast](https://www.latent.space/)** | 技術型 AI 訪談 | 值得長期追蹤的技術型 AI podcast，常有與研究者的深度對談 |
+| **[Lex Fridman Podcast](https://lexfridman.com/podcast/)** | 廣泛的 AI/ML 訪談 | 與頂尖 AI 研究者的長篇訪談 |
 
 ---
 
-## Learning Path Suggestions <a name="paths"></a>
+<a id="learning-path-suggestions"></a>
+## 學習路徑建議 <a name="paths"></a>
 
-### 🛤️ Path: "I'm new to AI and want to build things fast"
-
-```
-Week 1: Prompt Engineering for Developers (DeepLearning.AI) — free, 2 hrs
-Week 2: Building Systems with ChatGPT API (DeepLearning.AI) — free, 2 hrs
-Week 3: Building and Evaluating Advanced RAG (DeepLearning.AI) — free, 2 hrs
-Week 4: AI Agents in LangGraph (DeepLearning.AI) — free, 4 hrs
-Month 2: Pick a real project, use this guide as reference
-```
-
-### 🛤️ Path: "I want to understand LLMs deeply"
+<a id="path-im-new-to-ai-and-want-to-build-things-fast"></a>
+### 🛤️ 路徑：「我是 AI 新手，想快速做出作品」
 
 ```
-Week 1-3: Neural Networks: Zero to Hero (Karpathy) — free, 12+ hrs
-Week 4-6: CS324 Stanford LLMs — free, 30+ hrs
-Month 2: Generative AI with LLMs (Coursera DeepLearning.AI)
-Month 3: CS294 LLM Agents (Berkeley)
+第 1 週：Prompt Engineering for Developers (DeepLearning.AI) — 免費，2 小時
+第 2 週：Building Systems with ChatGPT API (DeepLearning.AI) — 免費，2 小時
+第 3 週：Building and Evaluating Advanced RAG (DeepLearning.AI) — 免費，2 小時
+第 4 週：AI Agents in LangGraph (DeepLearning.AI) — 免費，4 小時
+第 2 個月：挑一個真實專案，把這份指南當作參考
 ```
 
-### 🛤️ Path: "I want to build production-ready AI evaluation"
+<a id="path-i-want-to-understand-llms-deeply"></a>
+### 🛤️ 路徑：「我想深入理解 LLMs」
 
 ```
-Week 1: Evaluating and Debugging Generative AI (DeepLearning.AI + W&B) — free
-Week 2: This repo's evals guides (Phoenix/Langfuse) — free  ← start here
-Week 3-4: Quality and Safety for LLM Applications (DeepLearning.AI)
-Month 2: Evals for AI (Maven, Hamel + Shreya) — paid, worth it
+第 1-3 週：Neural Networks: Zero to Hero (Karpathy) — 免費，12+ 小時
+第 4-6 週：CS324 Stanford LLMs — 免費，30+ 小時
+第 2 個月：Generative AI with LLMs (Coursera DeepLearning.AI)
+第 3 個月：CS294 LLM Agents (Berkeley)
 ```
 
-### 🛤️ Path: "I'm a PM learning to contribute to AI product quality"
+<a id="path-i-want-to-build-production-ready-ai-evaluation"></a>
+### 🛤️ 路徑：「我想建立可上線的 AI 評估能力」
 
 ```
-Week 1: AI for Everyone (Coursera) — free
-Week 2: Prompt Engineering for Everyone (learnprompting.org) — free
-Week 3: AI Evals guide in this repo — free (especially Chapters 1-3 on error analysis)
-Month 2: Evals for AI (Maven) — paid, has PM track
+第 1 週：Evaluating and Debugging Generative AI (DeepLearning.AI + W&B) — 免費
+第 2 週：本 repo 的 evals 指南（Phoenix/Langfuse）— 免費  ← 從這裡開始
+第 3-4 週：Quality and Safety for LLM Applications (DeepLearning.AI)
+第 2 個月：Evals for AI (Maven, Hamel + Shreya) — 付費，但很值得
 ```
 
-### 🛤️ Path: "I want to deploy coding agents in my team"
+<a id="path-im-a-pm-learning-to-contribute-to-ai-product-quality"></a>
+### 🛤️ 路徑：「我是 PM，想學習如何提升 AI 產品品質」
 
 ```
-Day 1: Claude Code docs (anthropic.com) — free
-Week 1: This repo's Claude Code Guide + OpenCoder Landscape Guide
-Week 2: Building Code Agents (Hugging Face) — free
-Month 1: Run Claude Code on a real project in CI
+第 1 週：AI for Everyone (Coursera) — 免費
+第 2 週：Prompt Engineering for Everyone (learnprompting.org) — 免費
+第 3 週：本 repo 的 AI Evals 指南 — 免費（尤其是第 1-3 章的錯誤分析）
+第 2 個月：Evals for AI (Maven) — 付費，含 PM 路線
+```
+
+<a id="path-i-want-to-deploy-coding-agents-in-my-team"></a>
+### 🛤️ 路徑：「我想在團隊中部署 coding agents」
+
+```
+第 1 天：Claude Code docs (anthropic.com) — 免費
+第 1 週：本 repo 的 Claude Code Guide + OpenCoder Landscape Guide
+第 2 週：Building Code Agents (Hugging Face) — 免費
+第 1 個月：讓 Claude Code 在 CI 中跑一個真實專案
 ```
 
 ---
 
-## How to Stay Current
+<a id="how-to-stay-current"></a>
+## 如何持續掌握最新進展
 
-AI moves fast. Beyond courses, these habits keep you current:
+AI 變化很快。除了課程之外，以下習慣也能幫助你跟上最新動態：
 
-1. **Follow Simon Willison's blog** — daily, trustworthy AI news summaries
-2. **Read Anthropic + OpenAI release notes** — primary sources beat second-hand summaries
-3. **Watch the Latent Space podcast** — best technical depth
-4. **Contribute to open source** — OpenHands, LlamaIndex, DSPy — real learning happens in PRs
-5. **Star this repo** — we update it as the landscape changes ⭐
+1. **追蹤 Simon Willison 的部落格** — 每日更新、值得信賴的 AI 新聞摘要
+2. **閱讀 Anthropic + OpenAI 的 release notes** — 第一手資訊永遠勝過二手整理
+3. **收聽 Latent Space podcast** — 最佳的技術深度來源
+4. **參與 open source** — OpenHands、LlamaIndex、DSPy —— 真正的學習往往發生在 PR 中
+5. **替這個 repo 加星** — 我們會隨著產業變化持續更新它 ⭐
 
 ---
 
-*Maintained by [Om Bharatiya](https://github.com/ombharatiya). PRs welcome for new course additions!*
+*由 [Om Bharatiya](https://github.com/ombharatiya) 維護，歡迎透過 PR 新增更多課程！*

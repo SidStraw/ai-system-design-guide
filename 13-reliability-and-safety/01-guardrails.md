@@ -1,53 +1,60 @@
-# Guardrails and Safety
+<a id="guardrails-and-safety"></a>
+# 護欄與安全
 
-Guardrails are systems that constrain LLM behavior to ensure safe, reliable outputs and prevent unsafe actions. This chapter covers input validation, output filtering, prompt injection defense, action safety, hallucination mitigation, and reliability patterns for production systems.
+護欄是用來約束 LLM 行為的系統，可確保輸出安全、可靠，並避免不安全的操作。本章涵蓋輸入驗證、輸出過濾、Prompt Injection 防禦、動作安全、幻覺緩解，以及適用於正式環境系統的可靠性模式。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Why Guardrails Matter](#why-guardrails-matter)
-- [Types of Guardrails](#types-of-guardrails)
-- [Input Guardrails](#input-guardrails)
-- [Output Guardrails](#output-guardrails)
-- [Prompt Injection Defense](#prompt-injection-defense)
-- [Hallucination Mitigation](#hallucination-mitigation)
-- [Structured Output Validation](#structured-output-validation)
-- [Action Safety](#action-safety)
-- [Fallback Strategies](#fallback-strategies)
-- [Guardrail Architecture](#guardrail-architecture)
-- [Guardrail Frameworks](#guardrail-frameworks)
-- [Interview Questions](#interview-questions)
-- [References](#references)
-
----
-
-## Why Guardrails Matter
-
-### The Reliability Challenge
-
-LLMs are probabilistic and can produce:
-- Factually incorrect information (hallucination)
-- Harmful or inappropriate content
-- Off-topic or unhelpful responses
-- Inconsistent formatting
-- Leaked sensitive information
-
-### Risk Categories
-
-| Risk | Description | Impact |
-|------|-------------|--------|
-| Harmful content | Violence, hate, illegal activities | Legal liability, reputation damage |
-| PII exposure | Leaking personal information | Privacy violations, fines |
-| Prompt injection | Malicious instruction override | Security breach |
-| Hallucination | False information presented as fact | User harm, trust erosion, liability |
-| Unsafe actions | Executing dangerous operations | System damage, data loss |
-| Off-topic responses | Irrelevant answers | Poor user experience |
-| Format errors | Invalid output structure | Application crashes |
+- [為何護欄很重要](#why-guardrails-matter)
+- [護欄的類型](#types-of-guardrails)
+- [輸入護欄](#input-guardrails)
+- [輸出護欄](#output-guardrails)
+- [Prompt Injection 防禦](#prompt-injection-defense)
+- [幻覺緩解](#hallucination-mitigation)
+- [結構化輸出驗證](#structured-output-validation)
+- [動作安全](#action-safety)
+- [Fallback 策略](#fallback-strategies)
+- [護欄架構](#guardrail-architecture)
+- [護欄框架](#guardrail-frameworks)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Types of Guardrails
+<a id="why-guardrails-matter"></a>
+## 為何護欄很重要
 
-### Defense in Depth
+<a id="the-reliability-challenge"></a>
+### 可靠性挑戰
+
+LLM 具備機率性，可能產生：
+- 事實錯誤的資訊（幻覺）
+- 有害或不恰當的內容
+- 離題或無幫助的回覆
+- 不一致的格式
+- 洩露敏感資訊
+
+<a id="risk-categories"></a>
+### 風險類別
+
+| 風險 | 說明 | 影響 |
+|------|------|------|
+| 有害內容 | 暴力、仇恨、非法活動 | 法律責任、聲譽受損 |
+| PII 外洩 | 洩露個人資訊 | 隱私違規、罰款 |
+| Prompt injection | 惡意覆寫指令 | 安全性破口 |
+| 幻覺 | 將錯誤資訊當成事實呈現 | 傷害使用者、信任流失、責任風險 |
+| 不安全動作 | 執行危險操作 | 系統損害、資料遺失 |
+| 離題回覆 | 不相關的答案 | 使用者體驗差 |
+| 格式錯誤 | 無效的輸出結構 | 應用程式崩潰 |
+
+---
+
+<a id="types-of-guardrails"></a>
+## 護欄的類型
+
+<a id="defense-in-depth"></a>
+### 深度防禦
 
 ```
 User Input
@@ -87,11 +94,13 @@ User Input
 
 ---
 
-## Input Guardrails
+<a id="input-guardrails"></a>
+## 輸入護欄
 
-### Topic Classification
+<a id="topic-classification"></a>
+### 主題分類
 
-Block off-topic or prohibited requests:
+阻擋離題或被禁止的請求：
 
 ```python
 class TopicGuardrail:
@@ -127,9 +136,10 @@ result = guardrail.check("How do I cook pasta?")
 # Result: passed=False, topic outside allowed scope
 ```
 
-### PII Detection
+<a id="pii-detection"></a>
+### PII 偵測
 
-Detect and handle personally identifiable information:
+偵測並處理個人可識別資訊：
 
 ```python
 class PIIGuardrail:
@@ -165,7 +175,8 @@ class PIIGuardrail:
         return redacted
 ```
 
-### Input Length and Rate Limiting
+<a id="input-length-and-rate-limiting"></a>
+### 輸入長度與 Rate Limiting
 
 ```python
 class InputLimitsGuardrail:
@@ -204,9 +215,11 @@ class InputLimitsGuardrail:
 
 ---
 
-## Output Guardrails
+<a id="output-guardrails"></a>
+## 輸出護欄
 
-### Content Safety Filter
+<a id="content-safety-filter"></a>
+### 內容安全過濾器
 
 ```python
 class ContentSafetyGuardrail:
@@ -249,9 +262,10 @@ def check_with_openai(text: str) -> GuardrailResult:
     return GuardrailResult(passed=True)
 ```
 
-### Relevance Check
+<a id="relevance-check"></a>
+### 相關性檢查
 
-Ensure response addresses the question:
+確保回覆有回答到問題：
 
 ```python
 class RelevanceGuardrail:
@@ -274,7 +288,8 @@ class RelevanceGuardrail:
         return GuardrailResult(passed=True, metadata={"relevance": similarity})
 ```
 
-### Factuality Check (for RAG)
+<a id="factuality-check-for-rag"></a>
+### 事實性檢查（適用於 RAG）
 
 ```python
 class FactualityGuardrail:
@@ -307,9 +322,11 @@ class FactualityGuardrail:
 
 ---
 
-## Prompt Injection Defense
+<a id="prompt-injection-defense"></a>
+## Prompt Injection 防禦
 
-### Detection
+<a id="detection"></a>
+### 偵測
 
 ```python
 class PromptInjectionDetector:
@@ -353,7 +370,8 @@ class PromptInjectionDetector:
         return GuardrailResult(passed=True)
 ```
 
-### Mitigation Strategies
+<a id="mitigation-strategies"></a>
+### 緩解策略
 
 ```python
 class InjectionMitigation:
@@ -411,9 +429,11 @@ Provide a helpful response.
 
 ---
 
-## Hallucination Mitigation
+<a id="hallucination-mitigation"></a>
+## 幻覺緩解
 
-### Multi-Layer Approach
+<a id="multi-layer-approach"></a>
+### 多層式方法
 
 ```python
 class HallucinationGuard:
@@ -483,9 +503,10 @@ class HallucinationGuard:
         return GuardrailResult(passed=True)
 ```
 
-### Abstention Strategy
+<a id="abstention-strategy"></a>
+### 棄答策略
 
-Train the model to say "I don't know":
+訓練模型說出「我不知道」：
 
 ```python
 ABSTENTION_PROMPT = """
@@ -523,9 +544,11 @@ class AbstentionDetector:
 
 ---
 
-## Structured Output Validation
+<a id="structured-output-validation"></a>
+## 結構化輸出驗證
 
-### JSON Schema Validation
+<a id="json-schema-validation"></a>
+### JSON Schema 驗證
 
 ```python
 from jsonschema import validate, ValidationError
@@ -571,7 +594,8 @@ product_schema = {
 guardrail = StructuredOutputGuardrail(product_schema)
 ```
 
-### Retry with Correction
+<a id="retry-with-correction"></a>
+### 透過修正重試
 
 ```python
 class StructuredOutputRetry:
@@ -605,9 +629,11 @@ class StructuredOutputRetry:
 
 ---
 
-## Action Safety
+<a id="action-safety"></a>
+## 動作安全
 
-### Action Validation
+<a id="action-validation"></a>
+### 動作驗證
 
 ```python
 class ActionSafetyGuard:
@@ -662,7 +688,8 @@ class ActionSafetyGuard:
         return ValidationResult(allowed=True)
 ```
 
-### Sandbox Execution
+<a id="sandbox-execution"></a>
+### 沙箱執行
 
 ```python
 class SandboxedExecutor:
@@ -704,9 +731,11 @@ class SandboxedExecutor:
 
 ---
 
-## Fallback Strategies
+<a id="fallback-strategies"></a>
+## Fallback 策略
 
-### Graceful Degradation
+<a id="graceful-degradation"></a>
+### 優雅降級
 
 ```python
 class FallbackChain:
@@ -744,7 +773,8 @@ fallback = FallbackChain([
 ])
 ```
 
-### Human Escalation
+<a id="human-escalation"></a>
+### 升級給人工處理
 
 ```python
 class HumanEscalationGuardrail:
@@ -776,9 +806,11 @@ def handle_low_confidence(query: str, response: str, metadata: dict):
 
 ---
 
-## Guardrail Architecture
+<a id="guardrail-architecture"></a>
+## 護欄架構
 
-### Layered Pipeline
+<a id="layered-pipeline"></a>
+### 分層式 Pipeline
 
 ```python
 class GuardrailPipeline:
@@ -839,7 +871,8 @@ class GuardrailPipeline:
         )
 ```
 
-### Guardrail Metrics
+<a id="guardrail-metrics"></a>
+### 護欄指標
 
 ```python
 class GuardrailMetrics:
@@ -870,9 +903,11 @@ class GuardrailMetrics:
 
 ---
 
-## Guardrail Frameworks
+<a id="guardrail-frameworks"></a>
+## 護欄框架
 
-### NeMo Guardrails (NVIDIA)
+<a id="nemo-guardrails-nvidia"></a>
+### NeMo Guardrails（NVIDIA）
 
 ```python
 from nemoguardrails import LLMRails, RailsConfig
@@ -897,6 +932,7 @@ define flow
 response = rails.generate(messages=[{"role": "user", "content": user_message}])
 ```
 
+<a id="guardrails-ai"></a>
 ### Guardrails AI
 
 ```python
@@ -928,104 +964,109 @@ result = guard(
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: How do you prevent hallucination in a production RAG system?
+<a id="q-how-do-you-prevent-hallucination-in-a-production-rag-system"></a>
+### 問：你會如何在正式環境的 RAG 系統中防止幻覺？
 
-**Strong answer:**
-Multi-layer approach:
+**強回答：**
+多層式方法：
 
-**1. Retrieval quality:**
-- High-quality retrieval is the first defense
-- If we retrieve wrong context, model will hallucinate
-- Use reranking to ensure relevance
+**1. 檢索品質：**
+- 高品質檢索是第一道防線
+- 如果檢索到錯誤的 context，模型就會產生幻覺
+- 使用 reranking 來確保相關性
 
-**2. Prompt engineering:**
-- Explicit instruction: "Answer only from context"
-- Encourage abstention: "If not in context, say you don't know"
-- Low temperature (0.1-0.3)
+**2. Prompt engineering：**
+- 明確指示：「只根據 context 作答」
+- 鼓勵棄答：「如果 context 裡沒有，就說你不知道」
+- 低 temperature（0.1-0.3）
 
-**3. Output validation:**
-- Factuality checking: NLI model or LLM judge
-- Citation verification: Check claims against sources
-- Self-consistency: Multiple samples should agree
+**3. 輸出驗證：**
+- 事實性檢查：NLI 模型或 LLM judge
+- 引用驗證：將主張與來源交叉比對
+- Self-consistency：多次取樣應該一致
 
-**4. Abstention strategy:**
-- Train/prompt model to say "I don't know"
-- Detect low-confidence responses
-- Escalate to human when uncertain
+**4. 棄答策略：**
+- 訓練／提示模型說出「我不知道」
+- 偵測低信心回覆
+- 不確定時升級給人工處理
 
-**5. Monitoring:**
-- Track hallucination rate in production
-- User feedback on accuracy
-- Regular evaluation on test set
+**5. 監控：**
+- 在正式環境追蹤幻覺率
+- 使用者對正確性的回饋
+- 定期在測試集上評估
 
-### Q: How do you protect an LLM application from prompt injection?
+<a id="q-how-do-you-protect-an-llm-application-from-prompt-injection"></a>
+### 問：你會如何保護 LLM 應用程式免受 prompt injection 攻擊？
 
-**Strong answer:**
+**強回答：**
 
-"Defense in depth with multiple layers:
+「用多層防護的深度防禦：
 
-**Detection:**
-- Pattern matching for known injection phrases ('ignore previous instructions')
-- ML classifier trained on injection examples
-- Anomaly detection for unusual input patterns
+**偵測：**
+- 以 pattern matching 偵測已知 injection 片語（例如 `ignore previous instructions`）
+- 使用以 injection 範例訓練的 ML classifier
+- 對異常輸入模式做 anomaly detection
 
-**Mitigation:**
-- Sandwich defense: wrap user input with instruction reminders
-- Clear delimiters: use unique markers around user content
-- Input/output isolation: summarize intent before acting on it
-- Parameterization: separate data from instructions (like SQL params)
+**緩解：**
+- Sandwich defense：在使用者輸入外包上一層指令提醒
+- 清楚的 delimiter：用獨特標記包住使用者內容
+- 輸入／輸出隔離：先摘要意圖，再根據意圖行動
+- Parameterization：將資料與指令分開（類似 SQL params）
 
-**Architecture:**
-- Least privilege: agents only have permissions they need
-- Action validation: verify actions before execution
-- Output filtering: catch responses that leak system prompts
+**架構：**
+- Least privilege：agent 只擁有完成工作所需的權限
+- 動作驗證：執行前驗證動作
+- 輸出過濾：攔截會洩露 system prompt 的回覆
 
-No single defense is perfect. The goal is that an attacker needs to bypass multiple layers. I also monitor for injection attempts to update defenses.
+沒有任何單一防線是完美的。目標是讓攻擊者必須繞過多層防護。我也會持續監控 injection 嘗試，以更新防禦。
 
-For high-security applications, I use a two-stage approach: first LLM extracts intent without acting, second LLM acts only on the extracted intent."
+對高安全需求應用，我會採用兩階段方法：第一個 LLM 只負責提取意圖而不執行，第二個 LLM 只根據提取出的意圖行動。」
 
-### Q: Design a guardrail system for a customer service chatbot.
+<a id="q-design-a-guardrail-system-for-a-customer-service-chatbot"></a>
+### 問：為客服聊天機器人設計一套護欄系統。
 
-**Strong answer:**
-I would implement guardrails at input and output:
+**強回答：**
+我會在輸入與輸出兩端都實作護欄：
 
-**Input guardrails:**
-1. Topic filter: Only allow product/service questions
-2. PII detection: Redact or warn about sensitive data
-3. Jailbreak/injection detection: Block manipulation attempts
-4. Rate limiting: Prevent abuse
+**輸入護欄：**
+1. 主題過濾：只允許產品／服務相關問題
+2. PII 偵測：遮蔽或警告敏感資料
+3. Jailbreak／injection 偵測：阻擋操控嘗試
+4. Rate limiting：避免濫用
 
-**Output guardrails:**
-1. Content safety: No harmful/inappropriate content
-2. Relevance check: Response addresses the question
-3. Brand voice: Consistent tone and messaging
-4. Factuality: Claims supported by knowledge base
-5. PII filter: Ensure no PII leaks in responses
+**輸出護欄：**
+1. 內容安全：不產生有害／不當內容
+2. 相關性檢查：回覆有回答到問題
+3. 品牌語氣：維持一致的口吻與訊息
+4. 事實性：主張需有知識庫支持
+5. PII 過濾：確保回覆不洩露 PII
 
-**Behavioral guardrails:**
-- Confidence thresholds: escalate to human if uncertain
-- Refusal patterns: graceful decline for out-of-scope requests
-- Disclosure: clearly identify as AI when appropriate
+**行為型護欄：**
+- 信心門檻：不確定時升級給人工處理
+- 拒答模式：對超出範圍的請求做出得體拒絕
+- 揭露：在適合時清楚表明這是 AI
 
-**Fallback chain:**
+**Fallback 鏈：**
 ```
 Primary LLM -> Backup LLM -> Canned responses -> Human escalation
 ```
 
-**Monitoring:**
-- Log all guardrail triggers
-- Track guardrail trigger rates
-- Alert on high block rates (may indicate attack or model issue)
-- Sample blocked conversations for review
-- User satisfaction tracking
+**監控：**
+- 記錄所有護欄觸發事件
+- 追蹤護欄觸發率
+- 對高封鎖率發出警報（可能代表攻擊或模型問題）
+- 抽樣檢查被封鎖的對話
+- 追蹤使用者滿意度
 
-The balance is: enough guardrails to be safe, not so many that the bot is useless. Tune thresholds based on the risk profile -- financial services tighter than casual chat.
+平衡點在於：護欄要足夠多才能安全，但不能多到讓機器人失去作用。門檻應依風險輪廓調整——金融服務會比一般閒聊更嚴格。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - NeMo Guardrails: https://github.com/NVIDIA/NeMo-Guardrails
 - Guardrails AI: https://github.com/guardrails-ai/guardrails
@@ -1036,4 +1077,4 @@ The balance is: enough guardrails to be safe, not so many that the bot is useles
 
 ---
 
-*Next: [Ensemble Methods](02-ensemble-methods.md)*
+*下一章：[集成方法](02-ensemble-methods.md)*

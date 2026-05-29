@@ -1,52 +1,59 @@
-# Tokenization Deep Dive
+<a id="tokenization-deep-dive"></a>
+# Tokenization 深入解析
 
-Tokenization is the process of converting text into discrete units (tokens) that models can process. It directly impacts model capabilities, costs, and performance.
+Tokenization 是把文字轉成模型可處理的離散單位（tokens）的過程。它會直接影響模型能力、成本與效能。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Why Tokenization Matters](#why-tokenization-matters)
-- [Tokenization Algorithms](#tokenization-algorithms)
-- [Vocabulary Design Tradeoffs](#vocabulary-design-tradeoffs)
-- [Special Tokens](#special-tokens)
-- [Multilingual Tokenization](#multilingual-tokenization)
-- [Token Counting for Cost Estimation](#token-counting-for-cost-estimation)
-- [Common Tokenization Issues](#common-tokenization-issues)
-- [Practical Tokenization Patterns](#practical-tokenization-patterns)
-- [Interview Questions](#interview-questions)
-- [References](#references)
-
----
-
-## Why Tokenization Matters
-
-### For System Design
-
-1. **Cost**: LLM APIs charge per token. Tokenization efficiency directly affects costs.
-2. **Context limits**: Token count, not word count, determines what fits in context.
-3. **Capability**: Some tasks (character counting, anagrams) are hard because of tokenization.
-4. **Consistency**: Same text tokenizes differently across models.
-
-### For Understanding LLM Behavior
-
-**Classic interview question**: Why does GPT struggle to count letters in "strawberry"?
-
-Because "strawberry" is tokenized as multiple subwords. The model never sees individual characters; it sees subword units. Counting letters requires reasoning about internal structure of tokens.
+- [為什麼 Tokenization 很重要](#why-tokenization-matters)
+- [Tokenization 演算法](#tokenization-algorithms)
+- [Vocabulary 設計取捨](#vocabulary-design-tradeoffs)
+- [特殊 Tokens](#special-tokens)
+- [多語言 Tokenization](#multilingual-tokenization)
+- [成本估算的 Token 計數](#token-counting-for-cost-estimation)
+- [常見的 Tokenization 問題](#common-tokenization-issues)
+- [實務上的 Tokenization 模式](#practical-tokenization-patterns)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Tokenization Algorithms
+<a id="why-tokenization-matters"></a>
+## 為什麼 Tokenization 很重要
 
+<a id="for-system-design"></a>
+### 對系統設計而言
+
+1. **成本**：LLM API 依 token 計費。Tokenization 效率會直接影響成本。
+2. **Context 限制**：決定能放進 context 的是 token 數，不是字數。
+3. **能力**：某些任務（字元計數、anagrams）之所以困難，就是因為 tokenization。
+4. **一致性**：同一段文字在不同模型上會被切成不同 tokens。
+
+<a id="for-understanding-llm-behavior"></a>
+### 對理解 LLM 行為而言
+
+**經典面試題**：為什麼 GPT 很難數出 "strawberry" 裡有幾個字母？
+
+因為 "strawberry" 會被切成多個 subwords。模型從來沒有直接看到單一字元；它看到的是 subword 單位。要數字母，就必須推理 token 內部的結構。
+
+---
+
+<a id="tokenization-algorithms"></a>
+## Tokenization 演算法
+
+<a id="byte-pair-encoding-bpe"></a>
 ### Byte Pair Encoding (BPE)
 
-The most common algorithm. Used by GPT-series, Llama, Claude.
+最常見的演算法。GPT 系列、Llama、Claude 都使用它。
 
-**Training algorithm:**
-1. Start with vocabulary of individual bytes (256 tokens)
-2. Count all adjacent token pairs in training corpus
-3. Merge most frequent pair into a new token
-4. Repeat until vocabulary size reached
+**訓練演算法：**
+1. 先從單一 bytes 的詞彙表開始（256 個 tokens）
+2. 統計訓練語料中所有相鄰 token pairs
+3. 將最常出現的 pair 合併成一個新 token
+4. 重複直到達到目標詞彙表大小
 
-**Example:**
+**範例：**
 ```
 Corpus: "low lower lowest"
 Initial: ['l', 'o', 'w', ' ', 'l', 'o', 'w', 'e', 'r', ' ', 'l', 'o', 'w', 'e', 's', 't']
@@ -63,83 +70,90 @@ Step 3: Most frequent pair is ('low', 'e'). Merge to 'lowe'.
 Continue until vocabulary size target...
 ```
 
-**Properties:**
-- Deterministic tokenization given trained vocabulary
-- Common words tend to be single tokens
-- Rare words split into subwords
+**特性：**
+- 在詞彙表固定後，tokenization 是決定性的
+- 常見字詞傾向成為單一 token
+- 稀有字詞會被拆成 subwords
 
+<a id="wordpiece"></a>
 ### WordPiece
 
-Used by BERT-family models.
+BERT 系列模型使用它。
 
-**Key difference from BPE:**
-- BPE: Merge based on frequency
-- WordPiece: Merge based on likelihood improvement
+**與 BPE 的關鍵差異：**
+- BPE：依頻率合併
+- WordPiece：依 likelihood 改善幅度合併
 
 ```
 Score = freq(AB) / (freq(A) * freq(B))
 ```
 
-This favors merges that are more meaningful than random co-occurrence.
+這讓它更偏好那些比隨機共現更有意義的合併。
 
-**Visual marker:** WordPiece uses ## prefix for continuation tokens:
+**視覺標記：**WordPiece 會用 ## 前綴表示延續 token：
 ```
 "embedding" becomes ["em", "##bed", "##ding"]
 ```
 
+<a id="unigram-sentencepiece"></a>
 ### Unigram (SentencePiece)
 
-Used by T5, ALBERT, some multilingual models.
+T5、ALBERT，以及部分多語言模型使用它。
 
-**Training algorithm:**
-1. Start with large candidate vocabulary
-2. Compute loss if each token were removed
-3. Remove tokens that increase loss least
-4. Repeat until vocabulary size reached
+**訓練演算法：**
+1. 先建立很大的候選詞彙表
+2. 計算移除每個 token 後造成的 loss
+3. 移除那些讓 loss 增加最少的 tokens
+4. 重複直到達到目標詞彙表大小
 
-**Key difference:** Works with probabilities rather than frequencies. Can recover from suboptimal early merges.
+**關鍵差異：**它依賴機率，而不是頻率，因此能從早期不理想的合併中恢復。
 
-### Comparison
+<a id="comparison"></a>
+### 比較
 
-| Algorithm | Merge Criterion | Tokenization | Used By |
-|-----------|-----------------|--------------|---------|
-| BPE | Frequency | Deterministic | GPT, Llama, Claude |
-| WordPiece | Likelihood | Deterministic | BERT, DistilBERT |
-| Unigram | Probability | Probabilistic | T5, mT5, XLNet |
+| 演算法 | 合併準則 | Tokenization | 使用者 |
+|--------|----------|--------------|--------|
+| BPE | 頻率 | 決定性 | GPT、Llama、Claude |
+| WordPiece | Likelihood | 決定性 | BERT、DistilBERT |
+| Unigram | 機率 | 機率式 | T5、mT5、XLNet |
 
 ---
 
-## Vocabulary Design Tradeoffs
+<a id="vocabulary-design-tradeoffs"></a>
+## Vocabulary 設計取捨
 
-### Vocabulary Size
+<a id="vocabulary-size"></a>
+### Vocabulary 大小
 
-| Size | Example | Pros | Cons |
-|------|---------|------|------|
-| Small (10K) | Some early models | Smaller embeddings | Long token sequences |
-| Medium (32K) | Llama 2 | Good balance | Multilingual inefficiency |
-| Large (128K) | Llama 3/4, GPT-4o | **Standard in late 2025**. High compression ratio. | Larger embeddings table |
-| Huge (200K+) | GPT-5.2 (o200k) | Native multimodal & multilingual efficiency | Memory pressure at the LM Head |
+| 大小 | 範例 | 優點 | 缺點 |
+|------|------|------|------|
+| 小（10K） | 某些早期模型 | 較小的 embeddings | token 序列很長 |
+| 中（32K） | Llama 2 | 取得良好平衡 | 多語言效率不足 |
+| 大（128K） | Llama 3/4、GPT-4o | **2025 年末的標準**。壓縮率高。 | embeddings table 更大 |
+| 超大（200K+） | GPT-5.2 (o200k) | 原生多模態與多語言效率更好 | LM Head 的記憶體壓力更高 |
 
-**The 2025 Vocab Expansion (Deep Dive):**
-- **Llama 3/4 (128k)**: By moving from 32k to 128k, Meta improved English compression by ~15% and non-English languages like Hindi by 3-4x. 
-- **GPT-4o/5.2 (o200k_base)**: Tiktoken's latest encoding provides superior compression for code and multilingual text, reducing API costs indirectly by using fewer tokens for the same meaning.
+**2025 年的詞彙表擴張（深入說明）：**
+- **Llama 3/4 (128k)**：從 32k 擴展到 128k 後，Meta 將英文壓縮率提升了約 15%，對 Hindi 等非英文語言則提升 3-4 倍。
+- **GPT-4o/5.2 (o200k_base)**：Tiktoken 最新編碼在程式碼與多語言文字上有更好的壓縮率，透過同樣語意使用更少 tokens，間接降低 API 成本。
 
+<a id="character-vs-subword-vs-word"></a>
 ### Character vs Subword vs Word
 
-| Granularity | Example | Tokens for "running" | Tradeoffs |
-|-------------|---------|---------------------|-----------|
-| Character | ByT5 | ['r','u','n','n','i','n','g'] | Handles any text but very long sequences |
-| Subword | GPT | ['running'] or ['run','ning'] | Good balance |
-| Word | Early NLP | ['running'] | Short sequences but cannot handle OOV |
+| 粒度 | 範例 | "running" 的 tokens | 取捨 |
+|------|------|----------------------|------|
+| Character | ByT5 | ['r','u','n','n','i','n','g'] | 能處理任何文字，但序列非常長 |
+| Subword | GPT | ['running'] 或 ['run','ning'] | 平衡最佳 |
+| Word | 早期 NLP | ['running'] | 序列短，但無法處理 OOV |
 
-Modern LLMs universally use subword tokenization for the balance of vocabulary size and sequence length.
+現代 LLM 幾乎一律使用 subword tokenization，在詞彙表大小與序列長度之間取得平衡。
 
+<a id="byte-level-bpe"></a>
 ### Byte-Level BPE
 
-GPT-2 introduced byte-level BPE:
-- Base vocabulary is 256 bytes, not characters
-- Can represent any text without UNK tokens
-- Unicode handled naturally as byte sequences
+GPT-2 引入了 byte-level BPE：
+- 基礎詞彙表是 256 個 bytes，而不是字元
+- 可以表示任何文字，不需要 UNK tokens
+- Unicode 會自然地以 byte sequences 處理
 
 ```python
 # Character-level: Needs explicit handling of characters
@@ -151,23 +165,25 @@ text = "cafe"  # Becomes bytes, then BPE operates on bytes
 
 ---
 
-## Special Tokens
+<a id="special-tokens"></a>
+## 特殊 Tokens
 
-Special tokens handle structural information outside normal text:
+特殊 tokens 用來處理一般文字之外的結構資訊：
 
-| Token | Purpose | Example |
-|-------|---------|---------|
-| BOS | Beginning of sequence | Signals start of generation |
-| EOS | End of sequence | Signals completion |
-| PAD | Padding | Fill batches to equal length |
-| UNK | Unknown token | Fallback for OOV (rare with byte BPE) |
-| SEP | Separator | Divide segments (BERT-style) |
+| Token | 用途 | 範例 |
+|-------|------|------|
+| BOS | 序列開頭 | 表示生成開始 |
+| EOS | 序列結尾 | 表示完成 |
+| PAD | Padding | 將 batch 補到相同長度 |
+| UNK | 未知 token | OOV 的回退方案（byte BPE 中很少見） |
+| SEP | 分隔符 | 用來切分片段（BERT 風格） |
 
+<a id="chat-templates"></a>
 ### Chat Templates
 
-Modern chat models use special tokens for conversation structure:
+現代 chat 模型會使用特殊 tokens 來表示對話結構：
 
-**Llama 2 format:**
+**Llama 2 格式：**
 ```
 [INST] <<SYS>>
 You are a helpful assistant.
@@ -176,7 +192,7 @@ You are a helpful assistant.
 User message here [/INST] Assistant response here
 ```
 
-**ChatML (OpenAI style):**
+**ChatML（OpenAI 風格）：**
 ```
 <|im_start|>system
 You are a helpful assistant.<|im_end|>
@@ -186,41 +202,44 @@ Hello!<|im_end|>
 Hi there!<|im_end|>
 ```
 
-**Why this matters:**
-- Wrong formatting leads to poor results
-- Special tokens are not in pre-training data
-- Libraries like transformers use chat_template for automatic formatting
+**為什麼這很重要：**
+- 格式錯誤會導致結果變差
+- 特殊 tokens 不存在於預訓練資料中
+- 像 transformers 這類函式庫會用 chat_template 自動格式化
 
 ---
 
-## Multilingual Tokenization
+<a id="multilingual-tokenization"></a>
+## 多語言 Tokenization
 
-### The Challenge
+<a id="the-challenge"></a>
+### 挑戰
 
-Tokenizers trained primarily on English have poor efficiency for other languages:
+主要以英文訓練的 tokenizer，對其他語言的效率通常很差：
 
-| Language | Tokens for "Hello" | Tokens for equivalent greeting |
-|----------|-------------------|-------------------------------|
-| English | 1 ("Hello") | - |
-| Chinese | - | 2-3+ for equivalent |
-| Japanese | - | 3-5+ for equivalent |
-| Korean | - | 2-4+ for equivalent |
+| 語言 | "Hello" 的 tokens | 對應問候語的 tokens |
+|------|--------------------|----------------------|
+| 英文 | 1（"Hello"） | - |
+| 中文 | - | 2-3+ |
+| 日文 | - | 3-5+ |
+| 韓文 | - | 2-4+ |
 
-**Cost implication:** Non-English users pay 2-3x more per semantic unit.
+**成本含意：**非英文使用者為了同樣的語意單位，往往要多付 2-3 倍成本。
 
-### Solutions
+<a id="solutions"></a>
+### 解法
 
-1. **Multilingual training corpus:** Train tokenizer on balanced multilingual data
-2. **Larger vocabulary:** More room for non-English tokens
-3. **Language-specific tokenizers:** Separate tokenizers per language family
+1. **多語言訓練語料**：以平衡的多語言資料訓練 tokenizer
+2. **更大的詞彙表**：為非英文 tokens 騰出更多空間
+3. **語言專用 tokenizer**：依語系分別建立 tokenizer
 
-**Models with good multilingual support:**
-- mT5, XLM-R: Trained on 100+ languages
-- GPT-4, Claude 3.5: Large vocabulary with multilingual coverage
-- Gemini: Designed for multilingual from the start
+**多語言支援良好的模型：**
+- mT5、XLM-R：在 100+ 種語言上訓練
+- GPT-4、Claude 3.5：大詞彙表涵蓋多語言
+- Gemini：從一開始就以多語言為設計目標
 
-| Model | Chinese | Japanese | Korean | Hindi |
-|-------|---------|----------|--------|--------|
+| 模型 | 中文 | 日文 | 韓文 | Hindi |
+|------|------|------|------|-------|
 | GPT-2 | 2.5x | 3.0x | 2.8x | 6.0x |
 | GPT-4 (cl100k) | 1.4x | 1.6x | 1.5x | 3.2x |
 | GPT-5.2 (o200k) | 1.1x | 1.2x | 1.1x | 1.4x |
@@ -228,29 +247,34 @@ Tokenizers trained primarily on English have poor efficiency for other languages
 
 ---
 
-## Multimodal Tokenization (pixels-to-tokens)
+<a id="multimodal-tokenization-pixels-to-tokens"></a>
+## 多模態 Tokenization（pixels-to-tokens）
 
-Modern native multimodal models do not just "see" images; they tokenize them.
+現代原生多模態模型不只是「看見」圖片；它們會把圖片 token 化。
 
-### Image Tokenization (Vision Transformers)
-Images are split into patches (e.g., 14x14 pixels). Each patch is passed through a vision encoder (like SigLIP) to produce a single visual token.
-- **Fixed Token Cost**: Most models use a fixed number of tokens per image at a specific resolution (e.g., 256 or 729 tokens per image).
-- **Dynamic Resolution**: Some models (Gemini 3) use a variable number of tokens depending on image aspect ratio and detail level.
+<a id="image-tokenization-vision-transformers"></a>
+### 影像 Tokenization（Vision Transformers）
+圖片會被切成 patches（例如 14x14 pixels）。每個 patch 都會送進 vision encoder（如 SigLIP），產生一個視覺 token。
+- **固定 Token 成本**：多數模型會在特定解析度下，為每張圖片使用固定數量 tokens（例如每張圖 256 或 729 tokens）。
+- **動態解析度**：某些模型（Gemini 3）會依據圖片的長寬比與細節程度，使用可變數量的 tokens。
 
-### Audio/Video Tokenization
-- **Audio**: Compressed into discrete units using codecs like EnCodec, then represented as a sequence of audio tokens.
-- **Video**: Treated as a sequence of image frames (temporal tokenization). A 1-second video @ 1FPS might cost as much as 1 high-res image.
+<a id="audiovideo-tokenization"></a>
+### 音訊／影片 Tokenization
+- **音訊**：透過 EnCodec 之類的 codec 壓縮成離散單位，再表示成 audio tokens 序列。
+- **影片**：視為影格序列（temporal tokenization）。1 秒影片若以 1FPS 取樣，成本可能與 1 張高解析度圖片相當。
 
 ---
 
-## Token Counting for Cost Estimation
+<a id="token-counting-for-cost-estimation"></a>
+## 成本估算的 Token 計數
 
-### Quick Estimation Rules
+<a id="quick-estimation-rules"></a>
+### 快速估算法則
 
-For English text:
-- **Words to tokens:** ~1.3 tokens per word
-- **Characters to tokens:** ~4 characters per token
-- **Pages to tokens:** ~500-800 tokens per page
+對英文文字而言：
+- **字數轉 tokens**：每個單字約 1.3 tokens
+- **字元轉 tokens**：每 4 個字元約 1 個 token
+- **頁數轉 tokens**：每頁約 500-800 tokens
 
 ```python
 def estimate_tokens(text: str) -> int:
@@ -259,9 +283,10 @@ def estimate_tokens(text: str) -> int:
     return int(word_count * 1.3)
 ```
 
-### Accurate Counting
+<a id="accurate-counting"></a>
+### 精準計數
 
-Use the model-specific tokenizer:
+請使用模型專屬 tokenizer：
 
 ```python
 import tiktoken
@@ -278,7 +303,8 @@ tokens = tokenizer.encode("Your text here")
 token_count = len(tokens)
 ```
 
-### Cost Calculation
+<a id="cost-calculation"></a>
+### 成本計算
 
 ```python
 def calculate_cost(input_text: str, output_text: str, model: str) -> float:
@@ -287,11 +313,11 @@ def calculate_cost(input_text: str, output_text: str, model: str) -> float:
         "gpt-4o-mini": {"input": 0.15, "output": 0.60},
         "claude-3.5-sonnet": {"input": 3.00, "output": 15.00},
     }
-    
+
     encoding = tiktoken.encoding_for_model(model)
     input_tokens = len(encoding.encode(input_text))
     output_tokens = len(encoding.encode(output_text))
-    
+
     cost = (
         (input_tokens / 1_000_000) * pricing[model]["input"] +
         (output_tokens / 1_000_000) * pricing[model]["output"]
@@ -301,11 +327,13 @@ def calculate_cost(input_text: str, output_text: str, model: str) -> float:
 
 ---
 
-## Common Tokenization Issues
+<a id="common-tokenization-issues"></a>
+## 常見的 Tokenization 問題
 
-### Issue 1: Token Boundary Misalignment
+<a id="issue-1-token-boundary-misalignment"></a>
+### 問題 1：Token 邊界未對齊
 
-**Problem:** Text operations may not align with token boundaries.
+**問題：**文字操作可能無法對齊 token 邊界。
 
 ```python
 text = "Hello world"
@@ -314,11 +342,12 @@ text = "Hello world"
 # Truncating at character 6 ("Hello ") splits a token
 ```
 
-**Solution:** Always truncate at token boundaries when managing context.
+**解法：**在管理 context 時，永遠要以 token 邊界截斷。
 
-### Issue 2: Inconsistent Tokenization
+<a id="issue-2-inconsistent-tokenization"></a>
+### 問題 2：Tokenization 不一致
 
-**Problem:** Same text tokenizes differently based on context.
+**問題：**同一段文字會因上下文不同而被切成不同 tokens。
 
 ```python
 # GPT tokenizer example
@@ -327,11 +356,12 @@ text = "Hello world"
 " New York"    # Might be [" New", " York"]
 ```
 
-**Implication:** Token counts can vary based on surrounding text. Always tokenize the full context.
+**含意：**token 數量會隨周邊文字改變。務必對完整 context 做 tokenization。
 
-### Issue 3: Code and Structured Data
+<a id="issue-3-code-and-structured-data"></a>
+### 問題 3：程式碼與結構化資料
 
-**Problem:** Code and JSON often tokenize inefficiently.
+**問題：**程式碼與 JSON 常常會被低效率地 token 化。
 
 ```python
 # Python code often tokenizes poorly
@@ -343,14 +373,15 @@ text = "Hello world"
 # Many tokens for structure
 ```
 
-**Mitigation:** 
-- Some models have code-optimized tokenizers
-- Consider compressing JSON before sending
-- Use structured output modes when available
+**緩解方式：**
+- 有些模型使用為程式碼最佳化的 tokenizer
+- 傳送前可考慮壓縮 JSON
+- 若支援，使用 structured output modes
 
-### Issue 4: Whitespace Handling
+<a id="issue-4-whitespace-handling"></a>
+### 問題 4：空白處理
 
-**Problem:** Tokenizers handle whitespace differently.
+**問題：**不同 tokenizer 對空白的處理方式不同。
 
 ```python
 # Leading spaces often become separate tokens
@@ -360,13 +391,15 @@ text = "Hello world"
 "Hello  world"  # Behavior varies by tokenizer
 ```
 
-**Best practice:** Normalize whitespace before tokenizing.
+**最佳實務：**tokenization 前先正規化空白。
 
 ---
 
-## Practical Tokenization Patterns
+<a id="practical-tokenization-patterns"></a>
+## 實務上的 Tokenization 模式
 
-### Pattern 1: Context Window Management
+<a id="pattern-1-context-window-management"></a>
+### 模式 1：Context Window 管理
 
 ```python
 def fit_to_context(
@@ -377,17 +410,17 @@ def fit_to_context(
     reserve_for_output: int = 2000
 ) -> str:
     encoding = tiktoken.encoding_for_model("gpt-4")
-    
+
     available = max_tokens - reserve_for_output
-    
+
     # System prompt always included
     tokens_used = len(encoding.encode(system_prompt))
     available -= tokens_used
-    
+
     # User message always included
     tokens_used = len(encoding.encode(user_message))
     available -= tokens_used
-    
+
     # Add history from most recent, drop oldest if needed
     included_history = []
     for msg in reversed(history):
@@ -397,11 +430,12 @@ def fit_to_context(
             available -= msg_tokens
         else:
             break
-    
+
     return format_prompt(system_prompt, included_history, user_message)
 ```
 
-### Pattern 2: Chunking at Token Boundaries
+<a id="pattern-2-chunking-at-token-boundaries"></a>
+### 模式 2：在 Token 邊界切塊
 
 ```python
 def chunk_at_token_boundaries(
@@ -411,7 +445,7 @@ def chunk_at_token_boundaries(
 ) -> list[str]:
     encoding = tiktoken.encoding_for_model("gpt-4")
     tokens = encoding.encode(text)
-    
+
     chunks = []
     start = 0
     while start < len(tokens):
@@ -420,25 +454,26 @@ def chunk_at_token_boundaries(
         chunk_text = encoding.decode(chunk_tokens)
         chunks.append(chunk_text)
         start = end - overlap
-    
+
     return chunks
 ```
 
-### Pattern 3: Token Budget Allocation
+<a id="pattern-3-token-budget-allocation"></a>
+### 模式 3：Token 預算分配
 
 ```python
 class TokenBudget:
     def __init__(self, total: int):
         self.total = total
         self.allocated = {}
-    
+
     def allocate(self, component: str, tokens: int) -> bool:
         used = sum(self.allocated.values())
         if used + tokens > self.total:
             return False
         self.allocated[component] = tokens
         return True
-    
+
     def remaining(self) -> int:
         return self.total - sum(self.allocated.values())
 
@@ -453,59 +488,64 @@ budget.allocate("output_reserve", 2000)
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: Why does GPT-4 struggle with simple character counting?
+<a id="q-why-does-gpt-4-struggle-with-simple-character-counting"></a>
+### Q：為什麼 GPT-4 連簡單的字元計數都會出錯？
 
-**Strong answer:**
-Tokenization converts text to subword units, not characters. When asked "How many 'r's in strawberry?", the model sees tokens like ["str", "aw", "berry"] rather than individual letters.
+**強回答：**
+Tokenization 會把文字轉成 subword 單位，而不是字元。當你問「strawberry 裡有幾個 r？」時，模型看到的可能是 ["str", "aw", "berry"]，而不是單獨字母。
 
-The model has to reason about the internal structure of tokens it does not directly observe. This requires memorizing or computing character compositions of tokens, which is an emergent capability that is not always reliable.
+模型必須推理它無法直接觀察到的 token 內部結構。這需要記住或計算 token 的字元組成，而這種能力是 emergent capability，不一定可靠。
 
-The solution is to prompt the model to spell out the word character by character first, then count. This forces the creation of character-level tokens.
+解法是先要求模型把單字逐字拼出來，再開始計數。這會強制建立字元層級的 tokens。
 
-### Q: How would you estimate token count for cost planning?
+<a id="q-how-would-you-estimate-token-count-for-cost-planning"></a>
+### Q：你會如何估算 token 數量來做成本規劃？
 
-**Strong answer:**
-For rough estimation: multiply word count by 1.3 for English text.
+**強回答：**
+若只是粗估：英文文字可用字數乘上 1.3。
 
-For accurate counting: Use the model-specific tokenizer.
-- OpenAI: tiktoken library
-- Others: transformers AutoTokenizer
+若要精準計數：使用模型專屬 tokenizer。
+- OpenAI：tiktoken 函式庫
+- 其他：transformers AutoTokenizer
 
-Important considerations:
-- Non-English text uses 1.5-3x more tokens
-- Code and structured data tokenize inefficiently
-- Always budget extra for output tokens (typically priced higher)
-- Include system prompts and formatting tokens
+重要考量：
+- 非英文文字通常會多出 1.5-3 倍 tokens
+- 程式碼與結構化資料的 tokenization 效率較差
+- 要預留額外 output tokens 預算（通常單價更高）
+- 別忘了 system prompts 與 formatting tokens
 
-For production cost estimation, I sample real requests and measure actual token usage, then apply safety margins.
+在正式環境做成本估算時，我會抽樣真實 requests、量測實際 token 使用量，再加上 safety margins。
 
-### Q: What happens when switching tokenizers between models?
+<a id="q-what-happens-when-switching-tokenizers-between-models"></a>
+### Q：在不同模型之間切換 tokenizer 會發生什麼事？
 
-**Strong answer:**
-Every model family has its own tokenizer. You cannot reuse tokens across models because:
+**強回答：**
+每個模型家族都有自己的 tokenizer。你不能跨模型重用 tokens，原因如下：
 
-1. **Vocabulary differs:** Token IDs mean different strings
-2. **Merge rules differ:** Same text splits differently
-3. **Special tokens differ:** Chat formatting varies
+1. **詞彙表不同：**相同 token IDs 代表不同字串
+2. **合併規則不同：**同一段文字的切分方式不同
+3. **特殊 tokens 不同：**chat formatting 也不同
 
-Practical implications:
-- Always use the correct tokenizer for token counting
-- Cached embeddings are model-specific
-- Prompt templates need per-model adjustment
-- Fine-tuned models inherit their base tokenizer
+實務含意：
+- 做 token 計數時一定要用正確 tokenizer
+- 快取的 embeddings 是模型專屬的
+- Prompt templates 需要依模型調整
+- Fine-tuned models 會繼承其 base tokenizer
 
-### Q: How do you handle tokenization for RAG chunking?
+<a id="q-how-do-you-handle-tokenization-for-rag-chunking"></a>
+### Q：你會如何處理 RAG chunking 的 tokenization？
 
-**Strong answer:**
-Key considerations:
+**強回答：**
+關鍵考量：
 
-1. **Chunk at token boundaries:** Splitting mid-token corrupts text when decoded
-2. **Account for template tokens:** System prompt, formatting consume tokens
-3. **Leave headroom:** Retrieved chunks plus question must fit context
+1. **在 token 邊界切塊：**若切在 token 中間，decode 後的文字會損壞
+2. **把 template tokens 算進去：**system prompt、formatting 都會吃掉 tokens
+3. **保留餘裕：**取回的 chunks 加上問題必須能放進 context
 
-Implementation approach:
+實作方式：
 ```python
 # Determine available tokens for chunks
 available = max_context - system_prompt_tokens - question_tokens - output_reserve
@@ -525,7 +565,8 @@ for chunk in ranked_chunks:
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - Sennrich et al. "Neural Machine Translation of Rare Words with Subword Units" (BPE, 2016)
 - Wu et al. "Google's Neural Machine Translation System" (WordPiece, 2016)
@@ -535,4 +576,4 @@ for chunk in ranked_chunks:
 
 ---
 
-*Previous: [LLM Internals](01-llm-internals.md) | Next: [Attention Mechanisms](03-attention-mechanisms.md)*
+*上一篇：[LLM Internals](01-llm-internals.md) | 下一篇：[Attention Mechanisms](03-attention-mechanisms.md)*

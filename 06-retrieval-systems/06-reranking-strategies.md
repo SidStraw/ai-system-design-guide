@@ -1,37 +1,42 @@
-# Reranking Strategies
+<a id="reranking-strategies"></a>
+# 重排序策略
 
-Reranking is the second stage of retrieval that re-scores a small set of candidates (Top 50-100) using a high-precision model. It is the bridge between "efficient search" and "perfect grounding": first-stage retrieval optimizes for recall, reranking optimizes for precision. Three rerankers dominate production today (BGE-Reranker-v2-m3, Cohere Rerank 3, Voyage rerank-2), with the choice driven by cost model, latency tail, language coverage, and whether you need self-hostable weights.
+重排序是檢索的第二階段：使用高精度模型，對一小組候選結果（Top 50-100）重新評分。它是「高效率搜尋」與「完美 grounding」之間的橋樑：第一階段檢索優化的是召回率，重排序優化的是精確率。如今在正式環境中主流的三種 reranker 為 BGE-Reranker-v2-m3、Cohere Rerank 3 與 Voyage rerank-2；實際選擇通常取決於成本模型、延遲尾端表現、語言覆蓋，以及你是否需要可自行託管的權重。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Why Reranking](#why-reranking)
-- [Reranking Architectures](#reranking-architectures)
-- [Reranking Models](#reranking-models)
-- [Implementation Patterns](#implementation-patterns)
-- [When to Rerank](#when-to-rerank)
-- [LLM-Based Reranking](#llm-based-reranking)
-- [SLM Distillation](#slm-distillation)
-- [Production Considerations](#production-considerations)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [為什麼需要重排序](#why-reranking)
+- [重排序架構](#reranking-architectures)
+- [重排序模型](#reranking-models)
+- [實作模式](#implementation-patterns)
+- [何時該進行重排序](#when-to-rerank)
+- [基於 LLM 的重排序](#llm-based-reranking)
+- [SLM 蒸餾](#slm-distillation)
+- [正式環境考量](#production-considerations)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Why Reranking
+<a id="why-reranking"></a>
+## 為什麼需要重排序
 
-### The Quality Gap
+<a id="the-quality-gap"></a>
+### 品質落差
 
-| Stage | Model | Speed | Quality |
+| 階段 | 模型 | 速度 | 品質 |
 |-------|-------|-------|---------|
-| Embedding retrieval | Bi-encoder | Fast (ms) | Good |
-| Reranking | Cross-encoder | Slow (10-100ms) | Better |
+| Embedding 檢索 | Bi-encoder | 快（ms） | 良好 |
+| 重排序 | Cross-encoder | 慢（10-100ms） | 更好 |
 
-**Why the gap exists:**
-- Bi-encoders embed query and document independently
-- Cross-encoders jointly process query and document
-- Joint processing captures interactions bi-encoders miss
+**為什麼會有這個落差：**
+- Bi-encoder 會分別對 query 與 document 獨立編碼
+- Cross-encoder 會聯合處理 query 與 document
+- 聯合處理可以捕捉 bi-encoder 無法看見的互動關係
 
-### Example
+<a id="example"></a>
+### 範例
 
 ```
 Query: "How to configure CUDA memory"
@@ -51,34 +56,37 @@ Cross-encoder scores (relevance):
 - Doc 3: 0.42
 ```
 
-The cross-encoder sees that "CUDA memory" in the query relates to "GPU memory...CUDA" in Doc 1.
+Cross-encoder 可以看出 query 中的「CUDA memory」與 Doc 1 的「GPU memory...CUDA」是相互對應的。
 
 ---
 
-## Reranking Architectures
+<a id="reranking-architectures"></a>
+## 重排序架構
 
-### Bi-Encoder vs Cross-Encoder
+<a id="bi-encoder-vs-cross-encoder"></a>
+### Bi-Encoder 與 Cross-Encoder
 
-**Bi-Encoder (First Stage):**
+**Bi-Encoder（第一階段）：**
 ```
 Query --> Encoder --> Query Embedding -+
                                       +-> Similarity
 Document --> Encoder --> Doc Embedding +
 ```
-- O(1) per document (embeddings pre-computed)
-- Cannot see query-document interactions
+- 每份文件為 O(1)（embedding 可預先計算）
+- 無法看到 query-document 之間的互動
 
-**Cross-Encoder (Reranking):**
+**Cross-Encoder（重排序）：**
 ```
 [Query, Document] --> Encoder --> Relevance Score
 ```
-- O(n) per query (process each candidate)
-- Sees full query-document context
-- Uses the **Attention Mechanism** to compare how specific words in the query change the meaning of words in the document (late interaction)
+- 每個 query 為 O(n)（需處理每個候選）
+- 能看到完整的 query-document 上下文
+- 透過 **Attention Mechanism** 比較 query 中特定詞語如何改變 document 中詞語的含義（late interaction）
 
-### Two-Stage Pipeline
+<a id="two-stage-pipeline"></a>
+### 兩階段 Pipeline
 
-Production retrieval uses a two-stage funnel:
+正式環境中的檢索通常採用兩階段漏斗：
 
 ```
 +----------------------------------------------------------------+
@@ -100,9 +108,10 @@ Production retrieval uses a two-stage funnel:
 +----------------------------------------------------------------+
 ```
 
-### Multi-Stage Pipeline
+<a id="multi-stage-pipeline"></a>
+### 多階段 Pipeline
 
-For very large corpora:
+對超大型語料庫而言：
 
 ```
 Stage 1: Sparse (BM25)      -> Top 1000
@@ -110,15 +119,17 @@ Stage 2: Dense (Bi-encoder) -> Top 100
 Stage 3: Cross-encoder      -> Top 10
 ```
 
-Each stage trades speed for accuracy.
+每個階段都以速度換取更高的準確性。
 
 ---
 
-## Reranking Models
+<a id="reranking-models"></a>
+## 重排序模型
 
-### Cross-Encoder Models
+<a id="cross-encoder-models"></a>
+### Cross-Encoder 模型
 
-| Model | Size | Languages | Quality |
+| 模型 | 規模 | 語言 | 品質 |
 |-------|------|-----------|---------|
 | ms-marco-MiniLM-L-6 | 22M | English | Good |
 | bge-reranker-base | 278M | English | Very good |
@@ -126,9 +137,10 @@ Each stage trades speed for accuracy.
 | Cohere Rerank v3 | API | Multilingual | Excellent |
 | Jina Reranker v2 | Various | Multilingual (8k+ tokens) | Very good |
 
-**The "Lost in the Middle" Fix**: Rerankers are trained to prioritize relevant information regardless of its position in the chunk, ensuring that "middle" data is scored correctly before being sent to the final LLM.
+**修正「Lost in the Middle」問題**：Reranker 會被訓練成無論相關資訊出現在 chunk 的哪個位置，都能優先辨識與排序，確保位於中段的資訊在送入最終 LLM 前也能被正確評分。
 
-### Using Cross-Encoders
+<a id="using-cross-encoders"></a>
+### 使用 Cross-Encoder
 
 ```python
 from sentence_transformers import CrossEncoder
@@ -153,6 +165,7 @@ def rerank(query: str, documents: list[str], top_k: int = 5) -> list[tuple[str, 
     return scored_docs[:top_k]
 ```
 
+<a id="cohere-rerank"></a>
 ### Cohere Rerank
 
 ```python
@@ -183,22 +196,25 @@ def cohere_rerank(
     ]
 ```
 
-### Model Selection Guide
+<a id="model-selection-guide"></a>
+### 模型選型指南
 
-| Use Case | Recommended Model | Notes |
+| 使用情境 | 建議模型 | 備註 |
 |----------|-------------------|-------|
-| English, self-hosted | bge-reranker-base | Good balance |
-| Multilingual | bge-reranker-v2-m3 | Best open source |
-| Low latency | MiniLM-L-6 | 4x faster |
-| Highest quality | Cohere Rerank v3 | API, costly at scale |
-| Large batches | Jina Reranker | Good throughput |
-| Long queries (8k+) | Jina Reranker v2 | Handles long context |
+| English、自行託管 | bge-reranker-base | 平衡性佳 |
+| 多語言 | bge-reranker-v2-m3 | 最佳開源選擇 |
+| 低延遲 | MiniLM-L-6 | 快 4 倍 |
+| 最高品質 | Cohere Rerank v3 | API，規模化時成本高 |
+| 大批次 | Jina Reranker | 吞吐量佳 |
+| 長 query（8k+） | Jina Reranker v2 | 可處理長上下文 |
 
 ---
 
-## Implementation Patterns
+<a id="implementation-patterns"></a>
+## 實作模式
 
-### Pattern 1: Basic Reranking
+<a id="pattern-1-basic-reranking"></a>
+### 模式 1：基礎重排序
 
 ```python
 class RerankedRetriever:
@@ -236,7 +252,8 @@ class RerankedRetriever:
         return reranked[:self.rerank_k]
 ```
 
-### Pattern 2: Batched Reranking
+<a id="pattern-2-batched-reranking"></a>
+### 模式 2：批次重排序
 
 ```python
 def batch_rerank(
@@ -273,7 +290,8 @@ def batch_rerank(
     return results
 ```
 
-### Pattern 3: Async Reranking
+<a id="pattern-3-async-reranking"></a>
+### 模式 3：非同步重排序
 
 ```python
 import asyncio
@@ -300,44 +318,49 @@ class AsyncReranker:
 
 ---
 
-## When to Rerank
+<a id="when-to-rerank"></a>
+## 何時該進行重排序
 
-### Cost-Benefit Analysis
+<a id="cost-benefit-analysis"></a>
+### 成本效益分析
 
-| Factor | Without Reranking | With Reranking |
+| 因素 | 不使用重排序 | 使用重排序 |
 |--------|-------------------|----------------|
-| Latency | 50-100ms | 150-300ms |
-| Quality (NDCG) | 0.65 | 0.78 |
-| Complexity | Simple | Moderate |
-| Cost | Baseline | +API cost or +compute |
+| 延遲 | 50-100ms | 150-300ms |
+| 品質（NDCG） | 0.65 | 0.78 |
+| 複雜度 | 簡單 | 中等 |
+| 成本 | 基準 | +API 成本或 +算力 |
 
-### Decision Framework
+<a id="decision-framework"></a>
+### 決策框架
 
-**Always rerank when:**
-- Quality is critical (customer-facing, high-stakes)
-- Retrieved candidates have similar scores
-- Query is complex or multi-part
-- Budget allows for latency increase
+**以下情況應總是重排序：**
+- 品質至關重要（面向客戶、高風險場景）
+- 取回的候選結果分數相近
+- Query 複雜或包含多個子問題
+- 預算允許增加延遲
 
-**Skip reranking when:**
-- Latency budget is very tight (<100ms total)
-- Retrieved candidates are clearly ranked
-- Simple queries (single term lookups)
-- Cost constrained at scale
+**以下情況可略過重排序：**
+- 延遲預算非常緊（總時延 <100ms）
+- 取回的候選結果排序已非常明確
+- Query 很簡單（單一詞彙查找）
+- 在大規模情境下成本受限
 
-### Inference Time Tradeoffs
+<a id="inference-time-tradeoffs"></a>
+### 推論時間取捨
 
-| Stage | Retrieval (K) | Rerank (N) | Latency | Quality |
+| 階段 | 檢索（K） | 重排序（N） | 延遲 | 品質 |
 |-------|---------------|------------|---------|---------|
 | **Naive** | 5 | 0 | 50ms | Low |
 | **Standard** | 50 | 5 | 150ms | High |
 | **Enterprise**| 200 | 20 | 500ms | Max |
 
-**Key Rule**: If you have a budget of 200ms, spend 50ms on retrieval and 150ms on reranking. Reranking Top 50 results provides a much higher ROI than retrieving more chunks from the vector DB.
+**關鍵規則**：如果你有 200ms 的預算，建議把 50ms 花在檢索、150ms 花在重排序。對 Top 50 結果做重排序，通常比從 vector DB 多檢索更多 chunks 有更高的投資報酬率。
 
-### Optimal Candidate Count
+<a id="optimal-candidate-count"></a>
+### 最佳候選數量
 
-How many candidates to retrieve before reranking:
+在重排序前應先取回多少候選：
 
 ```python
 def optimize_candidate_count(test_set, retriever, reranker):
@@ -378,11 +401,13 @@ def optimize_candidate_count(test_set, retriever, reranker):
 
 ---
 
-## LLM-Based Reranking
+<a id="llm-based-reranking"></a>
+## 基於 LLM 的重排序
 
-### Using LLMs as Rerankers
+<a id="using-llms-as-rerankers"></a>
+### 把 LLM 當作 Reranker
 
-LLMs can score relevance but are expensive:
+LLM 也能為相關性打分，但成本很高：
 
 ```python
 def llm_rerank(
@@ -406,26 +431,27 @@ Format: DOC_NUM: SCORE
     return sorted(zip(documents, scores), key=lambda x: x[1], reverse=True)
 ```
 
-**Pros:**
-- Can handle complex relevance judgments
-- Understands nuance and context
-- No separate model to maintain
+**優點：**
+- 能處理複雜的相關性判斷
+- 理解細微差異與上下文
+- 不必額外維護獨立模型
 
-**Cons:**
-- Expensive at scale (10-100x cross-encoder)
-- Slower (1-3s vs 100ms)
-- Non-deterministic
+**缺點：**
+- 大規模時成本高（是 cross-encoder 的 10-100 倍）
+- 更慢（1-3s 對比 100ms）
+- 非決定性
 
-### Listwise vs Pointwise LLM Reranking
+<a id="listwise-vs-pointwise-llm-reranking"></a>
+### Listwise 與 Pointwise LLM 重排序
 
-**Pointwise:** Score each document independently
+**Pointwise：**獨立評分每份文件
 ```
 For document: [doc text]
 Query: [query]
 Rate relevance 0-10: _
 ```
 
-**Listwise:** Rank all documents together
+**Listwise：**一起排序所有文件
 ```
 Query: [query]
 Rank these documents by relevance:
@@ -435,9 +461,10 @@ C: [doc3]
 Output order: _
 ```
 
-**Listwise is often better** because the LLM can compare documents directly. Frontier models (like o1-mini or Sonnet 3.7) are extremely good at this, but it adds 1-2s of latency. Only used for high-stakes enterprise search (Legal, Medical).
+**Listwise 通常更好**，因為 LLM 可以直接比較多份文件。Frontier models（如 o1-mini 或 Sonnet 3.7）在這方面尤其強，但也會額外增加 1-2 秒延遲。通常只會用在高風險的企業搜尋場景（法律、醫療）。
 
-### Sliding Window for Many Documents
+<a id="sliding-window-for-many-documents"></a>
+### 大量文件的 Sliding Window
 
 ```python
 def sliding_window_rerank(
@@ -465,19 +492,22 @@ def sliding_window_rerank(
 
 ---
 
-## SLM Distillation
+<a id="slm-distillation"></a>
+## SLM 蒸餾
 
-To solve the latency problem of LLM-based reranking, we now use **Distilled Small Language Models (SLMs)**.
+為了解決基於 LLM 的重排序延遲問題，現在常見做法是使用 **蒸餾後的小型語言模型（SLM）**。
 
-- **Process**: Take a giant model (e.g., GPT-5.2), have it rerank 1 million pairs, and use those labels to "distill" a tiny 0.1B parameter model.
-- **Result**: You get 95% of the reranking quality of a giant model with the latency of a standard CPU lookup (< 10ms).
-- **Production pattern:** Use cross-encoder normally, LLM for fallback on low-confidence reranking scores.
+- **流程**：先用大型模型（例如 GPT-5.2）對 100 萬組 pair 進行重排序，再用這些標註資料去「蒸餾」出一個只有 0.1B 參數的小模型。
+- **結果**：你可以用接近標準 CPU 查詢的延遲（<10ms），拿到大型模型約 95% 的重排序品質。
+- **正式環境模式：**平時使用 cross-encoder；若重排序分數信心不足，再以 LLM 作為 fallback。
 
 ---
 
-## Production Considerations
+<a id="production-considerations"></a>
+## 正式環境考量
 
-### Latency Optimization
+<a id="latency-optimization"></a>
+### 延遲最佳化
 
 ```python
 class OptimizedReranker:
@@ -497,14 +527,15 @@ class OptimizedReranker:
         return sorted(zip(documents, scores), key=lambda x: x[1], reverse=True)
 ```
 
-**Optimization techniques:**
-- FP16 inference: 2x speedup
-- Batching: Amortize overhead
-- ONNX export: 1.5-2x speedup
-- TensorRT: 2-3x speedup (NVIDIA)
-- Model distillation: 4x speedup with quality tradeoff
+**最佳化技巧：**
+- FP16 推論：加速 2 倍
+- Batching：分攤 overhead
+- ONNX export：加速 1.5-2 倍
+- TensorRT：加速 2-3 倍（NVIDIA）
+- 模型蒸餾：以品質取捨換取 4 倍加速
 
-### Caching Reranker Results
+<a id="caching-reranker-results"></a>
+### 快取 Reranker 結果
 
 ```python
 class CachedReranker:
@@ -531,7 +562,8 @@ class CachedReranker:
         return f"{query_hash}:{doc_hash}"
 ```
 
-### Fallback Strategy
+<a id="fallback-strategy"></a>
+### Fallback 策略
 
 ```python
 def rerank_with_fallback(
@@ -559,65 +591,71 @@ def rerank_with_fallback(
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: Why is a Cross-Encoder fundamentally more accurate than a Bi-Encoder?
+<a id="q-why-is-a-cross-encoder-fundamentally-more-accurate-than-a-bi-encoder"></a>
+### Q：為什麼 Cross-Encoder 在本質上比 Bi-Encoder 更準確？
 
-**Strong answer:**
-A Bi-Encoder creates a single, static vector representation for a document *before* any query is known. This loses the specific relationship between different parts of the text. A Cross-Encoder takes both the query and the document as a single input pair and uses the **Attention Mechanism** to compare them. It can see how specific words in the query change the meaning of words in the document (late interaction), allowing for much more nuanced relevance scoring than a simple mathematical similarity of two fixed vectors.
+**強答：**
+Bi-Encoder 會在還不知道 query 之前，就先為 document 建立單一、固定的向量表示，因此會失去文字各部分之間的特定關係。Cross-Encoder 則把 query 與 document 當成一組輸入，並透過 **Attention Mechanism** 比較兩者。它能理解 query 中的特定詞語如何改變 document 中詞語的含義（late interaction），因此相關性評分會比兩個固定向量之間的簡單數學相似度更細膩。
 
-**In practice:** Use bi-encoder for first-stage retrieval (speed), cross-encoder for reranking (quality). This gives the best of both.
+**實務上：**第一階段檢索用 bi-encoder（速度），重排序用 cross-encoder（品質）。這樣能同時兼顧兩者優勢。
 
-### Q: How do you decide how many candidates to rerank?
+<a id="q-how-do-you-decide-how-many-candidates-to-rerank"></a>
+### Q：你如何決定要對多少個候選結果做重排序？
 
-**Strong answer:**
-Tradeoff between quality and latency:
+**強答：**
+本質上是在品質與延遲之間取捨：
 
-**Factors:**
-- Reranker latency per document
-- Total latency budget
-- Quality improvement curve (usually diminishing returns)
-- First-stage retrieval quality
+**因素：**
+- 每份文件的 reranker 延遲
+- 總延遲預算
+- 品質提升曲線（通常會逐漸遞減）
+- 第一階段檢索的品質
 
-**Process:**
-1. Benchmark reranker latency per document
-2. Calculate max candidates within latency budget
-3. Test quality at different K values
-4. Find elbow point (quality vs latency)
+**流程：**
+1. Benchmark 每份文件的 reranker 延遲
+2. 根據延遲預算計算可處理的最大候選數
+3. 在不同 K 值下測試品質
+4. 找出拐點（quality vs latency）
 
-**Typical findings:**
-- K=20-50 is often optimal
-- Beyond K=100, quality gains are minimal
-- Adjust based on first-stage retrieval quality
+**常見結論：**
+- K=20-50 通常最佳
+- 超過 K=100 後，品質提升很有限
+- 需依第一階段檢索品質調整
 
-For a 200ms reranking budget with 4ms per document, I would rerank ~50 candidates.
+如果我的重排序預算是 200ms，而每份文件需 4ms，我會大約重排序 50 個候選結果。
 
-### Q: When would you use LLM-based reranking?
+<a id="q-when-would-you-use-llm-based-reranking"></a>
+### Q：什麼情況下你會使用基於 LLM 的重排序？
 
-**Strong answer:**
-LLM reranking makes sense when:
+**強答：**
+以下情況適合使用 LLM 重排序：
 
-1. **Complex relevance judgments:** Query requires understanding nuance, context, or multi-hop reasoning
-2. **Low volume:** Cannot justify training/hosting a cross-encoder
-3. **Highest quality required:** Legal, medical, safety-critical
-4. **Already using LLM in pipeline:** Marginal cost lower
+1. **複雜相關性判斷：**Query 需要理解細微語意、上下文或 multi-hop 推理
+2. **流量低：**不值得訓練或託管一個 cross-encoder
+3. **要求最高品質：**例如法律、醫療、安全關鍵場景
+4. **LLM 已在 pipeline 中：**邊際成本較低
 
-**Cautions:**
-- Expensive at scale (10-100x cross-encoder)
-- Slower (1-3s vs 100ms)
-- Non-deterministic
-- May require careful prompt engineering
+**注意事項：**
+- 大規模時成本高（是 cross-encoder 的 10-100 倍）
+- 更慢（1-3s 對比 100ms）
+- 非決定性
+- 可能需要仔細做 prompt engineering
 
-**Production pattern:** Use cross-encoder normally, LLM for fallback on low-confidence reranking scores.
+**正式環境模式：**平時使用 cross-encoder；在低信心的重排序分數上，再以 LLM 做 fallback。
 
-### Q: How do you handle reranking for extremely long queries (e.g., a whole paragraph)?
+<a id="q-how-do-you-handle-reranking-for-extremely-long-queries-eg-a-whole-paragraph"></a>
+### Q：若 query 非常長（例如整段文字），你會如何處理重排序？
 
-**Strong answer:**
-Long queries present a "Token Budget" problem for cross-encoders, which often have 512 or 1024 token limits. The common fixes are **Sliding Window Reranking** or **Query Summarization**. Alternatively, use specialized models like **Jina-Reranker-v2** that handle 8k+ tokens. A "First-Pass Rerank" with a fast short-context model followed by a "Second-Pass Rerank" on the top 5 candidates using a high-context LLM is also common.
+**強答：**
+長 query 會帶來 cross-encoder 的「Token Budget」問題，因為它們通常只有 512 或 1024 token 限制。常見解法是 **Sliding Window Reranking** 或 **Query Summarization**。另一種做法是使用像 **Jina-Reranker-v2** 這種可支援 8k+ tokens 的專用模型。也常見先用短上下文、快速模型做一次「First-Pass Rerank」，再對前 5 名候選用高上下文 LLM 做「Second-Pass Rerank」。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - Nogueira and Cho. "Passage Re-ranking with BERT" (2019)
 - Nogueira et al. "Multi-Stage Document Ranking with BERT" (2019/2025 update)
@@ -627,4 +665,4 @@ Long queries present a "Token Budget" problem for cross-encoders, which often ha
 
 ---
 
-*Previous: [Hybrid Search](05-hybrid-search.md) | Next: [GraphRAG](07-graph-rag.md)*
+*上一節：[Hybrid Search](05-hybrid-search.md) | 下一節：[GraphRAG](07-graph-rag.md)*

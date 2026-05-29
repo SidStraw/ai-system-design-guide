@@ -1,89 +1,100 @@
-# LangGraph Orchestration
+<a id="langgraph-orchestration"></a>
+# LangGraph 協調編排
 
-LangGraph is the **de facto standard** for building stateful, multi-agent systems. It reached v1.0 in late 2025 and surpassed CrewAI in GitHub stars in early 2026 thanks to enterprise adoption of its graph-based runtime. Unlike simple chains, LangGraph allows for **Cycles**, **State Persistence**, and **Human-in-the-Loop** interventions.
+LangGraph 是建立有狀態、多代理系統的 **事實標準**。它在 2025 年底到達 v1.0，並因企業對其 graph-based runtime 的採用，在 2026 年初於 GitHub stars 上超越 CrewAI。不同於單純的 chains，LangGraph 允許 **Cycles**、**State Persistence**，以及 **Human-in-the-Loop** 介入。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [The Graph Philosophy](#philosophy)
-- [Cyclic vs. Acyclic Workflows](#cyclic)
-- [State Management in LangGraph](#state)
-- [Persistence and Checkpointing](#persistence)
-- [Multi-Agent Orchestration Patterns](#multi-agent)
-- [Interview Questions](#interview-questions)
-- [References](#references)
-
----
-
-## The Graph Philosophy
-
-In 2023, agents were "Black Boxes."
-Today, agents are **Graphs**.
-A graph consists of:
-- **Nodes**: Python functions (The LLM, a tool, or data processing).
-- **Edges**: Paths between nodes.
-- **Conditional Edges**: Logic that determines the path based on the **State**.
+- [Graph 哲學](#philosophy)
+- [循環式 vs. 非循環式工作流](#cyclic)
+- [LangGraph 中的狀態管理](#state)
+- [持久化與 Checkpointing](#persistence)
+- [多代理協調模式](#multi-agent)
+- [面試問題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Cyclic vs. Acyclic
+<a id="the-graph-philosophy"></a>
+## Graph 哲學
 
-Standard LangChain is **Acyclic** (Sequential).
-LangGraph is **Cyclic**.
-- **The Power of the Loop**: An agent can try a tool, see the error, and **cycle back** to the "Thinking" node to try again. This is the foundation of the **ReAct** pattern.
+在 2023 年，agents 是「黑盒子」。
+如今，agents 是 **Graphs**。
+Graph 由以下元素組成：
+- **Nodes**：Python functions（LLM、工具，或資料處理步驟）。
+- **Edges**：節點之間的路徑。
+- **Conditional Edges**：根據 **State** 決定路徑的邏輯。
 
 ---
 
-## State Management
+<a id="cyclic-vs-acyclic"></a>
+## 循環式 vs. 非循環式
 
-The **State Schema** is the "Mind" of the graph.
+標準 LangChain 是 **非循環式**（Sequential）。
+LangGraph 是 **循環式**。
+- **迴圈的力量**：agent 可以先嘗試某個工具、看到錯誤後，再 **循環返回**「Thinking」節點重新嘗試。這正是 **ReAct** 模式的基礎。
+
+---
+
+<a id="state-management"></a>
+## 狀態管理
+
+**State Schema** 是 graph 的「心智」。
 ```python
 class GraphState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     plan: list[str]
     is_secure: bool
 ```
-**Nuance**: Using `Annotated` with `add_messages` allows the graph to **Append** to history rather than overwriting it, preserving the full reasoning trajectory.
+**細節重點**：將 `Annotated` 與 `add_messages` 搭配使用，可讓 graph 對歷史記錄採用 **Append** 而不是覆寫，因而保留完整的推理軌跡。
 
 ---
 
-## Persistence and Checkpointing
+<a id="persistence-and-checkpointing"></a>
+## 持久化與 Checkpointing
 
-Late 2025 LangGraph uses **Thread-based Persistence**.
-- **The Concept**: Every session has a `thread_id`.
-- **The Win**: If a user comes back after 2 days, the agent remembers the exact point it was at in a multi-step workflow.
-- **Time-Travel**: Developers can "re-run" a specific thread from a previous state to debug a failure.
+2025 年底的 LangGraph 使用 **以 thread 為基礎的持久化**。
+- **概念**：每個 session 都有一個 `thread_id`。
+- **優勢**：如果使用者兩天後回來，agent 仍記得自己在多步 workflow 中停在哪一個確切位置。
+- **Time-Travel**：開發者可以從先前狀態「重新執行」某個特定 thread，以除錯失敗原因。
 
 ---
 
-## Multi-Agent Patterns
+<a id="multi-agent-patterns"></a>
+## 多代理模式
 
-| Pattern | Description | Case Study |
+| 模式 | 說明 | 案例 |
 |---------|-------------|------------|
-| **Supervisor** | One "Manager" directs specialized workers. | Research Team |
-| **Peer-to-Peer**| Agents hand off tasks to each other directly. | Customer Support |
-| **Hierarchical**| Graphs within Graphs (Nested graphs). | Enterprise Engineering |
+| **Supervisor** | 一個「Manager」指揮各個專精 worker。 | Research Team |
+| **Peer-to-Peer**| agents 直接彼此交接任務。 | Customer Support |
+| **Hierarchical**| Graphs 之中再包含 Graphs（巢狀 graphs）。 | Enterprise Engineering |
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試問題
 
-### Q: Why use LangGraph instead of OpenAI's "Assistant API"?
+<a id="q-why-use-langgraph-instead-of-openais-assistant-api"></a>
+### 問：為什麼使用 LangGraph，而不是 OpenAI 的「Assistant API」？
 
-**Strong answer:**
-**Control and Portability**. The Assistant API is a black box: you cannot see the exact prompts or control the logic gates. LangGraph is a **White Box framework**. I can use any model (OpenAI, Claude, Llama 3.3), control exactly when a tool is called, and inject my own custom validation logic between steps. More importantly, LangGraph is **Open Source** and can run locally/on-prem, which is critical for many enterprise security requirements.
+**理想回答：**
+因為它具備 **控制力與可攜性**。Assistant API 是黑盒子：你看不到精確的 prompts，也無法控制邏輯閘點。LangGraph 則是 **White Box framework**。我可以使用任何模型（OpenAI、Claude、Llama 3.3），精準控制工具何時被呼叫，並在步驟之間插入我自己的驗證邏輯。更重要的是，LangGraph 是 **Open Source**，可在本地或 on-prem 執行，這對許多企業安全需求至關重要。
 
-### Q: How do you handle "State Overload" in a graph with 20+ nodes?
+<a id="q-how-do-you-handle-state-overload-in-a-graph-with-20-nodes"></a>
+### 問：你會如何處理擁有 20+ 個節點的 graph 中的「State Overload」？
 
-**Strong answer:**
-We use **State Narrowing**. Instead of passing the entire global state to every node, we define specialized sub-states for sub-graphs. We also use **Trim Runnables** to prune the message history before it hits the LLM, ensuring we don't waste tokens while keeping the "Truth" preserved in the persistence layer. 
+**理想回答：**
+我們會使用 **State Narrowing**。我們不會把完整的全域 state 傳給每個節點，而是為各個 sub-graphs 定義專門的子狀態。我們也會使用 **Trim Runnables**，在訊息歷史送進 LLM 前先裁剪，確保不浪費 tokens，同時又把「Truth」保留在 persistence layer 中。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 - LangChain Team. "LangGraph: Multi-Agent Workflows at Scale" (2025)
 - Anthropic. "Building Resilient Agents with State Machines" (2025)
 - OpenSource AI. "Cycles and the Future of Agency" (2024 Tech Report)
 
 ---
 
-*Next: [LangSmith Observability](03-langsmith-observability.md)*
+*下一步：[LangSmith Observability](03-langsmith-observability.md)*

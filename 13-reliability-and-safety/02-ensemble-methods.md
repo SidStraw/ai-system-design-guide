@@ -1,46 +1,52 @@
-# Ensemble Methods for LLM Reliability
+<a id="ensemble-methods-for-llm-reliability"></a>
+# 提升 LLM 可靠性的集成方法
 
-Ensemble methods are critical for production reliability. This chapter covers multi-model coordination patterns that improve accuracy and reduce hallucinations.
+集成方法對正式環境的可靠性至關重要。本章涵蓋可提升準確度並降低幻覺的多模型協作模式。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Why Ensembles Matter](#why-ensembles-matter)
-- [Evaluation Ensembles](#evaluation-ensembles)
-- [Generation Ensembles](#generation-ensembles)
-- [Multi-Agent Patterns](#multi-agent-patterns)
-- [Ensemble vs Arbitration](#ensemble-vs-arbitration)
-- [Cost-Accuracy Tradeoffs](#cost-accuracy-tradeoffs)
-- [Interview Questions](#interview-questions)
-- [References](#references)
-
----
-
-## Why Ensembles Matter
-
-Single-model outputs are unreliable for high-stakes applications:
-- Models hallucinate facts
-- Reasoning can be flawed
-- Outputs vary with temperature
-- Single-judge evaluations are biased
-
-Ensembles improve reliability through redundancy and diversity.
-
-### Ensemble Methods Taxonomy
-
-| Category | Purpose | Methods |
-|----------|---------|---------|
-| Evaluation | Reduce judge bias | Panel of Judges, Pairwise Comparison |
-| Generation | Improve output quality | Self-Consistency, Best-of-N |
-| Verification | Reduce hallucinations | Multi-Agent Debate, Fact Checking |
-| Synthesis | Combine perspectives | Mixture of Agents |
+- [為何集成很重要](#why-ensembles-matter)
+- [評估型集成](#evaluation-ensembles)
+- [生成型集成](#generation-ensembles)
+- [多代理模式](#multi-agent-patterns)
+- [集成與仲裁的差異](#ensemble-vs-arbitration)
+- [成本與準確度的權衡](#cost-accuracy-tradeoffs)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Evaluation Ensembles
+<a id="why-ensembles-matter"></a>
+## 為何集成很重要
 
-### Panel of LLM Judges (PoLL)
+單一模型的輸出對高風險應用而言並不可靠：
+- 模型會產生幻覺
+- 推理可能有缺陷
+- 輸出會隨 temperature 波動
+- 單一 judge 的評估會有偏誤
 
-Multiple diverse models score the same output:
+集成透過冗餘與多樣性來提升可靠性。
+
+<a id="ensemble-methods-taxonomy"></a>
+### 集成方法分類
+
+| 類別 | 目的 | 方法 |
+|------|------|------|
+| 評估 | 降低 judge 偏誤 | Panel of Judges、Pairwise Comparison |
+| 生成 | 提升輸出品質 | Self-Consistency、Best-of-N |
+| 驗證 | 降低幻覺 | Multi-Agent Debate、Fact Checking |
+| 綜合 | 結合不同觀點 | Mixture of Agents |
+
+---
+
+<a id="evaluation-ensembles"></a>
+## 評估型集成
+
+<a id="panel-of-llm-judges-poll"></a>
+### LLM Judges Panel（PoLL）
+
+讓多個具多樣性的模型對同一輸出打分：
 
 ```python
 class PanelOfJudges:
@@ -82,11 +88,12 @@ class PanelOfJudges:
         }
 ```
 
-**When to use:** High-stakes evaluations, benchmark creation, when single-judge bias is unacceptable.
+**適用時機：** 高風險評估、benchmark 建立、無法接受單一 judge 偏誤時。
 
-### Pairwise Comparison with Positional Debiasing
+<a id="pairwise-comparison-with-positional-debiasing"></a>
+### 具位置去偏誤的成對比較
 
-Models prefer the first option 60-70% of the time. Always run both orderings:
+模型約有 60-70% 的機率偏好第一個選項。務必同時測試兩種順序：
 
 ```python
 async def pairwise_compare_debiased(model, response_a: str, response_b: str, criteria: str) -> dict:
@@ -119,11 +126,13 @@ async def pairwise_compare_debiased(model, response_a: str, response_b: str, cri
 
 ---
 
-## Generation Ensembles
+<a id="generation-ensembles"></a>
+## 生成型集成
 
-### Self-Consistency (Majority Voting)
+<a id="self-consistency-majority-voting"></a>
+### Self-Consistency（多數決）
 
-Generate multiple reasoning paths, vote on the final answer:
+產生多條推理路徑，並對最終答案投票：
 
 ```python
 class SelfConsistencyDecoder:
@@ -179,11 +188,12 @@ class SelfConsistencyDecoder:
         pass
 ```
 
-**Best for:** Math, logic, coding with verifiable answers. Accuracy gain: 5-15%.
+**最適合：** 數學、邏輯、具有可驗證答案的程式撰寫。準確度提升：5-15%。
 
-### Best-of-N with Reward Model
+<a id="best-of-n-with-reward-model"></a>
+### 搭配 Reward Model 的 Best-of-N
 
-Generate N candidates, score with reward model, return best:
+產生 N 個候選答案，用 reward model 評分後回傳最佳者：
 
 ```python
 class BestOfNSampler:
@@ -247,15 +257,17 @@ class BestOfNSampler:
         return 1 - np.mean(similarities)  # Higher = more diverse
 ```
 
-**Best for:** Open-ended generation, creative tasks. Accuracy gain: 10-30%.
+**最適合：** 開放式生成、創意任務。準確度提升：10-30%。
 
 ---
 
-## Multi-Agent Patterns
+<a id="multi-agent-patterns"></a>
+## 多代理模式
 
+<a id="multi-agent-debate"></a>
 ### Multi-Agent Debate
 
-Multiple models critique each other iteratively:
+讓多個模型反覆互相評論：
 
 ```python
 class MultiAgentDebate:
@@ -317,11 +329,12 @@ Provide your final answer.
         }
 ```
 
-**Best for:** Fact verification, reducing hallucinations in complex answers.
+**最適合：** 事實驗證、降低複雜回答中的幻覺。
 
-### Mixture of Agents (MoA)
+<a id="mixture-of-agents-moa"></a>
+### Mixture of Agents（MoA）
 
-Layered architecture where multiple models feed into aggregators:
+多個模型先輸出，再由聚合器分層整合：
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -375,23 +388,26 @@ Synthesize the best answer, combining the strongest elements from each response.
         return final_answer
 ```
 
-**Best for:** Complex synthesis, report generation, multi-domain problems.
+**最適合：** 複雜綜合、報告生成、多領域問題。
 
 ---
 
-## Ensemble vs Arbitration
+<a id="ensemble-vs-arbitration"></a>
+## 集成與仲裁的差異
 
-### Conceptual Distinction
+<a id="conceptual-distinction"></a>
+### 概念上的區別
 
-| Aspect | Ensemble Learning | Model Arbitration |
-|--------|------------------|-------------------|
-| **Goal** | Combine ALL outputs | SELECT single best output |
-| **Mechanism** | Aggregation (voting, averaging) | Selection (scoring, ranking) |
-| **Relationship** | Collaborative | Competitive |
-| **Final Output** | Composite from all models | Output of single winner |
-| **When to Use** | Want robustness, reduced variance | Want best quality |
+| 面向 | 集成學習 | 模型仲裁 |
+|------|----------|----------|
+| **目標** | 結合所有輸出 | 選出單一最佳輸出 |
+| **機制** | 聚合（投票、平均） | 選擇（評分、排序） |
+| **關係** | 協作式 | 競爭式 |
+| **最終輸出** | 由所有模型合成的結果 | 單一勝出模型的輸出 |
+| **適用時機** | 想要穩健性、降低變異 | 想要最佳品質 |
 
-### Decision Framework
+<a id="decision-framework"></a>
+### 決策框架
 
 ```
 Is there a single "correct" answer format?
@@ -407,78 +423,85 @@ Is there a single "correct" answer format?
 
 ---
 
-## Cost-Accuracy Tradeoffs
+<a id="cost-accuracy-tradeoffs"></a>
+## 成本與準確度的權衡
 
-### Ensemble Cost Matrix
+<a id="ensemble-cost-matrix"></a>
+### 集成成本矩陣
 
-| Method | Cost Multiplier | Latency | Accuracy Gain | When to Use |
-|--------|-----------------|---------|---------------|-------------|
-| Single Model | 1x | 1x | Baseline | Low-stakes, high-volume |
-| Self-Consistency k=3 | 3x | 1x (parallel) | +5-8% | Reasoning, latency-sensitive |
-| Self-Consistency k=10 | 10x | 1x (parallel) | +10-15% | Math, accuracy-critical |
-| Best-of-N (N=8) | 8x + scoring | 1x (parallel) | +15-25% | Creative generation |
-| Panel of Judges (3) | 3x eval | 1x (parallel) | Bias reduction | Evaluation tasks |
-| Multi-Agent Debate | 6x | 3x | Hallucination ↓ | Fact-critical |
-| Mixture of Agents | 5-8x | 2x | Better synthesis | Complex reports |
+| 方法 | 成本倍數 | 延遲 | 準確度提升 | 適用時機 |
+|------|----------|------|------------|----------|
+| 單一模型 | 1x | 1x | 基準線 | 低風險、高流量 |
+| Self-Consistency k=3 | 3x | 1x（平行） | +5-8% | 推理、延遲敏感 |
+| Self-Consistency k=10 | 10x | 1x（平行） | +10-15% | 數學、準確度關鍵 |
+| Best-of-N（N=8） | 8x + scoring | 1x（平行） | +15-25% | 創意生成 |
+| Panel of Judges（3） | 3x eval | 1x（平行） | 降低偏誤 | 評估任務 |
+| Multi-Agent Debate | 6x | 3x | 幻覺 ↓ | 事實關鍵 |
+| Mixture of Agents | 5-8x | 2x | 更佳綜合能力 | 複雜報告 |
 
-### When NOT to Use Ensembles
+<a id="when-not-to-use-ensembles"></a>
+### 何時不要使用集成
 
-| Situation | Why Not | Alternative |
-|-----------|---------|-------------|
-| Simple factual lookup | No diversity benefit | Single RAG call |
-| Latency < 500ms required | Ensemble adds latency | Single model + caching |
-| Cost is primary constraint | Ensembles multiply cost | Model distillation |
-| Models highly correlated | No diversity = no benefit | Get diverse models first |
-
----
-
-## Interview Questions
-
-### Q: When would you use Self-Consistency vs Best-of-N?
-
-**Strong answer:**
-
-"These serve different purposes:
-
-**Self-Consistency** is for tasks with extractable, verifiable answers:
-- Math problems: Extract final number, majority vote
-- Classification: Vote on labels
-- Short-form QA: Vote on answer
-
-The key is you can compare answers for equality. Temperature 0.5-0.8 provides diversity while maintaining coherence. I use k=5-10 for most tasks.
-
-**Best-of-N** is for open-ended generation where there is no single right answer:
-- Creative writing
-- Explanations
-- Code that could be written many ways
-
-Here I need a reward model or judge to score candidates since I cannot just compare for equality. N=8-16 typically. The challenge is avoiding reward hacking, so I use reward model ensembles with conservative aggregation.
-
-I would not use Self-Consistency for creative writing (no extractable answer) or Best-of-N for math (just use voting, simpler)."
-
-### Q: How do you prevent reward hacking in Best-of-N?
-
-**Strong answer:**
-
-"Reward hacking is when the model exploits weaknesses in the reward model rather than genuinely improving quality.
-
-**My mitigations:**
-
-1. **Reward model ensemble**: Use 3+ diverse reward models. A sample that hacks one RM is unlikely to hack all of them.
-
-2. **Conservative aggregation**: Instead of using the mean score, use the 25th percentile or minimum. This selects samples that score well across all RMs, not just one.
-
-3. **Diversity monitoring**: Track sample diversity. If diversity drops too low, the model may be exploiting a narrow reward hack. I adjust temperature or use different prompts.
-
-4. **Human calibration**: Periodically validate that RM-selected samples actually match human preferences.
-
-5. **Multiple dimensions**: Score on multiple criteria (quality, safety, relevance) and require good scores on all, not just composite.
-
-The key insight is that any single reward signal can be gamed. Ensembles make gaming much harder."
+| 情境 | 為什麼不適合 | 替代方案 |
+|------|--------------|----------|
+| 簡單事實查詢 | 沒有多樣性收益 | 單次 RAG 呼叫 |
+| 需要 < 500ms 延遲 | 集成會增加延遲 | 單一模型 + 快取 |
+| 成本是首要限制 | 集成會放大成本 | 模型蒸餾 |
+| 模型高度相關 | 沒有多樣性就沒有收益 | 先取得多樣化模型 |
 
 ---
 
-## References
+<a id="interview-questions"></a>
+## 面試題
+
+<a id="q-when-would-you-use-self-consistency-vs-best-of-n"></a>
+### 問：你會在什麼情況下使用 Self-Consistency 而不是 Best-of-N？
+
+**強回答：**
+
+「兩者用途不同：
+
+**Self-Consistency** 適合有可抽取、可驗證答案的任務：
+- 數學題：抽出最終數字，用多數決
+- 分類：對標籤投票
+- 短答 QA：對答案投票
+
+關鍵在於你能比較答案是否相等。Temperature 0.5-0.8 可以在維持連貫性的同時提供多樣性。大多數任務我會用 k=5-10。
+
+**Best-of-N** 適合沒有單一正確答案的開放式生成：
+- 創意寫作
+- 解釋說明
+- 可以有多種寫法的程式碼
+
+這時我需要 reward model 或 judge 來對候選答案評分，因為我不能只看答案是否相等。N 通常設為 8-16。挑戰在於避免 reward hacking，因此我會使用 reward model 集成加上保守聚合。
+
+我不會把 Self-Consistency 用在創意寫作（沒有可抽取答案），也不會把 Best-of-N 用在數學題（直接投票更簡單）。」
+
+<a id="q-how-do-you-prevent-reward-hacking-in-best-of-n"></a>
+### 問：你如何在 Best-of-N 中避免 reward hacking？
+
+**強回答：**
+
+「Reward hacking 是指模型利用 reward model 的弱點，而不是真正提升品質。
+
+**我的緩解方式：**
+
+1. **Reward model 集成**：使用 3 個以上、多樣化的 reward model。能騙過一個 RM 的樣本，不太可能同時騙過全部。
+
+2. **保守聚合**：不要用平均分，而改用第 25 百分位數或最小值。這會選出在所有 RM 上都表現不錯的樣本，而不是只在單一 RM 上分數高。
+
+3. **多樣性監控**：追蹤樣本多樣性。如果多樣性掉太低，模型可能正在利用狹窄的 reward hack。我會調整 temperature 或改用不同 prompt。
+
+4. **人工校準**：定期驗證 RM 選出的樣本是否真的符合人類偏好。
+
+5. **多維度評分**：從多個面向評分（品質、安全、相關性），要求各面向都達標，而不是只看單一綜合分數。
+
+關鍵洞見是：任何單一 reward signal 都可能被操弄。集成會讓操弄難度大幅提高。」
+
+---
+
+<a id="references"></a>
+## 參考資料
 
 - Verga et al. "Replacing Judges with Juries: Evaluating LLM Generations with a Panel of Diverse Models" (2024)
 - Wang et al. "Self-Consistency Improves Chain of Thought Reasoning" (2023)
@@ -486,4 +509,4 @@ The key insight is that any single reward signal can be gamed. Ensembles make ga
 
 ---
 
-*Next: [Reliability Patterns Extended](02-reliability-patterns.md)*
+*下一章：[延伸可靠性模式](02-reliability-patterns.md)*

@@ -1,77 +1,86 @@
-# Case Study: Customer Support Conversational Agent
+<a id="case-study-customer-support-conversational-agent"></a>
+# 案例研究：客戶支援對話式代理人
 
-This case study walks through designing a production customer support agent for a B2B SaaS company.
+本案例研究詳細介紹如何為一家 B2B SaaS 公司設計生產級客戶支援代理人。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Problem Statement](#problem-statement)
-- [Requirements Analysis](#requirements-analysis)
-- [Architecture Design](#architecture-design)
-- [Component Deep Dives](#component-deep-dives)
-- [Reliability Patterns](#reliability-patterns)
-- [Evaluation and Monitoring](#evaluation-and-monitoring)
-- [Cost Analysis](#cost-analysis)
-- [Lessons Learned](#lessons-learned)
-- [Interview Walkthrough](#interview-walkthrough)
-
----
-
-## Problem Statement
-
-**Company:** B2B SaaS platform with 50K enterprise customers
-
-**Current state:**
-- 500K support tickets per month
-- Average response time: 4 hours
-- Customer satisfaction (CSAT): 72%
-- Support team: 100 agents
-
-**Goal:**
-- Reduce response time to < 5 minutes for common queries
-- Improve CSAT to > 85%
-- Handle 60% of tickets without human intervention
-- Maintain quality for escalated tickets
+- [問題陳述](#problem-statement)
+- [需求分析](#requirements-analysis)
+- [架構設計](#architecture-design)
+- [元件深度解析](#component-deep-dives)
+- [可靠性模式](#reliability-patterns)
+- [評估與監控](#evaluation-and-monitoring)
+- [成本分析](#cost-analysis)
+- [學到的經驗](#lessons-learned)
+- [面試演練](#interview-walkthrough)
 
 ---
 
-## Requirements Analysis
+<a id="problem-statement"></a>
+## 問題陳述
 
-### Functional Requirements
+**公司：** 擁有 5 萬個企業客戶的 B2B SaaS 平台
 
-| Requirement | Description | Priority |
-|-------------|-------------|----------|
-| Query understanding | Classify intent, extract entities | P0 |
-| Knowledge retrieval | Search product docs, FAQs, past tickets | P0 |
-| Account context | Access user's subscription, history | P0 |
-| Response generation | Natural, accurate, helpful responses | P0 |
-| Conversation memory | Multi-turn context | P0 |
-| Action execution | Create tickets, trigger workflows | P1 |
-| Human escalation | Seamless handoff when needed | P0 |
-| Billing inquiries | Handle sensitive financial data | P1 |
+**現況：**
+- 每月 50 萬張支援票券
+- 平均回應時間：4 小時
+- 客戶滿意度（CSAT）：72%
+- 支援團隊：100 名專員
 
-### Non-Functional Requirements
-
-| Requirement | Target | Rationale |
-|-------------|--------|-----------|
-| Latency (TTFT) | < 1s | User expectation for chat |
-| Latency (full) | < 5s | Maintain engagement |
-| Availability | 99.9% | Business-critical |
-| Accuracy | > 95% | Customer trust |
-| Escalation rate | < 40% | Cost efficiency |
-| CSAT | > 85% | Business goal |
-
-### Security Requirements
-
-- No PII in logs
-- Tenant isolation (customers only see their data)
-- Audit trail for all actions
-- SOC 2 compliance
+**目標：**
+- 將常見查詢的回應時間縮短至 5 分鐘以內
+- 將 CSAT 提升至 85% 以上
+- 60% 的票券無需人工介入即可處理
+- 維持升級票券的品質
 
 ---
 
-## Architecture Design
+<a id="requirements-analysis"></a>
+## 需求分析
 
-### High-Level Architecture
+<a id="functional-requirements"></a>
+### 功能需求
+
+| 需求 | 說明 | 優先級 |
+|------|------|--------|
+| 查詢理解 | 分類意圖、提取實體 | P0 |
+| 知識檢索 | 搜尋產品文件、FAQ、過去票券 | P0 |
+| 帳戶上下文 | 存取使用者的訂閱與歷史記錄 | P0 |
+| 回應生成 | 自然、準確、有幫助的回應 | P0 |
+| 對話記憶 | 多輪對話上下文 | P0 |
+| 動作執行 | 建立票券、觸發工作流程 | P1 |
+| 人工升級 | 需要時無縫交接 | P0 |
+| 帳單查詢 | 處理敏感財務資料 | P1 |
+
+<a id="non-functional-requirements"></a>
+### 非功能需求
+
+| 需求 | 目標 | 理由 |
+|------|------|------|
+| 延遲（TTFT） | < 1 秒 | 聊天的使用者預期 |
+| 延遲（完整） | < 5 秒 | 維持參與度 |
+| 可用性 | 99.9% | 業務關鍵 |
+| 準確度 | > 95% | 客戶信任 |
+| 升級率 | < 40% | 成本效率 |
+| CSAT | > 85% | 業務目標 |
+
+<a id="security-requirements"></a>
+### 安全需求
+
+- 日誌中不得有 PII
+- 租戶隔離（客戶只能看到自己的資料）
+- 所有動作的稽核記錄
+- SOC 2 合規
+
+---
+
+<a id="architecture-design"></a>
+## 架構設計
+
+<a id="high-level-architecture"></a>
+### 高層架構
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -103,7 +112,7 @@ This case study walks through designing a production customer support agent for 
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-Rendered as a layered flow. The orchestration layer dispatches to three parallel context sources, then assembles them in the response generator:
+以分層流程圖呈現。協調層分派至三個平行上下文來源，再由回應生成器組合：
 
 ```mermaid
 flowchart TD
@@ -127,7 +136,8 @@ flowchart TD
     AT --> RG
 ```
 
-### Conversation Flow
+<a id="conversation-flow"></a>
+### 對話流程
 
 ```
 User Message
@@ -172,7 +182,7 @@ User Message
     Response / Escalation
 ```
 
-A turn is a state machine. The two gates that matter for cost and trust are *safety* (must pass before leaving the system) and *confidence* (decides escalation vs auto-reply):
+一輪對話是一個狀態機。對成本與信任最重要的兩個閘道是*安全性*（離開系統前必須通過）和*信心值*（決定升級 vs. 自動回覆）：
 
 ```mermaid
 stateDiagram-v2
@@ -196,9 +206,11 @@ stateDiagram-v2
 
 ---
 
-## Component Deep Dives
+<a id="component-deep-dives"></a>
+## 元件深度解析
 
-### Intent Classification (Dec 2025)
+<a id="intent-classification-dec-2025"></a>
+### 意圖分類（2025 年 12 月）
 
 ```python
 class IntentClassifier:
@@ -212,7 +224,8 @@ class IntentClassifier:
         return json.loads(result.choices[0].message.content)
 ```
 
-### Knowledge Base (Gemini 3 Flash RAG)
+<a id="knowledge-base-gemini-3-flash-rag"></a>
+### 知識庫（Gemini 3 Flash RAG）
 
 ```python
 class SupportKnowledgeBase:
@@ -223,7 +236,8 @@ class SupportKnowledgeBase:
         return results
 ```
 
-### Response Generation (Claude Sonnet 4.6)
+<a id="response-generation-claude-sonnet-46"></a>
+### 回應生成（Claude Sonnet 4.6）
 
 ```python
 class ResponseGenerator:
@@ -241,13 +255,15 @@ class ResponseGenerator:
 ```
 
 > [!NOTE]
-> **Production Wisdom:** While Gemini 3 Flash is great for high-volume retrieval, **Claude 3.5 Sonnet** remains the most "stable" generator for many support teams who have spent months fine-tuning guardrails around its specific personality and refusal patterns.
+> **生產實務智慧：** 雖然 Gemini 3 Flash 非常適合高量檢索，但對於許多已花費數月針對其特定個性和拒絕模式微調安全護欄的支援團隊而言，**Claude 3.5 Sonnet** 仍然是最「穩定」的生成器。
 
 ---
 
-## Reliability Patterns
+<a id="reliability-patterns"></a>
+## 可靠性模式
 
-### Confidence-Based Escalation
+<a id="confidence-based-escalation"></a>
+### 基於信心值的升級
 
 ```python
 class EscalationHandler:
@@ -292,7 +308,7 @@ class EscalationHandler:
         return any(kw in message.lower() for kw in sensitive_keywords)
 ```
 
-The escalation decision combines three independent signals. Any one of them triggers handoff. Visualizing it as a decision tree makes the OR semantics obvious and easy to extend with a fourth signal:
+升級決策結合三個獨立信號，任一信號觸發即進行交接。以決策樹呈現 OR 語意更直觀，也更容易擴充第四個信號：
 
 ```mermaid
 flowchart TD
@@ -309,7 +325,8 @@ flowchart TD
     E --> H[Queue for Human Agent<br/>with context bundle]
 ```
 
-### Multi-Turn Memory
+<a id="multi-turn-memory"></a>
+### 多輪對話記憶
 
 ```python
 class ConversationMemory:
@@ -348,9 +365,11 @@ class ConversationMemory:
 
 ---
 
-## Evaluation and Monitoring
+<a id="evaluation-and-monitoring"></a>
+## 評估與監控
 
-### Quality Metrics
+<a id="quality-metrics"></a>
+### 品質指標
 
 ```python
 class QualityMonitor:
@@ -379,102 +398,112 @@ class QualityMonitor:
             metrics.record(f"quality_{criterion}", score)
 ```
 
-### Dashboard Metrics
+<a id="dashboard-metrics"></a>
+### 儀表板指標
 
-| Metric | Target | Actual |
-|--------|--------|--------|
-| Latency (TTFT) | < 1s | 0.8s |
-| Latency (full) | < 5s | 3.2s |
-| Accuracy | > 95% | 94.3% |
-| Escalation rate | < 40% | 38% |
+| 指標 | 目標 | 實際 |
+|------|------|------|
+| 延遲（TTFT） | < 1 秒 | 0.8 秒 |
+| 延遲（完整） | < 5 秒 | 3.2 秒 |
+| 準確度 | > 95% | 94.3% |
+| 升級率 | < 40% | 38% |
 | CSAT | > 85% | 87% |
-| Resolution rate | > 60% | 62% |
+| 解決率 | > 60% | 62% |
 
 ---
 
-## Cost Analysis
+<a id="cost-analysis"></a>
+## 成本分析
 
-### Per-Conversation Cost Breakdown (Dec 2025)
+<a id="per-conversation-cost-breakdown-dec-2025"></a>
+### 每次對話成本細分（2025 年 12 月）
 
-| Component | Cost | Notes |
-|-----------|------|-------|
-| Intent classification | $0.0001 | GPT-5.5-mini ($0.10/1M) |
-| RAG retrieval | $0.0001 | Gemini 3 Flash ($0.05/1M) |
-| Thinking mode | $0.0050 | Claude Sonnet 4.6 Thinking (avg 250 tokens) |
-| Response generation | $0.0030 | Claude Sonnet 4.6 ($3/1M in) |
-| Quality sampling | $0.0001 | 5% sample rate on GPT-5.5 |
-| **Total** | **~$0.0083** | **Per conversation (62% reduction vs 2024)** |
+| 元件 | 成本 | 備註 |
+|------|------|------|
+| 意圖分類 | $0.0001 | GPT-5.5-mini（$0.10/1M） |
+| RAG 檢索 | $0.0001 | Gemini 3 Flash（$0.05/1M） |
+| 思考模式 | $0.0050 | Claude Sonnet 4.6 Thinking（平均 250 token） |
+| 回應生成 | $0.0030 | Claude Sonnet 4.6（$3/1M 輸入） |
+| 品質抽樣 | $0.0001 | 5% 抽樣率（GPT-5.5） |
+| **合計** | **~$0.0083** | **每次對話（比 2024 年減少 62%）** |
 
-### Monthly Cost Projection
+<a id="monthly-cost-projection"></a>
+### 每月成本預測
 
-| Item | Calculation | Cost |
-|------|-------------|------|
-| Conversations | 500K × $0.022 | $11,000 |
-| Infrastructure | Fixed | $2,000 |
-| Human escalations | 190K × $5 (human cost) | $950,000 |
-| **Total** | | $963,000 |
-| **Savings vs all-human** | 500K × $5 - $963K | $1.5M/year |
-
----
-
-## Lessons Learned
-
-### What Worked
-
-1. **Intent-based routing** reduced latency by focusing retrieval on relevant sources
-2. **Confidence-based escalation** maintained quality while reducing human load
-3. **Account context** made responses more personalized and accurate
-4. **Lower temperature (0.3)** improved consistency for support responses
-
-### What Did Not Work Initially
-
-1. **Single model for everything** - routing to different models for different tasks improved quality
-2. **Too high escalation threshold** - started at 0.9 confidence, causing too many escalations
-3. **Full conversation history** - exceeded context limits, switched to summarization
-
-### Recommendations
-
-1. Start with high escalation rate and lower gradually as confidence improves
-2. Monitor CSAT by escalation reason to identify weak areas
-3. Retrain embeddings on support-specific vocabulary
-4. Build feedback loop: agents tag escalated conversations for training data
+| 項目 | 計算方式 | 成本 |
+|------|----------|------|
+| 對話次數 | 50 萬 × $0.022 | $11,000 |
+| 基礎架構 | 固定 | $2,000 |
+| 人工升級 | 19 萬 × $5（人工成本） | $950,000 |
+| **合計** | | $963,000 |
+| **與全人工相比的節省** | 50 萬 × $5 - $963K | 每年 $150 萬 |
 
 ---
 
-## Interview Walkthrough
+<a id="lessons-learned"></a>
+## 學到的經驗
 
-**Interviewer:** "Design an AI customer support system for a SaaS company."
+<a id="what-worked"></a>
+### 成效良好之處
 
-**Strong response pattern:**
+1. **基於意圖的路由**：透過聚焦於相關來源的檢索，減少了延遲
+2. **基於信心值的升級**：在降低人工負擔的同時維持品質
+3. **帳戶上下文**：使回應更個人化且準確
+4. **較低溫度（0.3）**：改善了支援回應的一致性
 
-1. **Clarify requirements** (2 min)
-   - "What's the ticket volume? What channels? What's the current CSAT?"
+<a id="what-did-not-work-initially"></a>
+### 最初不成效之處
 
-2. **State constraints explicitly**
-   - "Key constraints: accuracy over speed, seamless escalation, tenant isolation"
+1. **對所有任務使用單一模型**：將不同任務路由至不同模型後，品質改善
+2. **升級閾值設定太高**：初始信心值設為 0.9，導致升級次數過多
+3. **完整對話歷史**：超出上下文限制，改用摘要方式處理
 
-3. **High-level architecture** (3 min)
-   - Draw the flow: intent → routing → RAG → generation → safety → response/escalation
+<a id="recommendations"></a>
+### 建議
 
-4. **Deep dive on critical component** (5 min)
-   - "Let me detail the confidence-based escalation..."
-
-5. **Address reliability** (3 min)
-   - "For reliability, I would use self-consistency for billing queries, multi-provider fallback"
-
-6. **Metrics and monitoring** (2 min)
-   - "Key metrics: CSAT, resolution rate, escalation rate, accuracy sampling"
-
-7. **Cost consideration** (1 min)
-   - "At 500K conversations/month, cost per conversation matters. Model routing helps."
+1. 從較高的升級率開始，隨著信心提升逐步降低
+2. 依升級原因監控 CSAT，以識別弱點
+3. 使用支援領域特定詞彙重新訓練嵌入模型
+4. 建立回饋迴圈：讓專員標記升級對話作為訓練資料
 
 ---
 
-## References
+<a id="interview-walkthrough"></a>
+## 面試演練
+
+**面試官：**「為一家 SaaS 公司設計 AI 客戶支援系統。」
+
+**優質回答模式：**
+
+1. **釐清需求**（2 分鐘）
+   - 「票券量是多少？有哪些管道？目前的 CSAT 是多少？」
+
+2. **明確說明限制條件**
+   - 「關鍵限制：準確度優先於速度、無縫升級、租戶隔離」
+
+3. **高層架構**（3 分鐘）
+   - 繪製流程：意圖 → 路由 → RAG → 生成 → 安全性 → 回應／升級
+
+4. **關鍵元件深度解析**（5 分鐘）
+   - 「讓我詳細說明基於信心值的升級……」
+
+5. **處理可靠性**（3 分鐘）
+   - 「對於可靠性，我會對帳單查詢使用自洽性（self-consistency），並採用多供應商備援」
+
+6. **指標與監控**（2 分鐘）
+   - 「關鍵指標：CSAT、解決率、升級率、準確度抽樣」
+
+7. **成本考量**（1 分鐘）
+   - 「每月 50 萬次對話，每次對話的成本至關重要。模型路由有助於控制成本。」
+
+---
+
+<a id="references"></a>
+## 參考資料
 
 - Anthropic Customer Support Best Practices: https://docs.anthropic.com/claude/docs/customer-service
 - LangChain Conversational Agents: https://python.langchain.com/docs/use_cases/chatbots
 
 ---
 
-*Next: [Code Assistant Case Study](03-code-assistant.md)*
+*下一章：[程式碼助手案例研究](03-code-assistant.md)*

@@ -1,98 +1,117 @@
-# Evaluating Agentic Systems
+<a id="evaluating-agentic-systems"></a>
+# 評估代理式系統
 
-Evaluating agents is fundamentally different from evaluating RAG. While RAG is about "Accuracy," Agents are about **"Reliability," "Efficiency," and "Safety."** Production agent eval relies on **Trajectory Benchmarks** and **LLM-as-Judge** for multi-step reasoning, with tools like Langfuse, LangWatch, Braintrust, and Arize Phoenix offering native trace-level scoring.
+agent 與 RAG 的評估本質上不同。RAG 著重於「準確性」，而 agent 更重視 **「可靠性」、「效率」與「安全性」**。生產環境中的 agent 評估，會依賴 **Trajectory Benchmarks** 與 **LLM-as-Judge** 來檢驗多步推理，而 Langfuse、LangWatch、Braintrust 與 Arize Phoenix 等工具則提供原生的 trace-level scoring。
 
 > [!NOTE]
-> For standard RAG evaluation (Retrieval vs. Generation metrics), see [06-retrieval-systems/09-advanced-retrieval-patterns.md](../06-retrieval-systems/09-advanced-retrieval-patterns.md) and Section 14. This chapter focuses specifically on the *Execution Path* of an agent.
+> 關於標準 RAG 評估（Retrieval 與 Generation metrics），請參閱 [06-retrieval-systems/09-advanced-retrieval-patterns.md](../06-retrieval-systems/09-advanced-retrieval-patterns.md) 與第 14 節。本章特別聚焦於 agent 的*執行路徑*。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [The Evaluation Shift](#shift)
-- [Trajectory Benchmarks (The GOLD Standard)](#benchmarks)
-- [Key Metrics: Success, Cost, and Duration](#metrics)
-- [LLM-as-Judge for Step Quality](#judge)
-- [Production Evaluation (A/B Testing Agents)](#production)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [評估轉向](#shift)
+- [Trajectory Benchmarks（黃金標準）](#benchmarks)
+- [關鍵指標：成功、成本與時間](#metrics)
+- [用於步驟品質的 LLM-as-Judge](#judge)
+- [生產環境評估（A/B 測試代理）](#production)
+- [面試問題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## The Evaluation Shift
+<a id="shift"></a>
+<a id="the-evaluation-shift"></a>
+## 評估轉向
 
-| Metric | RAG App | Agentic App |
+| 指標 | RAG 應用 | 代理式應用 |
 |--------|---------|-------------|
-| **Unit of Eval** | Single Response | The **Trajectory** (All steps) |
-| **Success Criteria**| Groundedness/Faithfulness | Task Completion / Logical Soundness |
-| **Complexity** | Low (Text similarity) | High (Tool state validation) |
+| **評估單位** | 單一回應 | **Trajectory**（所有步驟） |
+| **成功標準**| Groundedness/Faithfulness | 任務完成 / 邏輯健全性 |
+| **複雜度** | 低（文字相似度） | 高（工具狀態驗證） |
 
 ---
 
+<a id="benchmarks"></a>
+<a id="trajectory-benchmarks"></a>
 ## Trajectory Benchmarks
 
-Modern eval scores the **"Path to the Result."**
-1. **Optimal Path**: The shortest sequence of tools to solve the task.
-2. **Agent Path**: The actual steps taken.
-3. **The Score**: `Efficiency = (Optimal Steps / Agent Steps)`. A score of `0.2` means the agent meandered or looped excessively.
+現代評估會為 **「通往結果的路徑」**打分。
+1. **最佳路徑**：解決任務所需的最短工具序列。
+2. **Agent 路徑**：實際採取的步驟。
+3. **分數**：`Efficiency = (Optimal Steps / Agent Steps)`。分數為 `0.2` 代表 agent 走了很多冤枉路，或陷入過度迴圈。
 
-**Common Benchmarks**:
-- **SWE-bench**: Fixing GitHub issues (Code Agency).
-- **WebArena**: Navigating menus and forms (Browser Agency).
-- **GAIA**: General tool-use tasks (Assistant Agency).
+**常見基準測試**：
+- **SWE-bench**：修復 GitHub issue（Code Agency）。
+- **WebArena**：導覽選單與表單（Browser Agency）。
+- **GAIA**：一般工具使用任務（Assistant Agency）。
 
 ---
 
-## Key Metrics
+<a id="metrics"></a>
+<a id="key-metrics"></a>
+## 關鍵指標
 
-### 1. Task Success Rate (TSR)
-The percentage of tasks where the final state is correct.
+<a id="1-task-success-rate-tsr"></a>
+### 1. 任務成功率（TSR）
+最終狀態正確的任務比例。
 > [!IMPORTANT]
-> A "Correct Answer" via a "Wrong Path" is a score of 0 in senior production settings.
+> 在資深生產場景中，透過「錯誤路徑」得到「正確答案」，分數仍然是 0。
 
-### 2. Action Success Rate (ASR)
-The percentage of individual tool calls that returned valid data (not errors or hallucinations).
+<a id="2-action-success-rate-asr"></a>
+### 2. 動作成功率（ASR）
+回傳有效資料（而非錯誤或 hallucination）的單次工具呼叫比例。
 
-### 3. Unit Cost per Task
-Total tokens + infrastructure cost (Sandboxes, API calls) per completed goal.
-
----
-
-## LLM-as-Judge for Step Quality
-
-We use a stronger model (Claude Opus 4.7, GPT-5.5 reasoning) to review the **Reasoning Log** of a smaller agent.
-- **Thought Quality**: Did the agent's logic for using Tool X follow from Observation Y?
-- **Redundancy Check**: Did the agent repeat a search it just performed?
-- **Feedback Loop**: This "Judge" output is then used for **DPO (Direct Preference Optimization)** to align the agent's future behavior.
+<a id="3-unit-cost-per-task"></a>
+### 3. 每項任務的單位成本
+每個已完成目標的總 token 成本 + 基礎設施成本（Sandboxes、API calls）。
 
 ---
 
-## Production Evaluation
+<a id="judge"></a>
+<a id="llm-as-judge-for-step-quality"></a>
+## 用於步驟品質的 LLM-as-Judge
 
-Production teams use **Shadow Execution**.
-1. **V1 Agent** responds to the user.
-2. **V2 (Experimental) Agent** runs the same query in a "Hidden Sandbox."
-3. **The Comparison**: We compare the two trajectories. If V2 consistently solves tasks in fewer steps without safety violations, we promote it to production.
-
----
-
-## Interview Questions
-
-### Q: How do you evaluate an agent when the environment is non-deterministic (e.g., the web)?
-
-**Strong answer:**
-We use **Mock Environments** or **Snapshotted States**. For high-fidelity testing, we use a containerized browser that resets to a clean state for every test run. We then compare the agent's trajectory against a **Reference Trace**. If the environment is truly live, we use **State-Based Verification**—instead of comparing the text, we check the external world's state (e.g., "Is there a new row in the database with the correct values?").
-
-### Q: Why is "Meandering" (taking too many steps) a critical failure in Staff-level Agent design?
-
-**Strong answer:**
-Meandering leads to three failures: 1) **Cost**: Every step is an LLM call; 2) **Latency**: Every step adds 2-5 seconds; 3) **Entropy**: The longer the trajectory, the higher the chance of the agent encountering a weird edge case that triggers a hallucination. The standard fix is **Step Budgets**: if an agent doesn't solve a task in 10 steps, we terminate it and escalate to a human to prevent a "Token Leak."
+我們使用更強的模型（Claude Opus 4.7、GPT-5.5 reasoning）來審查較小型 agent 的 **Reasoning Log**。
+- **思考品質**：agent 使用 Tool X 的邏輯，是否真的從 Observation Y 推導而來？
+- **冗餘檢查**：agent 是否重複進行了剛做過的搜尋？
+- **回饋迴圈**：這個「Judge」輸出接著會被用於 **DPO（Direct Preference Optimization）**，以對齊 agent 未來的行為。
 
 ---
 
-## References
-- Jimenez et al. "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?" (2024/2025 update)
-- Microsoft Research. "AgentBench: A Comprehensive Benchmark for AI Agents" (2024)
-- RAGAS. "Agentic Evaluation Module" (2025)
+<a id="production"></a>
+<a id="production-evaluation"></a>
+## 生產環境評估
+
+生產團隊會使用 **Shadow Execution**。
+1. **V1 Agent** 回應使用者。
+2. **V2（實驗版）Agent** 在「Hidden Sandbox」中執行相同查詢。
+3. **比較**：我們比較兩條 trajectory。如果 V2 能穩定地用更少步驟解決任務，且沒有安全違規，就將它升級到 production。
 
 ---
 
-*Next: [Memory Architectures](../08-memory-and-state/01-memory-architectures.md)*
+<a id="interview-questions"></a>
+## 面試問題
+
+<a id="q-how-do-you-evaluate-an-agent-when-the-environment-is-non-deterministic-eg-the-web"></a>
+### 問：當環境具有非決定性（例如 web）時，你如何評估 agent？
+
+**強回答：**
+我們會使用 **Mock Environments** 或 **Snapshotted States**。在高擬真測試中，我們使用容器化瀏覽器，並在每次測試執行時重設為乾淨狀態。然後將 agent 的 trajectory 與 **Reference Trace** 比較。如果環境真的是 live 的，我們就使用 **State-Based Verification**——不比較文字，而是檢查外部世界的狀態（例如：「資料庫中是否新增了一列具有正確值的資料？」）。
+
+<a id="q-why-is-meandering-taking-too-many-steps-a-critical-failure-in-staff-level-agent-design"></a>
+### 問：為什麼「Meandering」（走太多步）在 Staff-level Agent 設計中屬於關鍵失敗？
+
+**強回答：**
+Meandering 會導致三種失敗：1）**成本**：每一步都是一次 LLM 呼叫；2）**延遲**：每一步都會增加 2-5 秒；3）**熵**：trajectory 越長，agent 遇到奇怪 edge case 並觸發 hallucination 的機率越高。標準修正方式是 **Step Budgets**：如果 agent 在 10 步內無法解決任務，我們就終止它並升級給人工處理，以避免「Token Leak」。
+
+---
+
+<a id="references"></a>
+## 參考資料
+- Jimenez et al.「SWE-bench: Can Language Models Resolve Real-World GitHub Issues?」(2024/2025 update)
+- Microsoft Research.「AgentBench: A Comprehensive Benchmark for AI Agents」(2024)
+- RAGAS.「Agentic Evaluation Module」(2025)
+
+---
+
+*下一章：[Memory Architectures](../08-memory-and-state/01-memory-architectures.md)*

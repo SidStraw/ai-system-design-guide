@@ -1,29 +1,32 @@
-# Computer-Use Agents
+<a id="computer-use-agents"></a>
+# 電腦操作代理
 
-Computer-use agents let an LLM see a screen, reason about it, and act through mouse clicks and keystrokes -- the same way a human operates a computer. Instead of calling structured APIs, the model works with raw pixels. This chapter covers how they work, when they beat traditional automation, and how to design production systems around them.
+Computer-use agents 讓 LLM 能看見螢幕、對其進行推理，並透過滑鼠點擊與鍵盤輸入採取動作——就像人類操作電腦一樣。模型不是呼叫結構化 API，而是直接處理原始像素。本章會說明它們的運作方式、何時能勝過傳統自動化，以及如何圍繞它們設計可投入生產的系統。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [What Are Computer-Use Agents?](#what-are-computer-use-agents)
-- [The Screenshot-Reason-Act Loop](#the-screenshot-reason-act-loop)
-- [Claude Computer Use: Tools and API](#claude-computer-use-tools-and-api)
-- [Architecture: Sandboxed Environments](#architecture-sandboxed-environments)
-- [Browser vs Desktop Automation](#browser-vs-desktop-automation)
-- [Comparison with Traditional Automation](#comparison-with-traditional-automation)
-- [When Computer-Use Beats API Calls](#when-computer-use-beats-api-calls)
-- [Error Handling and Recovery](#error-handling-and-recovery)
-- [Performance: Latency, Cost, Throughput](#performance-latency-cost-throughput)
-- [Real-World Applications](#real-world-applications)
-- [Security Considerations](#security-considerations)
-- [Code Examples](#code-examples)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [什麼是 Computer-Use Agents？](#what-are-computer-use-agents)
+- [Screenshot-Reason-Act 迴圈](#the-screenshot-reason-act-loop)
+- [Claude Computer Use：工具與 API](#claude-computer-use-tools-and-api)
+- [架構：沙箱化環境](#architecture-sandboxed-environments)
+- [瀏覽器自動化 vs 桌面自動化](#browser-vs-desktop-automation)
+- [與傳統自動化的比較](#comparison-with-traditional-automation)
+- [何時 Computer-Use 會勝過 API 呼叫](#when-computer-use-beats-api-calls)
+- [錯誤處理與復原](#error-handling-and-recovery)
+- [效能：延遲、成本、吞吐量](#performance-latency-cost-throughput)
+- [真實世界應用](#real-world-applications)
+- [安全考量](#security-considerations)
+- [程式碼範例](#code-examples)
+- [面試題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## What Are Computer-Use Agents?
+<a id="what-are-computer-use-agents"></a>
+## 什麼是 Computer-Use Agents？
 
-A computer-use agent is an LLM that controls a graphical interface by interpreting screenshots and issuing low-level input commands (mouse moves, clicks, keystrokes). It replaces the human in the human-computer interaction loop.
+Computer-use agent 是一種透過解讀螢幕截圖並發出低階輸入指令（滑鼠移動、點擊、鍵盤輸入）來控制圖形介面的 LLM。它會在人機互動迴圈中取代人類的位置。
 
 ```
 Traditional Tool Use:           Computer Use:
@@ -49,25 +52,27 @@ User Request                    User Request
                                 LLM verifies result, continues...
 ```
 
-The key difference: traditional tool use requires pre-defined APIs with known schemas. Computer use works with any application that has a visual interface -- no API required.
+關鍵差異在於：傳統工具使用仰賴預先定義、schema 已知的 API。Computer use 則可作用於任何具備視覺介面的應用程式——不需要 API。
 
-### The Landscape (2026)
+<a id="the-landscape-2026"></a>
+### 目前版圖（2026）
 
-Multiple providers now offer computer-use capabilities:
+現在已有多家供應商提供 computer-use 能力：
 
-| Provider | Agent | Approach | Key Strength |
+| 供應商 | 代理 | 方法 | 主要優勢 |
 |----------|-------|----------|--------------|
-| Anthropic | Claude Computer Use | Vision + coordinate reasoning | Desktop + browser, mature API |
-| OpenAI | ChatGPT Agent Mode | Operator-based browser agent | Deep web navigation |
-| Google | Project Mariner | Gemini vision-language | Chrome integration |
-| Microsoft | UFO/UFO2 | Windows UI Automation + vision | Native Windows support |
-| Amazon | Nova Act | Purpose-built browser model | E-commerce workflows |
+| Anthropic | Claude Computer Use | Vision + 座標推理 | 桌面 + 瀏覽器、成熟 API |
+| OpenAI | ChatGPT Agent Mode | 以 Operator 為基礎的瀏覽器代理 | 深度網頁導覽 |
+| Google | Project Mariner | Gemini vision-language | Chrome 整合 |
+| Microsoft | UFO/UFO2 | Windows UI Automation + vision | 原生 Windows 支援 |
+| Amazon | Nova Act | 為瀏覽器打造的專用模型 | 電商工作流程 |
 
 ---
 
-## The Screenshot-Reason-Act Loop
+<a id="the-screenshot-reason-act-loop"></a>
+## Screenshot-Reason-Act 迴圈
 
-Every computer-use agent follows the same core loop, often called the "agent loop" or "action loop":
+每個 computer-use agent 都遵循相同的核心迴圈，通常稱為「agent loop」或「action loop」：
 
 ```
 +------------------+
@@ -103,52 +108,55 @@ Every computer-use agent follows the same core loop, often called the "agent loo
          +----------------------+
 ```
 
-Each iteration:
-1. **Capture**: Take a screenshot of the current display state.
-2. **Send**: Pass the screenshot (base64 image) plus the conversation history to the LLM.
-3. **Reason**: The model analyzes what is on screen, determines the next step toward the goal.
-4. **Act**: The model outputs a tool call (e.g., `click at (450, 320)`) which the runtime executes.
-5. **Repeat**: A new screenshot is captured and the loop continues until the model signals completion.
+每次迭代都包含：
+1. **Capture**：擷取目前顯示狀態的螢幕截圖。
+2. **Send**：把截圖（base64 圖像）加上對話歷史傳給 LLM。
+3. **Reason**：模型分析螢幕上的內容，判斷朝目標前進的下一步。
+4. **Act**：模型輸出工具呼叫（例如 `click at (450, 320)`），由執行環境實際執行。
+5. **Repeat**：再次擷取新截圖，直到模型發出完成訊號前持續重複。
 
-The model maintains context across iterations via the conversation history, which accumulates screenshots and actions like a visual "memory" of what has happened.
+模型透過持續累積截圖與動作的對話歷史，在多次迭代間維持上下文，形成一種視覺上的「記憶」，記住已經發生過的事。
 
 ---
 
-## Claude Computer Use: Tools and API
+<a id="claude-computer-use-tools-and-api"></a>
+## Claude Computer Use：工具與 API
 
-Claude exposes three built-in tools for computer use. These are Anthropic-defined tools -- you do not write the implementation; Claude knows how to generate calls to them and your runtime executes them against the environment.
+Claude 提供三個內建的 computer use 工具。這些工具由 Anthropic 定義——你不需要自行撰寫實作；Claude 知道如何產生對它們的呼叫，而你的 runtime 會在環境中執行這些呼叫。
 
-### The Three Tools
+<a id="the-three-tools"></a>
+### 三個工具
 
-**1. `computer` -- Full GUI Control**
+**1. `computer` -- 完整 GUI 控制**
 
-Controls mouse and keyboard on a virtual display. Capabilities:
-- `screenshot` -- capture current screen state
-- `left_click`, `right_click`, `double_click`, `triple_click` -- mouse clicks at coordinates
-- `left_click_drag` -- drag from one point to another
-- `type` -- type a string of text
-- `key` -- press keyboard keys (e.g., `ctrl+c`, `Return`, `Escape`)
-- `scroll` -- scroll up/down/left/right at a coordinate
-- `move` -- move cursor to coordinates
-- `hold_key` -- hold a modifier key while performing another action
-- `wait` -- pause for a specified duration
+控制虛擬顯示器上的滑鼠與鍵盤。能力包括：
+- `screenshot` -- 擷取目前螢幕狀態
+- `left_click`, `right_click`, `double_click`, `triple_click` -- 在座標位置進行滑鼠點擊
+- `left_click_drag` -- 從一個點拖曳到另一個點
+- `type` -- 輸入一段文字字串
+- `key` -- 按下鍵盤按鍵（例如 `ctrl+c`、`Return`、`Escape`）
+- `scroll` -- 在指定座標向上／下／左／右捲動
+- `move` -- 將游標移動到座標位置
+- `hold_key` -- 執行其他動作時按住修飾鍵
+- `wait` -- 暫停指定時間
 
-**2. `bash` -- Shell Command Execution**
+**2. `bash` -- Shell 指令執行**
 
-Runs shell commands in a persistent session:
-- Commands share state (environment variables, working directory)
-- Supports multi-line scripts
-- Output is captured and returned as text
+在持續存在的工作階段中執行 shell 指令：
+- 指令會共享狀態（環境變數、工作目錄）
+- 支援多行 script
+- 輸出會被擷取並以文字形式回傳
 
-**3. `text_editor` -- File Operations**
+**3. `text_editor` -- 檔案操作**
 
-Structured file editing with commands:
-- `view` -- read file contents (with optional line range)
-- `create` -- create a new file with content
-- `str_replace` -- replace a specific string in a file (must be unique match)
-- `insert` -- insert text at a specific line number
+以結構化方式編輯檔案，支援以下指令：
+- `view` -- 讀取檔案內容（可選擇行號範圍）
+- `create` -- 建立帶有內容的新檔案
+- `str_replace` -- 取代檔案中的特定字串（必須唯一匹配）
+- `insert` -- 在指定行號插入文字
 
-### API Request Structure
+<a id="api-request-structure"></a>
+### API 請求結構
 
 ```python
 import anthropic
@@ -185,15 +193,17 @@ response = client.messages.create(
 )
 ```
 
-The response will contain `tool_use` blocks that your runtime must execute and feed back as `tool_result` messages.
+回應會包含 `tool_use` 區塊，你的 runtime 必須執行它們，並以 `tool_result` 訊息回傳結果。
 
 ---
 
-## Architecture: Sandboxed Environments
+<a id="architecture-sandboxed-environments"></a>
+## 架構：沙箱化環境
 
-Computer-use agents must run in isolated environments. The model has full control of mouse and keyboard -- you do not want that on your production workstation.
+Computer-use agents 必須在隔離環境中執行。模型可完全控制滑鼠與鍵盤——你絕對不會希望它直接操作你的正式工作站。
 
-### Standard Architecture: Docker + VNC
+<a id="standard-architecture-docker--vnc"></a>
+### 標準架構：Docker + VNC
 
 ```
 +-----------------------------------------------------+
@@ -217,110 +227,124 @@ Computer-use agents must run in isolated environments. The model has full contro
 +-----------------------------------------------------+
 ```
 
-### Cloud-Hosted Alternatives
+<a id="cloud-hosted-alternatives"></a>
+### 雲端託管替代方案
 
-Services like E2B (e2b.dev) provide pre-configured sandboxed environments:
-- Ephemeral VMs with pre-installed browsers and tools
-- API for screenshot capture and input injection
-- Automatic cleanup after session ends
-- No Docker management overhead
+像 E2B (e2b.dev) 這類服務提供預先設定好的沙箱環境：
+- 內建瀏覽器與工具的短暫性 VM
+- 用於截圖擷取與輸入注入的 API
+- 工作階段結束後自動清理
+- 無需承擔 Docker 管理成本
 
-### Key Environment Components
+<a id="key-environment-components"></a>
+### 關鍵環境元件
 
-| Component | Purpose | Example |
+| 元件 | 用途 | 範例 |
 |-----------|---------|---------|
-| Xvfb | Virtual X11 display server | Creates a framebuffer without physical display |
-| Mutter/Xfwm | Window manager | Handles window positioning, resizing |
-| Tint2 | Task panel | Shows running applications |
-| xdotool | Input injection | Executes mouse/keyboard commands |
-| scrot/maim | Screenshot capture | Takes display snapshots as PNG |
+| Xvfb | 虛擬 X11 顯示伺服器 | 在沒有實體顯示器的情況下建立 framebuffer |
+| Mutter/Xfwm | 視窗管理器 | 處理視窗定位與大小調整 |
+| Tint2 | 工作列面板 | 顯示正在執行的應用程式 |
+| xdotool | 輸入注入 | 執行滑鼠／鍵盤指令 |
+| scrot/maim | 截圖擷取 | 將顯示內容快照為 PNG |
 
 ---
 
-## Browser vs Desktop Automation
+<a id="browser-vs-desktop-automation"></a>
+## 瀏覽器自動化 vs 桌面自動化
 
-| Dimension | Browser-Only | Full Desktop |
+| 面向 | 僅瀏覽器 | 完整桌面 |
 |-----------|-------------|--------------|
-| Scope | Web apps only | Any GUI application |
-| Setup complexity | Lower (headless browser) | Higher (full desktop env) |
-| Performance | Faster (smaller screenshots) | Slower (full screen captures) |
-| Reliability | Higher (predictable layouts) | Lower (OS variations) |
-| Use case | Web scraping, form filling | Legacy software, cross-app workflows |
+| 範圍 | 僅限 Web 應用 | 任何 GUI 應用程式 |
+| 設定複雜度 | 較低（headless browser） | 較高（完整桌面環境） |
+| 效能 | 較快（較小的截圖） | 較慢（全螢幕擷取） |
+| 可靠性 | 較高（版面較可預測） | 較低（OS 差異） |
+| 使用情境 | 網頁爬取、表單填寫 | 舊式軟體、跨應用工作流程 |
 
-Browser automation controls a web browser (navigate, fill forms, click buttons, handle SPAs). Desktop automation controls the full OS environment (launch applications, use native dialogs, interact with thick-client software, chain operations across multiple apps).
+瀏覽器自動化是控制 web browser（導覽、填表、點按按鈕、處理 SPA）。桌面自動化則控制整個 OS 環境（啟動應用程式、使用原生對話框、與 thick-client 軟體互動、串接多個應用程式的操作）。
 
 ---
 
-## Comparison with Traditional Automation
+<a id="comparison-with-traditional-automation"></a>
+## 與傳統自動化的比較
 
-Selenium, Playwright, and Puppeteer automate browsers via direct DOM access. Computer-use agents work with pixels. Both have a place in production.
+Selenium、Playwright 與 Puppeteer 透過直接存取 DOM 來自動化瀏覽器。Computer-use agents 則是處理像素。兩者在生產環境中都有其定位。
 
-| Feature | Selenium/Playwright | Computer Use Agent |
+| 特性 | Selenium/Playwright | Computer Use Agent |
 |---------|--------------------|--------------------|
-| Speed | Fast (direct DOM) | Slow (screenshot + LLM) |
-| Reliability | Brittle (selector changes) | Resilient (visual recognition) |
-| Maintenance | Constant selector updates | Minimal (adapts to UI changes) |
-| Anti-bot detection | Frequently blocked | Harder to detect |
-| Cost per action | ~$0.001 | ~$0.01-0.05 |
-| Non-web support | No | Yes (any GUI) |
+| 速度 | 快（直接操作 DOM） | 慢（截圖 + LLM） |
+| 可靠性 | 脆弱（selector 一改就壞） | 韌性較高（視覺辨識） |
+| 維護成本 | 需要持續更新 selector | 極少（可適應 UI 變化） |
+| 反機器人偵測 | 經常被擋 | 較難偵測 |
+| 每次動作成本 | ~$0.001 | ~$0.01-0.05 |
+| 非 Web 支援 | 否 | 是（任何 GUI） |
 
-**Hybrid approaches** work best in production: Playwright handles high-volume, well-defined flows (login, navigation) while computer-use agents handle dynamic, unpredictable steps (visual verification, novel layouts, anti-bot sites).
-
----
-
-## When Computer-Use Beats API Calls
-
-**Use computer use when:** no API exists (legacy systems), anti-bot protections block Selenium, visual judgment is required (chart verification, PDF layout), UIs change faster than selectors can be maintained, or the workflow spans multiple desktop applications.
-
-**Stick with APIs when:** a structured API is available (always prefer it), latency matters (sub-second), volume is high (thousands of actions/hour), or determinism is required (same input, same output).
+**混合式方法** 在正式環境中效果最好：Playwright 處理高流量、明確定義的流程（登入、導覽），而 computer-use agents 處理動態且不可預測的步驟（視覺驗證、新穎版面、反機器人網站）。
 
 ---
 
-## Error Handling and Recovery
+<a id="when-computer-use-beats-api-calls"></a>
+## 何時 Computer-Use 會勝過 API 呼叫
 
-Computer-use agents fail differently from API-based tools. The main failure modes:
+**適合使用 computer use 的情況：** 沒有 API 可用（舊系統）、反機器人防護會擋下 Selenium、需要視覺判斷（圖表驗證、PDF 版面）、UI 變化速度快到 selector 難以維護，或工作流程橫跨多個桌面應用程式。
 
-### 1. Misclicks (Wrong Coordinates)
-
-The model calculates coordinates from the screenshot but may miss by a few pixels:
-- **Mitigation**: Use `screenshot` after every click to verify the expected state change occurred.
-- **Recovery**: If the wrong element was clicked, the model can reason about the new state and correct course.
-
-### 2. Stale Screenshots
-
-The screen may have changed between capture and action execution (animations, popups, loading):
-- **Mitigation**: Add a short wait before screenshots. Use the `wait` action when pages are loading.
-- **Recovery**: Re-capture and re-assess before continuing.
-
-### 3. Infinite Loops
-
-The model repeats the same action without making progress:
-- **Mitigation**: Set a maximum iteration count (e.g., 50 actions per task).
-- **Recovery**: After N repeated identical actions, force a different approach or escalate to a human.
-
-### 4. Unexpected Dialogs
-
-Cookie banners, popups, permission dialogs appear unexpectedly:
-- **Mitigation**: Include instructions in the system prompt about handling common dialogs.
-- **Recovery**: The model's visual reasoning usually handles these naturally -- it sees the dialog and dismisses it.
-
-### 5. Resolution and Scaling Mismatches
-
-The model was trained at specific resolutions. Mismatches cause coordinate errors:
-- **Mitigation**: Use recommended resolution (1280x800) with display scaling at 100%.
-- **Recovery**: Adjust `display_width_px` and `display_height_px` to match actual display.
-
-### Error Handling Pattern
-
-The agent loop should track action history and detect repeats. If the same action is emitted 3+ times consecutively, inject a message telling the model to try a different approach. Always set a hard maximum iteration count (e.g., 50) and capture a verification screenshot after every action to detect state changes. See the full agent loop in the Code Examples section below.
+**應繼續使用 API 的情況：** 有結構化 API 可用（永遠優先）、延遲很重要（次秒級）、量很大（每小時數千個動作），或必須要有決定性行為（相同輸入得到相同輸出）。
 
 ---
 
-## Performance: Latency, Cost, Throughput
+<a id="error-handling-and-recovery"></a>
+## 錯誤處理與復原
 
-### Latency Breakdown
+Computer-use agents 的失敗方式與 API 型工具不同。主要失敗模式如下：
 
-Each iteration of the agent loop involves:
+<a id="1-misclicks-wrong-coordinates"></a>
+### 1. 點錯（錯誤座標）
+
+模型會根據截圖計算座標，但可能偏差幾個像素：
+- **Mitigation**：每次點擊後都使用 `screenshot` 驗證是否真的發生預期的狀態變化。
+- **Recovery**：如果點到了錯誤元素，模型可以推理新的狀態並修正路徑。
+
+<a id="2-stale-screenshots"></a>
+### 2. 過期截圖
+
+畫面可能在擷取與執行动作之間已經改變（動畫、彈窗、載入中）：
+- **Mitigation**：截圖前先短暫等待。頁面載入時使用 `wait` 動作。
+- **Recovery**：繼續前重新擷取並重新判斷。
+
+<a id="3-infinite-loops"></a>
+### 3. 無限迴圈
+
+模型重複相同動作，卻沒有任何進展：
+- **Mitigation**：設定最大迭代次數（例如每個任務最多 50 個動作）。
+- **Recovery**：若連續 N 次出現相同動作，就強制改用不同方法，或升級交由人工處理。
+
+<a id="4-unexpected-dialogs"></a>
+### 4. 非預期對話框
+
+Cookie 橫幅、彈窗、權限對話框可能會突然出現：
+- **Mitigation**：在 system prompt 中加入處理常見對話框的指示。
+- **Recovery**：模型的視覺推理通常能自然處理這些情況——它會看到對話框並將其關閉。
+
+<a id="5-resolution-and-scaling-mismatches"></a>
+### 5. 解析度與縮放不一致
+
+模型是在特定解析度下訓練的。不一致會導致座標錯誤：
+- **Mitigation**：使用建議解析度（1280x800），並將顯示縮放設為 100%。
+- **Recovery**：調整 `display_width_px` 與 `display_height_px`，使其與實際顯示相符。
+
+<a id="error-handling-pattern"></a>
+### 錯誤處理模式
+
+agent loop 應追蹤動作歷史並偵測重複。如果相同行動連續出現 3 次以上，就注入一則訊息要求模型改用其他方法。務必設定硬性的最大迭代次數（例如 50），並在每次動作後擷取驗證截圖，以偵測狀態變化。完整 agent loop 請見下方的程式碼範例章節。
+
+---
+
+<a id="performance-latency-cost-throughput"></a>
+## 效能：延遲、成本、吞吐量
+
+<a id="latency-breakdown"></a>
+### 延遲拆解
+
+agent loop 的每次迭代都包含：
 
 ```
 Screenshot capture:     ~100ms
@@ -331,55 +355,61 @@ Action execution:        ~100ms
 Total per action:        ~2.5-5.5s
 ```
 
-A typical 10-step task takes 25-55 seconds. Compare this to Playwright which completes the same 10 steps in under 2 seconds.
+一個典型的 10 步任務需要 25-55 秒。相比之下，Playwright 完成相同 10 個步驟通常不到 2 秒。
 
-### Cost Per Action
+<a id="cost-per-action"></a>
+### 每次動作成本
 
-Each action sends a screenshot (~800KB base64) plus conversation history:
+每個動作都會傳送一張截圖（約 800KB 的 base64）加上對話歷史：
 
-| Model | Cost per Action (approx) | Notes |
+| 模型 | 每次動作成本（約略） | 備註 |
 |-------|-------------------------|-------|
-| Claude Sonnet 4 | $0.01-0.03 | Recommended for most tasks |
-| Claude Opus 4 | $0.05-0.15 | Use for complex visual reasoning |
+| Claude Sonnet 4 | $0.01-0.03 | 建議用於大多數任務 |
+| Claude Opus 4 | $0.05-0.15 | 適合複雜視覺推理 |
 
-A 20-step workflow costs roughly $0.20-0.60 with Sonnet, or $1.00-3.00 with Opus.
+使用 Sonnet 時，20 步工作流程大約花費 $0.20-0.60；使用 Opus 則約為 $1.00-3.00。
 
-### Throughput Optimization
+<a id="throughput-optimization"></a>
+### 吞吐量最佳化
 
-- **Parallel sessions**: Run multiple Docker containers for concurrent tasks.
-- **Selective screenshots**: Only capture after uncertain actions; skip after typing text.
-- **Resolution reduction**: Use 1024x768 instead of 1920x1080 to reduce token cost.
-- **Early termination**: Teach the model to signal completion as soon as the goal is verified.
+- **Parallel sessions**：為並行任務執行多個 Docker container。
+- **Selective screenshots**：只在不確定的動作後截圖；輸入文字後可略過。
+- **Resolution reduction**：使用 1024x768 取代 1920x1080，以降低 token 成本。
+- **Early termination**：教模型在確認目標達成後盡早發出完成訊號。
 
 ---
 
-## Real-World Applications
+<a id="real-world-applications"></a>
+## 真實世界應用
 
-| Application | How It Works | Why Computer Use |
+| 應用 | 運作方式 | 為何適合 Computer Use |
 |------------|--------------|------------------|
-| Legacy system integration | Agent navigates mainframe/thick-client UI, extracts data to structured format | No API exists for legacy software |
-| Form filling / data entry | Reads source documents, fills web forms field by field, handles multi-page wizards | Government portals, insurance claims with complex conditional logic |
-| QA and visual testing | Navigates app as a user, verifies visual rendering, reports issues in natural language | Goes beyond pixel-diff -- understands layout and UX |
-| Competitive intelligence | Navigates product pages, captures pricing data from JS-rendered widgets | Works on sites that block traditional scrapers |
+| 舊系統整合 | 代理操作 mainframe/thick-client UI，將資料擷取為結構化格式 | 舊式軟體沒有 API |
+| 表單填寫／資料輸入 | 讀取來源文件，逐欄填入 web form，處理多頁 wizard | 政府入口網站、具有複雜條件邏輯的保險理賠 |
+| QA 與視覺測試 | 像使用者一樣操作 app，驗證視覺呈現，並用自然語言回報問題 | 不只做 pixel-diff——還能理解版面與 UX |
+| 競品情報 | 瀏覽產品頁面，從 JS-rendered widget 擷取價格資料 | 能在封鎖傳統爬蟲的網站上運作 |
 
 ---
 
-## Security Considerations
+<a id="security-considerations"></a>
+## 安全考量
 
-| Risk | What Happens | Mitigation |
+| 風險 | 會發生什麼事 | 緩解方式 |
 |------|-------------|------------|
-| **Visible secrets** | Model sees passwords, sessions, notifications in screenshots | Ephemeral containers, clear credentials after use |
-| **Unrestricted actions** | Agent can run shell commands, navigate anywhere, download files | Firewall rules, read-only FS, session time limits, HITL for destructive ops |
-| **Data exfiltration** | Screenshots sent to LLM provider contain sensitive data | On-premise deployment for regulated industries, mask sensitive UI fields |
-| **Prompt injection via UI** | Malicious site displays text to manipulate the agent | System prompt warnings against following on-screen instructions that contradict the task |
+| **可見的秘密資訊** | 模型會在截圖中看到密碼、工作階段、通知 | 使用短暫性 container，使用後清除憑證 |
+| **不受限制的動作** | 代理可執行 shell 指令、任意導覽、下載檔案 | 防火牆規則、唯讀檔案系統、工作階段時間限制、對破壞性操作採用 HITL |
+| **資料外洩** | 傳送給 LLM 供應商的截圖可能包含敏感資料 | 受監管產業可採 on-premise 部署，遮罩敏感 UI 欄位 |
+| **經由 UI 的 prompt injection** | 惡意網站顯示文字以操控代理 | 在 system prompt 中警告不要遵從與任務衝突的螢幕指示 |
 
-The cardinal rule: **never run computer-use agents on your production workstation or with access to real credentials unless in a fully sandboxed container**.
+最重要的原則：**永遠不要在你的正式工作站上執行 computer-use agents，也不要讓它們接觸真實憑證，除非是在完全沙箱化的 container 中**。
 
 ---
 
-## Code Examples
+<a id="code-examples"></a>
+## 程式碼範例
 
-### Minimal Agent Loop
+<a id="minimal-agent-loop"></a>
+### 最小化 Agent Loop
 
 ```python
 import anthropic, base64, subprocess
@@ -441,7 +471,8 @@ def run_agent(task: str, max_steps: int = 30):
     return ["Max steps reached"]
 ```
 
-### Dockerfile for Sandboxed Environment
+<a id="dockerfile-for-sandboxed-environment"></a>
+### 沙箱化環境的 Dockerfile
 
 ```dockerfile
 FROM ubuntu:22.04
@@ -457,31 +488,35 @@ CMD Xvfb :1 -screen 0 1280x800x24 & sleep 1 && mutter & tint2 & \
 
 ---
 
-## Interview Questions
+<a id="interview-questions"></a>
+## 面試題
 
-### Q: A client has 500 insurance claim PDFs per day that must be entered into a legacy web portal with no API. Design a system using computer-use agents.
+<a id="q-a-client-has-500-insurance-claim-pdfs-per-day-that-must-be-entered-into-a-legacy-web-portal-with-no-api-design-a-system-using-computer-use-agents"></a>
+### Q：某客戶每天有 500 份保險理賠 PDF，必須輸入到一個沒有 API 的舊式 Web 入口網站。請設計一個使用 computer-use agents 的系統。
 
-**Strong answer:**
-I would build a pipeline with three stages. First, a document processing stage using an LLM to extract structured data from the PDFs (claim number, claimant name, amounts, dates). Second, a computer-use agent stage where each claim is processed by a Claude Computer Use agent running in an isolated Docker container with a virtual display. The agent navigates the web portal, fills in the form fields using the extracted data, and captures a confirmation screenshot after submission. Third, a verification stage that uses a separate LLM call to compare the confirmation screenshot against the expected data to catch any entry errors.
+**強答：**
+我會建立一個包含三個階段的 pipeline。第一階段是文件處理，使用 LLM 從 PDF 中擷取結構化資料（理賠編號、申請人姓名、金額、日期）。第二階段是 computer-use agent，讓每份理賠都由在隔離 Docker container 與虛擬顯示器中執行的 Claude Computer Use agent 處理。代理會導覽該 web portal、使用擷取出的資料填寫表單欄位，並在送出後擷取確認截圖。第三階段是驗證，使用獨立的 LLM 呼叫比對確認截圖與預期資料，以捕捉任何輸入錯誤。
 
-For scale, I would run 10-20 containers in parallel, each processing claims sequentially. At roughly 2 minutes per claim with the agent, 20 containers handle 600 claims per 8-hour day. I would add a dead-letter queue for claims that fail after 3 retries, with human review.
+若要擴展，我會平行執行 10-20 個 container，每個 container 依序處理理賠案件。若代理平均每件約需 2 分鐘，20 個 container 在 8 小時工作天內可處理 600 件。我也會加入 dead-letter queue，讓重試 3 次後仍失敗的案件交由人工複查。
 
-Cost at $0.50 per claim (roughly 20 actions at $0.025 each) means $250/day for 500 claims -- likely cheaper than the manual data entry team it replaces.
+若每件理賠成本是 $0.50（約 20 個動作、每次 $0.025），那麼 500 件每天約為 $250——很可能比被取代的人工資料輸入團隊更便宜。
 
-### Q: Compare computer-use agents with Selenium for web automation. When would you choose each?
+<a id="q-compare-computer-use-agents-with-selenium-for-web-automation-when-would-you-choose-each"></a>
+### Q：請比較 computer-use agents 與 Selenium 在 Web 自動化上的差異。你會在什麼情況下選擇各自方案？
 
-**Strong answer:**
-Selenium interacts with the DOM directly -- it is fast, deterministic, and cheap. But it breaks when selectors change, gets blocked by anti-bot systems, and cannot handle tasks requiring visual judgment.
+**強答：**
+Selenium 直接與 DOM 互動——速度快、具決定性、成本低。但只要 selector 改變就容易失效，也會被反機器人系統阻擋，而且無法處理需要視覺判斷的任務。
 
-Computer-use agents are 100x slower and 10x more expensive per action, but they adapt to UI changes because they work with pixels rather than selectors. They handle anti-bot detection better because they generate human-like interaction patterns. And they can reason about visual layouts -- verifying a chart rendered correctly or reading content from a canvas element that Selenium cannot inspect.
+Computer-use agents 每個動作大約慢 100 倍、貴 10 倍，但因為它們處理的是像素而不是 selector，所以能適應 UI 變化。它們也更擅長避開反機器人偵測，因為產生的是更像人類的互動模式。此外，它們能推理視覺版面——例如驗證圖表是否正確渲染，或從 Selenium 無法檢查的 canvas 元素讀取內容。
 
-I would choose Selenium for high-volume, stable workflows where the target site is under my control. I would choose computer-use agents for one-off tasks, third-party sites that change frequently, cross-application desktop workflows, and any task where the human cost of maintaining selectors exceeds the LLM inference cost.
+對於高流量、穩定且目標網站由我掌控的工作流程，我會選擇 Selenium。對於一次性任務、經常變動的第三方網站、跨應用桌面工作流程，以及維護 selector 的人工成本已高於 LLM 推理成本的情境，我會選擇 computer-use agents。
 
-The best production systems use both: Playwright handles the predictable steps (authentication, navigation), and the computer-use agent handles the dynamic steps (interpreting results, making judgment calls).
+最佳的生產系統通常兩者並用：Playwright 處理可預測步驟（驗證、導覽），computer-use agent 則處理動態步驟（解讀結果、進行判斷）。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - Anthropic. "Computer Use Tool" API Documentation (2025)
 - Anthropic. "Bash Tool" and "Text Editor Tool" API Documentation (2025)
@@ -491,4 +526,4 @@ The best production systems use both: Playwright handles the predictable steps (
 
 ---
 
-*Next: [Building Tool-Use Agents](05-building-tool-agents.md)*
+*下一節： [Building Tool-Use Agents](05-building-tool-agents.md)*

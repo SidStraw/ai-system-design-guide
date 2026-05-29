@@ -1,29 +1,33 @@
-# Architecture Patterns for Tool-Use Agents
+<a id="architecture-patterns-for-tool-use-agents"></a>
+# 工具使用代理的架構模式
 
-Every tool-use agent in 2026 -- from OpenClaw to Claude Code to Cursor's Background Agents -- is built on one of a handful of core architecture patterns. Understanding these patterns lets you design agents from first principles rather than copying specific tools. This chapter breaks down each pattern with detailed diagrams, code examples, trade-offs, and guidance on when to use which.
+2026 年的每一個工具使用代理——從 OpenClaw、Claude Code 到 Cursor 的 Background Agents——都建立在少數幾種核心架構模式之一上。理解這些模式，能讓你從第一原理設計代理，而不是只複製特定工具。本章以詳細圖解、程式碼範例、取捨分析，以及何時該選用哪一種模式的指引，逐一拆解這些模式。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Pattern 1: Function/Tool Calling](#pattern-1-functiontool-calling)
-- [Pattern 2: Vision-Based Automation](#pattern-2-vision-based-automation)
-- [Pattern 3: Local Code Execution](#pattern-3-local-code-execution)
-- [Pattern 4: Multi-Agent Tool Orchestration](#pattern-4-multi-agent-tool-orchestration)
-- [Sandboxed vs. Unsandboxed Execution](#sandboxed-vs-unsandboxed-execution)
-- [State Management Across Tool Calls](#state-management-across-tool-calls)
-- [Error Handling and Retry Patterns](#error-handling-and-retry-patterns)
-- [MCP Integration Patterns](#mcp-integration-patterns)
-- [Architecture Decision Tree](#architecture-decision-tree)
-- [System Design Interview Angle](#system-design-interview-angle)
-- [Interview Questions](#interview-questions)
-- [References](#references)
+- [模式 1：函式／工具呼叫](#pattern-1-functiontool-calling)
+- [模式 2：視覺式自動化](#pattern-2-vision-based-automation)
+- [模式 3：本機程式碼執行](#pattern-3-local-code-execution)
+- [模式 4：多代理工具協調](#pattern-4-multi-agent-tool-orchestration)
+- [沙箱化 vs. 非沙箱化執行](#sandboxed-vs-unsandboxed-execution)
+- [跨工具呼叫的狀態管理](#state-management-across-tool-calls)
+- [錯誤處理與重試模式](#error-handling-and-retry-patterns)
+- [MCP 整合模式](#mcp-integration-patterns)
+- [架構決策樹](#architecture-decision-tree)
+- [系統設計面試切入角度](#system-design-interview-angle)
+- [面試問題](#interview-questions)
+- [參考資料](#references)
 
 ---
 
-## Pattern 1: Function/Tool Calling
+<a id="pattern-1-functiontool-calling"></a>
+## 模式 1：函式／工具呼叫
 
-The most widely deployed pattern in production. The LLM decides which tool to call and with what arguments; a framework executes the call; results are fed back into the conversation for the next reasoning step.
+這是目前在正式環境中部署最廣泛的模式。LLM 決定要呼叫哪個工具以及使用哪些參數；框架執行該呼叫；結果再被回饋到對話中，供下一步推理使用。
 
-### Architecture
+<a id="architecture"></a>
+### 架構
 
 ```
 +-------------------------------------------------------------------+
@@ -69,15 +73,17 @@ The most widely deployed pattern in production. The LLM decides which tool to ca
 +-------------------------------------------------------------------+
 ```
 
-### The Three Steps in Detail
+<a id="the-three-steps-in-detail"></a>
+### 三個步驟的細節
 
-**Step 1 -- Schema Presentation**: The model receives a JSON schema describing available tools. In 2026, best practice is to use Dynamic Manifests that fetch only relevant tools based on the user's intent, rather than loading all tool schemas upfront.
+**步驟 1 -- Schema Presentation**：模型會接收到一份 JSON schema，用來描述可用工具。到了 2026 年，最佳實務是使用 Dynamic Manifests，依據使用者意圖只載入相關工具，而不是一開始就把所有工具 schema 全部載入。
 
-**Step 2 -- Intent and Extraction**: The model outputs a structured tool call. This is not free-form text; it is a JSON object with `tool_name` and `arguments` that the framework can parse deterministically.
+**步驟 2 -- Intent and Extraction**：模型輸出結構化的工具呼叫。這不是自由文字，而是包含 `tool_name` 與 `arguments` 的 JSON 物件，讓框架可以做確定性的解析。
 
-**Step 3 -- Execution and Contextualization**: The framework validates arguments (using Pydantic, Zod, or similar), calls the function, and injects the result back into the conversation as a new message with role `tool`.
+**步驟 3 -- Execution and Contextualization**：框架會驗證參數（使用 Pydantic、Zod 或類似工具）、呼叫函式，並把結果以角色為 `tool` 的新訊息注入回對話內容中。
 
-### Code Example: MCP Server + Client
+<a id="code-example-mcp-server-client"></a>
+### 程式碼範例：MCP Server + Client
 
 ```python
 # MCP Server: defines a tool with strict schema
@@ -110,29 +116,33 @@ if response.stop_reason == "tool_use":
     # Feed result back as a tool_result message for the next LLM turn
 ```
 
-### When to Use This Pattern
+<a id="when-to-use-this-pattern"></a>
+### 何時使用這個模式
 
-- API integrations (databases, SaaS tools, internal services)
-- Structured data retrieval and mutation
-- Any workflow where you can define the tool interface upfront
-- Production systems where you need audit trails and input validation
+- API 整合（資料庫、SaaS 工具、內部服務）
+- 結構化資料擷取與修改
+- 任何能事先定義工具介面的工作流程
+- 需要稽核軌跡與輸入驗證的正式環境系統
 
-### Trade-offs
+<a id="trade-offs"></a>
+### 取捨
 
-| Advantage | Disadvantage |
+| 優點 | 缺點 |
 |-----------|--------------|
-| Deterministic execution | Requires tool schema upfront |
-| Easy to audit and log | Cannot interact with arbitrary UIs |
-| Fast (50-200ms per tool call) | Model may hallucinate tool names/args |
-| Works with any LLM that supports tool use | Schema overload with many tools |
+| 可確定性的執行 | 需要預先定義工具 schema |
+| 容易稽核與記錄 | 無法與任意 UI 互動 |
+| 快速（每次工具呼叫 50-200ms） | 模型可能幻想出不存在的工具名稱／參數 |
+| 適用於任何支援 tool use 的 LLM | 工具太多時會有 schema 過載問題 |
 
 ---
 
-## Pattern 2: Vision-Based Automation
+<a id="pattern-2-vision-based-automation"></a>
+## 模式 2：視覺式自動化
 
-The model sees a screenshot of the screen, reasons about what to do, and emits a low-level action (click, type, scroll). The environment executes the action, takes a new screenshot, and the loop repeats. This is how Claude Computer Use and Open Interpreter's Computer API work.
+模型會看到螢幕截圖，推理接下來該做什麼，並輸出低階動作（click、type、scroll）。環境執行動作後，再拍攝新的截圖，然後重複這個循環。這就是 Claude Computer Use 與 Open Interpreter 的 Computer API 的運作方式。
 
-### Architecture
+<a id="architecture-1"></a>
+### 架構
 
 ```
 +-------------------------------------------------------------------+
@@ -174,21 +184,23 @@ The model sees a screenshot of the screen, reasons about what to do, and emits a
 +-------------------------------------------------------------------+
 ```
 
-### The Observe-Reason-Act Cycle
+<a id="the-observe-reason-act-cycle"></a>
+### Observe-Reason-Act 週期
 
-**Observe**: Capture a screenshot of the current screen state. In Claude Computer Use, this is a base64-encoded PNG sent as an image content block. The Zoom Action (new in 2026) allows capturing a high-resolution crop of a specific region for dense UIs.
+**Observe**：擷取目前螢幕狀態的截圖。在 Claude Computer Use 中，這通常是以 base64 編碼的 PNG，作為影像內容區塊傳送。Zoom Action（2026 年新功能）可擷取特定區域的高解析裁切畫面，適合密集型 UI。
 
-**Reason**: The multimodal LLM analyzes the screenshot alongside the task goal and action history. It decides what the next action should be. This step consumes the most tokens.
+**Reason**：多模態 LLM 會結合任務目標與動作歷史來分析截圖，並決定下一步動作。這一步通常消耗最多 token。
 
-**Act**: The model emits a structured action:
-- `left_click(x, y)` -- click at coordinates
-- `type(text)` -- type a string
-- `key(key_combo)` -- press keyboard shortcut
-- `scroll(direction, amount)` -- scroll the page
-- `screenshot()` -- take a new screenshot without acting
-- `zoom(x0, y0, x1, y1)` -- inspect a region at high resolution
+**Act**：模型會輸出結構化動作：
+- `left_click(x, y)` -- 在指定座標點擊
+- `type(text)` -- 輸入字串
+- `key(key_combo)` -- 按下鍵盤快捷鍵
+- `scroll(direction, amount)` -- 捲動畫面
+- `screenshot()` -- 在不執行動作的情況下重新截圖
+- `zoom(x0, y0, x1, y1)` -- 以高解析度檢視某個區域
 
-### Code Example: Computer Use Loop
+<a id="code-example-computer-use-loop"></a>
+### 程式碼範例：Computer Use 迴圈
 
 ```python
 tools = [
@@ -212,29 +224,33 @@ while True:  # The vision-action loop
                 {"type": "tool_result", "tool_use_id": block.id, "content": result}]})
 ```
 
-### When to Use This Pattern
+<a id="when-to-use-this-pattern-1"></a>
+### 何時使用這個模式
 
-- Automating legacy applications with no API
-- End-to-end testing of graphical interfaces
-- Tasks that require interaction with multiple applications
-- Non-developer users who describe tasks in natural language
+- 自動化沒有 API 的舊式應用程式
+- 圖形介面的端對端測試
+- 需要與多個應用程式互動的任務
+- 以自然語言描述任務的非開發者使用者
 
-### Trade-offs
+<a id="trade-offs-1"></a>
+### 取捨
 
-| Advantage | Disadvantage |
+| 優點 | 缺點 |
 |-----------|--------------|
-| Works with any GUI application | Slow (1-3 sec per action step) |
-| No API or integration needed | High token cost (screenshots are large) |
-| Handles dynamic UIs | Misclick risk on dense interfaces |
-| Accessible to non-technical users | Requires sandboxed VM for safety |
+| 可搭配任何 GUI 應用程式使用 | 慢（每個動作步驟 1-3 秒） |
+| 不需要 API 或額外整合 | token 成本高（截圖很大） |
+| 能處理動態 UI | 在密集介面上有誤點風險 |
+| 對非技術使用者友善 | 為了安全需要沙箱化 VM |
 
 ---
 
-## Pattern 3: Local Code Execution
+<a id="pattern-3-local-code-execution"></a>
+## 模式 3：本機程式碼執行
 
-The user describes a task in natural language. The LLM generates code. The code runs on the local machine (or in a sandbox). The output is observed, and the LLM either generates more code or provides the final answer. This is how Open Interpreter and parts of Claude Code work.
+使用者以自然語言描述任務。LLM 產生程式碼。程式碼在本機（或沙箱中）執行。系統觀察輸出後，LLM 會繼續產生更多程式碼，或直接提供最終答案。這就是 Open Interpreter 與 Claude Code 部分能力的運作方式。
 
-### Architecture
+<a id="architecture-2"></a>
+### 架構
 
 ```
 User (NL): "Analyze the CSV and plot the top 10 products"
@@ -255,20 +271,22 @@ User (NL): "Analyze the CSV and plot the top 10 products"
 [LLM Decides] --> Done? Return result. Need more? Generate next code block. (Loop)
 ```
 
-### The NL-Code-Execute-Observe Cycle
+<a id="the-nl-code-execute-observe-cycle"></a>
+### NL-Code-Execute-Observe 週期
 
-**1. Natural Language to Code**: The LLM translates the user's intent into executable code. The code language depends on the task -- Python for data analysis, bash for system operations, JavaScript for web tasks.
+**1. Natural Language to Code**：LLM 會把使用者意圖轉成可執行程式碼。使用哪種語言取決於任務——資料分析用 Python、系統操作用 bash、網頁任務用 JavaScript。
 
-**2. Permission Gate**: Before execution, the user is asked to approve. This is the critical safety mechanism for unsandboxed environments. Implementations vary:
-- **Always ask** (Open Interpreter default): Every code block requires explicit approval
-- **Auto-approve** (trusted mode): Dangerous but fast
-- **Rules-based** (Claude Code model): Allow/deny patterns in configuration. For example: allow `git` commands, deny `rm -rf`
+**2. Permission Gate**：在執行前，會先要求使用者核准。這是非沙箱化環境中最關鍵的安全機制。常見實作包括：
+- **Always ask**（Open Interpreter 預設）：每個程式碼區塊都必須明確核准
+- **Auto-approve**（trusted mode）：危險但快速
+- **Rules-based**（Claude Code 模式）：在設定中定義允許／拒絕規則。例如：允許 `git` 指令，拒絕 `rm -rf`
 
-**3. Execute and Capture**: The code runs in a runtime with full (or restricted) system access. Stdout, stderr, return values, and any generated files are captured.
+**3. Execute and Capture**：程式碼會在具備完整（或受限）系統權限的執行環境中運作。系統會擷取 stdout、stderr、回傳值，以及任何產生的檔案。
 
-**4. Observe and Iterate**: The LLM sees the execution output. If there is an error, it generates a fix. If the output is partial, it generates the next step. This creates a self-correcting loop.
+**4. Observe and Iterate**：LLM 會看到執行輸出。如果出現錯誤，它會產生修正；若輸出只是部分結果，它會產生下一步。這形成一個可自我修正的迴圈。
 
-### Code Example: Code Execution Agent
+<a id="code-example-code-execution-agent"></a>
+### 程式碼範例：Code Execution Agent
 
 ```python
 class CodeExecutionAgent:
@@ -293,29 +311,33 @@ class CodeExecutionAgent:
         return "Max iterations reached."
 ```
 
-### When to Use This Pattern
+<a id="when-to-use-this-pattern-2"></a>
+### 何時使用這個模式
 
-- Data analysis and visualization tasks
-- System administration and DevOps automation
-- File processing and transformation
-- Any task where the user describes "what" and the agent figures out "how"
+- 資料分析與視覺化任務
+- 系統管理與 DevOps 自動化
+- 檔案處理與轉換
+- 使用者只描述「做什麼」，由代理決定「怎麼做」的任務
 
-### Trade-offs
+<a id="trade-offs-2"></a>
+### 取捨
 
-| Advantage | Disadvantage |
+| 優點 | 缺點 |
 |-----------|--------------|
-| Extremely flexible | Security risk if unsandboxed |
-| Self-correcting via observe loop | Model may generate dangerous code |
-| Works offline with local models | Requires user to evaluate code (or trust) |
-| Full system access when needed | Non-deterministic (same prompt, different code) |
+| 極度彈性 | 若未沙箱化則有安全風險 |
+| 可透過 observe 迴圈自我修正 | 模型可能產生危險程式碼 |
+| 可搭配本機模型離線運作 | 需要使用者評估程式碼（或選擇信任） |
+| 有需要時可取得完整系統存取權 | 非確定性（相同提示，產生不同程式碼） |
 
 ---
 
-## Pattern 4: Multi-Agent Tool Orchestration
+<a id="pattern-4-multi-agent-tool-orchestration"></a>
+## 模式 4：多代理工具協調
 
-Instead of one agent with many tools, you have multiple specialized agents that each own a subset of tools. An orchestrator routes tasks to the right agent. This is the "microservices revolution" for agents.
+與其使用一個擁有許多工具的代理，不如使用多個各自負責一部分工具的專門代理。協調器會把任務路由到正確的代理。這可說是代理世界的「微服務革命」。
 
-### Architecture
+<a id="architecture-3"></a>
+### 架構
 
 ```
   [User Request]
@@ -336,17 +358,19 @@ Instead of one agent with many tools, you have multiple specialized agents that 
 (Docker)   (Docker)   (Docker)
 ```
 
-### Orchestration Strategies
+<a id="orchestration-strategies"></a>
+### 協調策略
 
-**1. Router-Based (Simplest)**: The orchestrator is a classifier. It looks at the user's message, picks the right specialist agent, and forwards the entire task. No inter-agent communication.
+**1. Router-Based（最簡單）**：協調器本身是分類器。它查看使用者訊息、選出正確的專家代理，並把整個任務轉交出去。不需要代理彼此溝通。
 
-**2. Plan-and-Execute**: A planning model (frontier-class) breaks the task into subtasks and assigns each to the appropriate specialist. Subtask results are aggregated by the planner. Benchmarks show 92% task completion with 3.6x speedup over sequential ReAct.
+**2. Plan-and-Execute**：規劃模型（frontier-class）會把任務拆成子任務，並指派給合適的專家。最後再由規劃者彙整子任務結果。基準測試顯示，相較於序列式 ReAct，這種方式能達到 92% 的任務完成率與 3.6 倍速度提升。
 
-**3. Hierarchical**: High-level agents assign work to lower-level agents, which may further delegate. This mirrors organizational structures and works well for complex projects.
+**3. Hierarchical**：高階代理把工作分派給低階代理，而低階代理還可以再往下委派。這很像組織結構，特別適合複雜專案。
 
-**4. Collaborative (Peer-to-Peer)**: Agents can communicate with each other directly, sharing observations and requesting help. This is the most complex pattern but handles emergent tasks well.
+**4. Collaborative（Peer-to-Peer）**：代理可以彼此直接溝通、分享觀察，並互相請求協助。這是最複雜的模式，但很適合處理具湧現性的任務。
 
-### Cost Optimization: The Plan-and-Execute Advantage
+<a id="cost-optimization-the-plan-and-execute-advantage"></a>
+### 成本最佳化：Plan-and-Execute 的優勢
 
 ```
 Traditional: [Frontier Model] handles all steps       Cost: $1.00/task
@@ -359,15 +383,17 @@ Plan-and-Execute:
                                                       Savings: ~87%
 ```
 
-The 2026 trend is treating agent cost optimization as a first-class concern, similar to how cloud cost optimization became essential in the microservices era.
+2026 年的趨勢，是把代理成本最佳化視為一級設計考量，就像微服務時代裡雲端成本最佳化變得不可或缺一樣。
 
 ---
 
-## Sandboxed vs. Unsandboxed Execution
+<a id="sandboxed-vs-unsandboxed-execution"></a>
+## 沙箱化 vs. 非沙箱化執行
 
-This is the most consequential architecture decision for any tool-use agent.
+對任何工具使用代理來說，這都是影響最深遠的架構決策。
 
-### Comparison
+<a id="comparison"></a>
+### 比較
 
 ```
   UNSANDBOXED (Host Access)              SANDBOXED (Isolated)
@@ -384,36 +410,41 @@ This is the most consequential architecture decision for any tool-use agent.
   +------------------------+             +------------------------+
 ```
 
-### Sandbox Implementation Options
+<a id="sandbox-implementation-options"></a>
+### 沙箱實作選項
 
-| Technology | Isolation Level | Startup Time | Use Case |
+| 技術 | 隔離等級 | 啟動時間 | 使用情境 |
 |------------|----------------|-------------|----------|
-| Docker | Process + FS | 1-5 sec | Most agent sandboxes (OpenHands) |
-| Firecracker | Full VM (microVM) | ~125ms | High-security, multi-tenant |
-| gVisor | Kernel-level | ~200ms | Google Cloud Run |
-| E2B | Cloud sandbox | 2-3 sec | Remote agent execution |
-| WebAssembly | Language-level | <50ms | Browser-based execution |
+| Docker | 程序 + FS | 1-5 秒 | 多數代理沙箱（OpenHands） |
+| Firecracker | 完整 VM（microVM） | 約 125ms | 高安全、多租戶 |
+| gVisor | 核心層級 | 約 200ms | Google Cloud Run |
+| E2B | 雲端沙箱 | 2-3 秒 | 遠端代理執行 |
+| WebAssembly | 語言層級 | <50ms | 瀏覽器內執行 |
 
-### The 2026 Consensus
+<a id="the-2026-consensus"></a>
+### 2026 年共識
 
-Sandboxed-by-default with escape hatches. The OpenClaw security crisis (135,000 exposed instances on the public internet) has made the industry take this seriously. New production agents are expected to sandbox by default. Unsandboxed execution is reserved for single-user, supervised environments.
+預設採用沙箱，必要時再提供 escape hatch。OpenClaw 的安全危機（135,000 個暴露在公網上的實例）讓整個產業開始嚴肅看待這件事。新的正式環境代理預期都應該預設啟用沙箱；非沙箱化執行則保留給單一使用者、有人監督的環境。
 
 ---
 
-## State Management Across Tool Calls
+<a id="state-management-across-tool-calls"></a>
+## 跨工具呼叫的狀態管理
 
-Agents need to maintain state between tool calls. The strategy depends on the agent's lifecycle and use case.
+代理需要在工具呼叫之間維持狀態。應採用哪種策略，取決於代理生命週期與使用情境。
 
-### State Management Patterns
+<a id="state-management-patterns"></a>
+### 狀態管理模式
 
-| Pattern | Lifecycle | Storage | Used By |
+| 模式 | 生命週期 | 儲存位置 | 使用者 |
 |---------|-----------|---------|---------|
-| **Conversation State** | Ephemeral (single conversation) | Message array | Most API-based agents |
-| **Session State** | Per-session (working dir, open files) | Docker container / temp dir | OpenHands, Claude Code |
-| **Persistent State** | Cross-session (days, weeks) | DB, files, Markdown | OpenClaw (Memories/), CLAUDE.md |
-| **Environment State** | External (source of truth) | Git repo, database, FS | Claude Code (git status), CI/CD |
+| **Conversation State** | 短暫（單次對話） | 訊息陣列 | 多數 API 型代理 |
+| **Session State** | 每個 session（工作目錄、開啟檔案） | Docker container / temp dir | OpenHands、Claude Code |
+| **Persistent State** | 跨 session（數天、數週） | DB、檔案、Markdown | OpenClaw（Memories/）、CLAUDE.md |
+| **Environment State** | 外部（事實來源） | Git repo、database、FS | Claude Code（`git status`）、CI/CD |
 
-### Implementation: Session State
+<a id="implementation-session-state"></a>
+### 實作：Session State
 
 ```python
 class AgentSession:
@@ -441,21 +472,24 @@ class AgentSession:
 
 ---
 
-## Error Handling and Retry Patterns
+<a id="error-handling-and-retry-patterns"></a>
+## 錯誤處理與重試模式
 
-Tool calls fail. Networks time out. APIs return errors. Code throws exceptions. A production agent needs systematic error handling.
+工具呼叫會失敗。網路會逾時。API 會回傳錯誤。程式碼會丟出例外。正式環境代理需要系統化的錯誤處理機制。
 
-### Error Taxonomy
+<a id="error-taxonomy"></a>
+### 錯誤分類
 
-| Error Type | Examples | Strategy |
+| 錯誤類型 | 範例 | 策略 |
 |-----------|----------|----------|
-| **Transient** | Network timeout, rate limit, 503 | Exponential backoff retry (max 3) |
-| **Input** | Invalid args, wrong format | Feed error to LLM, let it fix args |
-| **Permission** | Auth failure, access denied | Report to user, do NOT retry |
-| **Logic** | Wrong tool, impossible op | Feed error to LLM, let it re-plan |
-| **Catastrophic** | OOM, sandbox crash, infinite loop | Abort, report, clean up resources |
+| **Transient** | 網路逾時、rate limit、503 | 指數退避重試（最多 3 次） |
+| **Input** | 參數無效、格式錯誤 | 把錯誤回饋給 LLM，讓它修正參數 |
+| **Permission** | 驗證失敗、存取遭拒 | 回報給使用者，**不要**重試 |
+| **Logic** | 工具選錯、操作不可能完成 | 把錯誤回饋給 LLM，讓它重新規劃 |
+| **Catastrophic** | OOM、沙箱崩潰、無限迴圈 | 中止、回報並清理資源 |
 
-### Retry Pattern Implementation
+<a id="retry-pattern-implementation"></a>
+### 重試模式實作
 
 ```python
 class ToolExecutor:
@@ -485,9 +519,10 @@ class ToolExecutor:
         return {"error": f"Failed after {self.MAX_RETRIES} retries"}
 ```
 
-### The Self-Correction Loop
+<a id="the-self-correction-loop"></a>
+### 自我修正迴圈
 
-The most powerful error handling pattern in 2026. The agent observes its own failures and autonomously fixes them:
+這是 2026 年最強大的錯誤處理模式。代理會觀察自己的失敗，並自主修正：
 
 ```
 LLM generates code/tool call
@@ -500,31 +535,35 @@ LLM generates code/tool call
               (max 5 corrections to prevent infinite loops)
 ```
 
-This is how Claude Code, OpenHands, and Cline handle test failures: run tests, see failures, edit code, re-run tests, repeat until green.
+這就是 Claude Code、OpenHands 與 Cline 處理測試失敗的方式：執行測試、看見失敗、編輯程式碼、重新跑測試，反覆進行直到全部變綠。
 
 ---
 
-## MCP Integration Patterns
+<a id="mcp-integration-patterns"></a>
+## MCP 整合模式
 
-MCP has become the standard protocol for tool integration in 2026. Here are the key patterns for integrating MCP into agent architectures.
+MCP 已成為 2026 年工具整合的標準協定。以下是把 MCP 整合進代理架構時的幾個關鍵模式。
 
-### Pattern A: Direct MCP Connection
+<a id="pattern-a-direct-mcp-connection"></a>
+### 模式 A：直接連線到 MCP
 
 ```
 [Agent (Client)] <-- stdio / HTTP --> [MCP Server]
 ```
-Simplest pattern. One agent, one server. Used for single-purpose tools (database, file system).
+最簡單的模式。一個代理、一個伺服器。適用於單一用途工具（資料庫、檔案系統）。
 
-### Pattern B: Multi-Server Fan-Out
+<a id="pattern-b-multi-server-fan-out"></a>
+### 模式 B：多伺服器 Fan-Out
 
 ```
                   +--> [GitHub MCP]
 [Agent (Client)]--+--> [Postgres MCP]
                   +--> [Slack MCP]
 ```
-Agent connects to multiple MCP servers simultaneously. Tool schemas are merged into one manifest. Used by Claude Code and multi-tool assistants.
+代理會同時連到多個 MCP 伺服器。工具 schema 會被合併為一份 manifest。Claude Code 與多工具助理都採用這種方式。
 
-### Pattern C: MCP Gateway (Enterprise)
+<a id="pattern-c-mcp-gateway-enterprise"></a>
+### 模式 C：MCP Gateway（企業版）
 
 ```
 [Agent 1] --+                          +--> [GitHub MCP]
@@ -532,23 +571,25 @@ Agent connects to multiple MCP servers simultaneously. Tool schemas are merged i
 [Agent 3] --+    (Auth, Rate Limit,    +--> [Slack MCP]
                   Audit, Route)
 ```
-Central gateway handles auth, rate limiting, and audit logging. Agents authenticate only with the gateway. Used for enterprise and multi-tenant deployments.
+中央 gateway 會處理 auth、rate limiting 與 audit logging。代理只需要向 gateway 驗證。這種方式常見於企業與多租戶部署。
 
-### MCP Roadmap Gaps
+<a id="mcp-roadmap-gaps"></a>
+### MCP 路線圖缺口
 
-The current MCP specification (as of May 2026) is missing three critical production primitives:
+目前的 MCP 規格（截至 2026 年 5 月）仍缺少三個關鍵的正式環境原語：
 
-1. **Identity Propagation**: No standardized way to pass user identity from client through to server. The gateway pattern is a workaround.
-2. **Adaptive Tool Budgeting**: No protocol-level support for limiting token/cost consumption per tool call.
-3. **Structured Error Semantics**: No standard error codes or error categories. Each server defines its own error format.
+1. **Identity Propagation**：缺乏從 client 經由 server 傳遞使用者身分的標準化方式。gateway 模式是目前的變通方案。
+2. **Adaptive Tool Budgeting**：協定層沒有提供限制單次工具呼叫 token／成本消耗的能力。
+3. **Structured Error Semantics**：沒有標準錯誤碼或錯誤分類。每個 server 都定義自己的錯誤格式。
 
-These are on the 2026 roadmap but not yet ratified.
+這些項目都在 2026 路線圖中，但尚未正式核准。
 
 ---
 
-## Architecture Decision Tree
+<a id="architecture-decision-tree"></a>
+## 架構決策樹
 
-Use this decision tree to select the right pattern for your use case:
+使用這個決策樹為你的使用情境選出正確模式：
 
 ```
 Does the target system have an API?
@@ -562,77 +603,89 @@ Does the target system have an API?
                                         +-- NO  --> Pattern 1 with custom tool.
 ```
 
-### Hybrid Architectures
+<a id="hybrid-architectures"></a>
+### 混合式架構
 
-In practice, production systems combine patterns. Claude Code uses:
-- Pattern 1 (tool calling) for file operations and git
-- Pattern 2 (vision-based) for computer use features
-- Pattern 3 (code execution) for bash and test running
-- Pattern 4 (multi-agent) for subagent spawning
+在實務上，正式環境系統會混合使用多種模式。Claude Code 會使用：
+- 模式 1（工具呼叫）處理檔案操作與 git
+- 模式 2（視覺式）處理 computer use 功能
+- 模式 3（程式碼執行）處理 bash 與測試執行
+- 模式 4（多代理）處理 subagent 啟動
 
-The key is to default to the simplest pattern (function calling) and only add complexity when the use case demands it.
-
----
-
-## System Design Interview Angle
-
-When discussing tool-use architecture in interviews, structure your answer around these five dimensions:
-
-### 1. Pattern Selection
-
-Start by identifying which pattern fits: "The target system has a REST API, so I would use the function/tool calling pattern with an MCP server wrapping the API." This shows you understand the decision tree.
-
-### 2. Sandbox Boundary
-
-Always address security: "For a multi-tenant deployment, I would sandbox each user's agent session in a Docker container with no network access to internal services. The MCP server runs outside the sandbox and mediates all external calls."
-
-### 3. State Strategy
-
-Explain how state is managed: "I would use session state within the Docker container for working files, and environment state (the git repo) as the source of truth. No persistent agent memory needed for this use case."
-
-### 4. Error Budget
-
-Discuss failure modes: "Tool calls can fail due to transient errors (retry with backoff), input errors (let the LLM self-correct), or permission errors (surface to user). I would set a max of 5 self-correction attempts before escalating."
-
-### 5. Cost Model
-
-Address economics: "For the orchestrator, I would use the Plan-and-Execute pattern: Opus plans the task, Haiku executes each step. This reduces cost by roughly 87% compared to using Opus for everything."
+關鍵原則是：預設先使用最簡單的模式（function calling），只有在使用情境真的需要時才增加複雜度。
 
 ---
 
-## Interview Questions
+<a id="system-design-interview-angle"></a>
+## 系統設計面試切入角度
 
-### Q: Design a system that lets a customer support agent answer questions using data from Zendesk, Salesforce, and an internal knowledge base.
+在面試中討論工具使用架構時，可以用以下五個維度來組織你的回答：
 
-**Strong answer:**
-Pattern 1 (function/tool calling) with three MCP servers, one per data source. Use the Multi-Server Fan-Out pattern with dynamic manifests so only relevant tools load per query. For production, add an MCP Gateway to handle OAuth per data source, rate limiting (critical for Salesforce API limits), and audit logging. State is ephemeral -- customer support does not need cross-session memory.
+<a id="1-pattern-selection"></a>
+### 1. 模式選擇
 
-### Q: How would you prevent an AI agent from causing damage through tool calls?
+先辨識適合的模式：「目標系統有 REST API，所以我會使用 function/tool calling 模式，並用 MCP server 包住 API。」這能展現你理解整個決策樹。
 
-**Strong answer:**
-Defense in depth across five layers: (1) Schema constraints with deny-patterns (regex rejecting `DROP TABLE`, etc.). (2) Permission gate for destructive operations -- Claude Code's allow/deny rules are a good model. (3) Sandbox isolation (Docker with read-only mounts, no outbound network). (4) Token and cost caps to prevent runaway loops. (5) Audit trail via the MCP Gateway pattern. No single layer is sufficient -- the model can hallucinate args that pass validation (need sandbox), the sandbox cannot prevent exfiltration through allowed paths (need audit logging).
+<a id="2-sandbox-boundary"></a>
+### 2. 沙箱邊界
 
-### Q: Explain the trade-offs between vision-based computer use and API-based tool calling.
+一定要談安全性：「若是多租戶部署，我會把每位使用者的代理 session 放進 Docker container 中執行，並切斷它對內部服務的網路存取。MCP server 則跑在沙箱外，負責中介所有外部呼叫。」
 
-**Strong answer:**
-API-based is faster (50-200ms vs. 1-3s per step), cheaper (text vs. image tokens), more reliable (deterministic vs. coordinate-clicking), and easier to test. Always prefer it when an API exists. Vision-based is the fallback for applications without APIs, legacy systems, or multi-app workflows. The 2026 Zoom Action mitigates misclicks on dense UIs. Best practice: API calls for the 80% of tasks with API support, vision-based for the remaining 20%.
+<a id="3-state-strategy"></a>
+### 3. 狀態策略
+
+說明狀態如何管理：「我會在 Docker container 內使用 session state 來管理工作檔案，並把 environment state（git repo）作為事實來源。這個使用情境不需要持久化的代理記憶。」
+
+<a id="4-error-budget"></a>
+### 4. 錯誤預算
+
+討論失敗模式：「工具呼叫可能因 transient error 失敗（以 backoff 重試）、因 input error 失敗（讓 LLM 自我修正），或因 permission error 失敗（直接呈現給使用者）。在升級處理前，我會把自我修正嘗試上限設為 5 次。」
+
+<a id="5-cost-model"></a>
+### 5. 成本模型
+
+說明經濟面：「對 orchestrator 來說，我會用 Plan-and-Execute 模式：由 Opus 規劃任務，再由 Haiku 執行每個步驟。與全部都用 Opus 相比，成本大約可降低 87%。」
 
 ---
 
-## References
+<a id="interview-questions"></a>
+## 面試問題
 
-- Anthropic. "Computer Use Tool Documentation" (2024-2026)
-- Anthropic. "Model Context Protocol Specification" (2025-2026)
-- MCP 2026 Roadmap. "Transport Evolution, Agent Communication, Governance" (2026)
-- IBM Developer. "MCP Architecture Patterns for Multi-Agent AI Systems" (2026)
-- Google Cloud. "Choose a Design Pattern for Your Agentic AI System" (2025-2026)
-- Microsoft Azure. "AI Agent Orchestration Patterns" (2025-2026)
-- OpenHands Documentation. "Runtime Architecture" (2025-2026)
-- OpenClaw Documentation. "Architecture and SOUL.md Guide" (2025-2026)
+<a id="q-design-a-system-that-lets-a-customer-support-agent-answer-questions-using-data-from-zendesk-salesforce-and-an-internal-knowledge-base"></a>
+### 問：設計一個系統，讓客服代理能使用 Zendesk、Salesforce 與內部知識庫的資料回答問題。
+
+**較強的回答：**
+採用模式 1（function/tool calling），並為每個資料來源各設一個 MCP server。使用 Multi-Server Fan-Out 模式，再搭配 dynamic manifests，讓每次查詢只載入相關工具。若要上正式環境，再加入 MCP Gateway 來處理各資料來源的 OAuth、rate limiting（尤其 Salesforce API 限額很關鍵）與 audit logging。狀態採短暫型即可——客服情境不需要跨 session 記憶。
+
+<a id="q-how-would-you-prevent-an-ai-agent-from-causing-damage-through-tool-calls"></a>
+### 問：你會如何防止 AI 代理透過工具呼叫造成破壞？
+
+**較強的回答：**
+採用五層式深度防禦：（1）Schema 約束與 deny-patterns（例如用 regex 拒絕 `DROP TABLE` 等）。（2）對破壞性操作設置 permission gate——Claude Code 的 allow/deny 規則就是很好的範例。（3）沙箱隔離（Docker 搭配唯讀掛載、禁止對外網路）。（4）token 與成本上限，避免失控迴圈。（5）透過 MCP Gateway 模式建立 audit trail。任何單一層都不夠——模型可能幻想出能通過驗證的參數（所以需要沙箱），而沙箱也無法阻止透過允許路徑進行資料外洩（所以需要 audit logging）。
+
+<a id="q-explain-the-trade-offs-between-vision-based-computer-use-and-api-based-tool-calling"></a>
+### 問：說明 vision-based computer use 與 API-based tool calling 之間的取捨。
+
+**較強的回答：**
+API-based 方式更快（每步 50-200ms vs. 1-3 秒）、更便宜（文字 token vs. 圖像 token）、更可靠（確定性 vs. 座標點擊），也更容易測試。只要有 API，就應優先使用。vision-based 則是沒有 API 的應用程式、legacy systems 或跨多個應用的工作流程之後備方案。2026 年的 Zoom Action 能降低密集 UI 上誤點的問題。最佳實務是：對具備 API 支援的 80% 任務使用 API 呼叫，對剩下的 20% 使用 vision-based。
+
+---
+
+<a id="references"></a>
+## 參考資料
+
+- Anthropic.「Computer Use Tool Documentation」(2024-2026)
+- Anthropic.「Model Context Protocol Specification」(2025-2026)
+- MCP 2026 Roadmap.「Transport Evolution, Agent Communication, Governance」(2026)
+- IBM Developer.「MCP Architecture Patterns for Multi-Agent AI Systems」(2026)
+- Google Cloud.「Choose a Design Pattern for Your Agentic AI System」(2025-2026)
+- Microsoft Azure.「AI Agent Orchestration Patterns」(2025-2026)
+- OpenHands Documentation.「Runtime Architecture」(2025-2026)
+- OpenClaw Documentation.「Architecture and SOUL.md Guide」(2025-2026)
 - Open Interpreter GitHub Repository (2024-2026)
-- ArXiv 2603.13417. "Design Patterns for Deploying AI Agents with MCP" (2026)
+- ArXiv 2603.13417.「Design Patterns for Deploying AI Agents with MCP」(2026)
 
 ---
 
-*Previous: [Tool-Use and Computer Agent Landscape](01-tool-use-landscape.md)*
-*Next Chapter: [Case Studies](../16-case-studies/)*
+*上一節：[工具使用與電腦代理版圖](01-tool-use-landscape.md)*
+*下一章：[案例研究](../16-case-studies/)*

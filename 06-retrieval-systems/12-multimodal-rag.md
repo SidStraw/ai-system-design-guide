@@ -1,44 +1,49 @@
-# Multi-Modal RAG
+<a id="multi-modal-rag"></a>
+# 多模態 RAG
 
-Multi-modal RAG extends retrieval-augmented generation beyond plain text to handle images, tables, charts, audio, and mixed-layout documents. Production systems now routinely ingest PDFs with diagrams, slide decks, scanned invoices, and research papers where the visual layout *is* the meaning. Three architectures dominate: caption-and-index, unified vision-text embeddings (Cohere Embed v4, Voyage-Multimodal-3.5, Gemini Embedding 001), and page-as-image with late interaction (ColPali, ColQwen2.5, ColNomic).
+多模態 RAG 將 retrieval-augmented generation 從純文字擴展到可處理影像、表格、圖表、音訊，以及混合版面文件。如今正式環境系統經常需要匯入包含圖解的 PDF、簡報、掃描發票，以及研究論文，而這些文件中的視覺版面本身 *就是* 意義所在。當前主流有三種架構：caption-and-index、統一式 vision-text embedding（Cohere Embed v4、Voyage-Multimodal-3.5、Gemini Embedding 001），以及以 page-as-image 搭配 late interaction 的做法（ColPali、ColQwen2.5、ColNomic）。
 
-## Table of Contents
+<a id="table-of-contents"></a>
+## 目錄
 
-- [Why Text-Only RAG Fails](#why-text-only-rag-fails)
-- [Architecture Patterns](#architecture-patterns)
-- [Multi-Modal Embedding Strategies](#multi-modal-embedding-strategies)
-- [Vision-Language Models for Document Understanding](#vision-language-models)
-- [ColPali and Vision-Based Retrieval](#colpali)
-- [Table Extraction and Structured Data Retrieval](#table-extraction)
-- [Chart and Diagram Understanding](#chart-understanding)
-- [Production Architecture](#production-architecture)
-- [Implementation Example](#implementation-example)
-- [System Design Interview Angle](#system-design-interview-angle)
-- [References](#references)
+- [為什麼純文字 RAG 會失敗](#why-text-only-rag-fails)
+- [架構模式](#architecture-patterns)
+- [多模態嵌入策略](#multi-modal-embedding-strategies)
+- [用於文件理解的 Vision-Language Models](#vision-language-models)
+- [ColPali 與視覺式檢索](#colpali)
+- [表格擷取與結構化資料檢索](#table-extraction)
+- [圖表與示意圖理解](#chart-understanding)
+- [正式環境架構](#production-architecture)
+- [實作範例](#implementation-example)
+- [系統設計面試角度](#system-design-interview-angle)
+- [參考資料](#references)
 
 ---
 
-## Why Text-Only RAG Fails
+<a id="why-text-only-rag-fails"></a>
+## 為什麼純文字 RAG 會失敗
 
-Traditional RAG pipelines parse documents into text chunks, embed them, and retrieve against a text query. This breaks on real-world documents:
+傳統 RAG pipeline 會把文件解析成文字 chunk、做 embedding，然後根據文字查詢來檢索。但這種做法在真實世界文件上會失效：
 
-| Document Element | Text-Only RAG Behavior | Actual Information Lost |
+| 文件元素 | 純文字 RAG 的表現 | 實際遺失的資訊 |
 |-----------------|----------------------|------------------------|
-| **Bar Chart** | Extracts axis labels only | Trends, comparisons, magnitudes |
-| **Architecture Diagram** | Misses entirely | Component relationships, data flow |
-| **Table** | Flattened rows lose structure | Row-column associations, headers |
-| **Infographic** | Captures scattered text fragments | Visual hierarchy, spatial groupings |
-| **Photo with Caption** | Gets caption, loses image | Visual evidence, spatial context |
+| **長條圖** | 只抽出座標軸標籤 | 趨勢、比較、數值量級 |
+| **架構圖** | 完全漏掉 | 元件關係、資料流 |
+| **表格** | 壓平的列失去結構 | 列欄關聯、表頭 |
+| **資訊圖表** | 只抓到零散文字片段 | 視覺層級、空間分組 |
+| **附圖說的照片** | 只拿到圖說、失去影像 | 視覺證據、空間脈絡 |
 
-**Reality**: Enterprise documents are 40-60% non-textual content. A financial report's value is in its charts. A medical paper's key finding is in its figures. Ignoring visual content means ignoring most of the knowledge.
+**現實**：企業文件中有 40–60% 屬於非文字內容。財報的價值在圖表；醫學論文的關鍵發現往往在 figures。忽略視覺內容，就等於忽略了大部分知識。
 
 ---
 
-## Architecture Patterns
+<a id="architecture-patterns"></a>
+## 架構模式
 
-There are three dominant patterns for multi-modal RAG, each with distinct trade-offs:
+多模態 RAG 主要有三種模式，各自有明確的取捨：
 
-### Pattern 1: Unified Embedding Space
+<a id="pattern-1-unified-embedding-space"></a>
+### 模式 1：統一嵌入空間
 
 ```
                      Shared Vector Space
@@ -51,11 +56,12 @@ There are three dominant patterns for multi-modal RAG, each with distinct trade-
   Query "show revenue trends" --> encode --> nearest neighbors across ALL modalities
 ```
 
-- **How**: Use a model like CLIP or SigLIP to project text and images into the same vector space.
-- **Pros**: Single index, single query, simple retrieval logic.
-- **Cons**: Embedding quality varies across modalities; tables need serialization.
+- **作法**：使用像 CLIP 或 SigLIP 這類模型，將文字與影像投影到同一個向量空間。
+- **優點**：單一索引、單一查詢、檢索邏輯簡單。
+- **缺點**：不同模態的 embedding 品質不一致；表格仍需序列化。
 
-### Pattern 2: Modality-Specific Retrieval with Fusion
+<a id="pattern-2-modality-specific-retrieval-with-fusion"></a>
+### 模式 2：依模態分開檢索，再做融合
 
 ```
   Query --> +----> Text Index    --> Top-K text chunks
@@ -68,11 +74,12 @@ There are three dominant patterns for multi-modal RAG, each with distinct trade-
         Fusion / Reranking Layer --> Combined Top-K --> VLM Generator
 ```
 
-- **How**: Separate embeddings and indices per modality. A reranker or reciprocal rank fusion (RRF) merges results.
-- **Pros**: Best-in-class embeddings per modality; can tune each retriever independently.
-- **Cons**: More infra complexity; fusion logic is non-trivial.
+- **作法**：每種模態使用獨立的 embedding 與索引，最後由 reranker 或 reciprocal rank fusion（RRF）合併結果。
+- **優點**：每種模態都可用最佳 embedding；每個 retriever 都能獨立調校。
+- **缺點**：基礎設施更複雜；融合邏輯不容易。
 
-### Pattern 3: Vision-First (Page-as-Image)
+<a id="pattern-3-vision-first-page-as-image"></a>
+### 模式 3：Vision-First（Page-as-Image）
 
 ```
   Document Page --> Screenshot/Render --> Vision Encoder --> Multi-vector Index
@@ -81,41 +88,46 @@ There are three dominant patterns for multi-modal RAG, each with distinct trade-
                                                     --> Retrieve top pages
 ```
 
-- **How**: Treat every document page as an image. Use a vision-language model (e.g., ColPali) to create patch-level embeddings. Score via late interaction (MaxSim).
-- **Pros**: No OCR, no layout parsing, no table extraction pipeline. End-to-end trainable.
-- **Cons**: Higher compute at indexing; loses fine-grained text search.
+- **作法**：把每一頁文件都當作影像處理。使用 vision-language model（例如 ColPali）建立 patch-level embedding，再透過 late interaction（MaxSim）評分。
+- **優點**：不需要 OCR、不需要版面解析、也不需要表格擷取 pipeline，可端到端訓練。
+- **缺點**：索引時計算量較高；細粒度文字搜尋能力較弱。
 
-**Recommendation**: Pattern 3 (vision-first) is gaining ground fast for document-heavy use cases. Pattern 2 remains the production workhorse when you need precise text search alongside visual retrieval.
+**建議**：在文件密集場景中，模式 3（vision-first）正在快速成為主流；若你同時需要精準文字搜尋與視覺檢索，模式 2 仍是目前最穩定的正式環境主力。
 
 ---
 
-## Multi-Modal Embedding Strategies
+<a id="multi-modal-embedding-strategies"></a>
+## 多模態嵌入策略
 
-### CLIP (Contrastive Language-Image Pretraining)
+<a id="clip-contrastive-language-image-pretraining"></a>
+### CLIP（Contrastive Language-Image Pretraining）
 
-The original dual-encoder that maps text and images to a shared 512/768-dim space.
+這是最早將文字與影像映射到共享 512/768 維空間的 dual-encoder。
 
-- **Strengths**: Huge ecosystem, well-understood, many fine-tuned variants.
-- **Weaknesses**: Weaker on document-style images (charts, tables) vs. natural photos. Contrastive loss requires large batch sizes.
+- **優勢**：生態系龐大、理解成熟、已有許多微調版本。
+- **弱點**：對文件型影像（圖表、表格）不如對自然照片表現好；contrastive loss 需要較大的 batch size。
 
+<a id="siglip--siglip-2"></a>
 ### SigLIP / SigLIP 2
 
-Replaces CLIP's softmax cross-entropy with a sigmoid loss, allowing each image-text pair to be evaluated independently.
+它以 sigmoid loss 取代 CLIP 的 softmax cross-entropy，讓每組 image-text pair 都能獨立評估。
 
-- **SigLIP 2 (2025)**: Adds captioning decoders, self-distillation, and masked prediction. Trained on 10B+ images across 109 languages.
-- **Key Win**: Outperforms CLIP at small batch sizes (4-8k) and provides denser, more robust features.
-- **Production Use**: National Library of Norway, e-commerce visual search, AI art curation.
+- **SigLIP 2（2025）**：加入 captioning decoder、self-distillation 與 masked prediction，並以 109 種語言、100 億+ 影像進行訓練。
+- **關鍵優勢**：在較小 batch size（4–8k）下仍優於 CLIP，並提供更密集、更穩健的特徵。
+- **正式環境應用**：挪威國家圖書館、電商視覺搜尋、AI 藝術策展。
 
-### Comparison for RAG
+<a id="comparison-for-rag"></a>
+### 用於 RAG 的比較
 
-| Model | Best For | Embedding Dim | Document Quality | Natural Image Quality |
+| 模型 | 最適合 | 嵌入維度 | 文件品質 | 自然影像品質 |
 |-------|----------|--------------|-----------------|----------------------|
-| CLIP ViT-L/14 | General purpose | 768 | Medium | High |
-| SigLIP 2 So400m | Multi-lingual docs | 1152 | High | High |
-| Nomic Embed Vision | Text-heavy docs | 768 | High | Medium |
-| Voyage Multimodal 3 | Mixed documents | 1024 | High | High |
+| CLIP ViT-L/14 | 通用用途 | 768 | 中 | 高 |
+| SigLIP 2 So400m | 多語文件 | 1152 | 高 | 高 |
+| Nomic Embed Vision | 文字密集文件 | 768 | 高 | 中 |
+| Voyage Multimodal 3 | 混合型文件 | 1024 | 高 | 高 |
 
-### Embedding Strategy Decision
+<a id="embedding-strategy-decision"></a>
+### 嵌入策略決策
 
 ```
 Is your content mostly natural images (photos, products)?
@@ -134,22 +146,25 @@ Is it a mix of text, images, and structured data?
 
 ---
 
-## Vision-Language Models for Document Understanding
+<a id="vision-language-models-for-document-understanding"></a>
+## 用於文件理解的 Vision-Language Models
 
-VLMs serve two roles in multi-modal RAG: (1) as the **generator** that synthesizes answers from retrieved multi-modal context, and (2) as the **indexing engine** that extracts structured information at ingestion time.
+VLM 在多模態 RAG 中扮演兩種角色：（1）作為 **generator**，從檢索到的多模態脈絡綜合生成答案；（2）作為 **indexing engine**，在匯入階段萃取結構化資訊。
 
-### VLM Capabilities Comparison
+<a id="vlm-capabilities-comparison"></a>
+### VLM 能力比較
 
-| Capability | Claude Opus 4.7 / Sonnet 4.6 | GPT-5.5 | Gemini 3.1 Pro |
+| 能力 | Claude Opus 4.7 / Sonnet 4.6 | GPT-5.5 | Gemini 3.1 Pro |
 |-----------|------------------------------|---------|----------------|
-| **Chart Reading** | Excellent | Excellent | Excellent |
-| **Table Extraction** | Excellent | Good | Excellent |
-| **Diagram Understanding** | Excellent | Good | Excellent |
-| **Handwriting OCR** | Good | Good | Good |
-| **Multi-page Reasoning** | Excellent (1M ctx on Sonnet 4.6) | Excellent (1M ctx) | Excellent (1M ctx) |
-| **Structured Output** | Native JSON mode | Native JSON mode | Native JSON mode |
+| **圖表閱讀** | 極佳 | 極佳 | 極佳 |
+| **表格擷取** | 極佳 | 良好 | 極佳 |
+| **示意圖理解** | 極佳 | 良好 | 極佳 |
+| **手寫 OCR** | 良好 | 良好 | 良好 |
+| **多頁推理** | 極佳（Sonnet 4.6 可到 1M ctx） | 極佳（1M ctx） | 極佳（1M ctx） |
+| **結構化輸出** | 原生 JSON mode | 原生 JSON mode | 原生 JSON mode |
 
-### VLM-Augmented Ingestion Pipeline
+<a id="vlm-augmented-ingestion-pipeline"></a>
+### VLM 增強式匯入 pipeline
 
 ```
   Raw PDF
@@ -172,15 +187,17 @@ VLMs serve two roles in multi-modal RAG: (1) as the **generator** that synthesiz
     +---> Page images     --> Image embedding index (CLIP/SigLIP)
 ```
 
-This "describe-then-embed" approach converts visual content into searchable text while preserving the original image for the generation step.
+這種「先描述、再嵌入」的方法，能把視覺內容轉成可搜尋文字，同時保留原始影像供生成階段使用。
 
 ---
 
-## ColPali and Vision-Based Retrieval
+<a id="colpali-and-vision-based-retrieval"></a>
+## ColPali 與視覺式檢索
 
-ColPali represents a paradigm shift: instead of building complex OCR + layout + table extraction pipelines, treat each document page as a single image and let a vision-language model handle everything.
+ColPali 代表一種典範轉移：與其建立複雜的 OCR + 版面 + 表格擷取 pipeline，不如把每一頁文件都當成單一影像，交給 vision-language model 全權處理。
 
-### How ColPali Works
+<a id="how-colpali-works"></a>
+### ColPali 如何運作
 
 ```
   Document Page Image
@@ -209,35 +226,40 @@ ColPali represents a paradigm shift: instead of building complex OCR + layout + 
     Score = Sum over query tokens of Max similarity to any patch
 ```
 
-### ColPali vs. Traditional Pipeline
+<a id="colpali-vs-traditional-pipeline"></a>
+### ColPali 與傳統 pipeline 比較
 
-| Aspect | Traditional Pipeline | ColPali |
+| 面向 | 傳統 pipeline | ColPali |
 |--------|---------------------|---------|
-| **OCR** | Required (Tesseract, Azure OCR) | Not needed |
-| **Layout Detection** | Required (Detectron2, LayoutLM) | Not needed |
-| **Table Parser** | Required (Camelot, Tabula) | Not needed |
-| **Chart Extractor** | Required (ChartOCR) | Not needed |
-| **Indexing Speed** | Slow (multi-stage) | Fast (single forward pass) |
-| **Retrieval Quality** | High on text, poor on visuals | High across all modalities |
-| **Storage** | Text index (~small) | Multi-vector index (~larger) |
+| **OCR** | 必要（Tesseract、Azure OCR） | 不需要 |
+| **版面偵測** | 必要（Detectron2、LayoutLM） | 不需要 |
+| **表格解析器** | 必要（Camelot、Tabula） | 不需要 |
+| **圖表擷取器** | 必要（ChartOCR） | 不需要 |
+| **索引速度** | 慢（多階段） | 快（單次 forward pass） |
+| **檢索品質** | 文字高、視覺差 | 各模態都高 |
+| **儲存量** | 文字索引（較小） | 多向量索引（較大） |
 
-### ColPali Family
+<a id="colpali-family"></a>
+### ColPali 家族
 
-- **ColPali (v1)**: PaliGemma-3B backbone. The original.
-- **ColQwen 2.5**: Qwen2-VL backbone. Better multilingual support, improved on Asian-language documents.
-- **ColSmol**: Smaller variant for edge deployment. ~1B parameters.
+- **ColPali（v1）**：以 PaliGemma-3B 為 backbone，最原始版本。
+- **ColQwen 2.5**：以 Qwen2-VL 為 backbone，多語言支援更好，對亞洲語言文件表現更佳。
+- **ColSmol**：較小型變體，適合 edge deployment，約 10 億參數。
 
-### ViDoRe Benchmark Results
+<a id="vidore-benchmark-results"></a>
+### ViDoRe 基準結果
 
-ColPali excels on visually complex benchmarks like InfographicVQA, ArxivQA, and TabFQuAD, which test infographics, figures, and tables respectively. It outperforms traditional text-based pipelines even on text-centric documents.
+ColPali 在 InfographicVQA、ArxivQA、TabFQuAD 等視覺複雜基準上表現出色，這些資料集分別測試資訊圖表、圖形與表格。即使在文字為主的文件上，它也優於傳統文字型 pipeline。
 
 ---
 
-## Table Extraction and Structured Data Retrieval
+<a id="table-extraction-and-structured-data-retrieval"></a>
+## 表格擷取與結構化資料檢索
 
-Tables are the hardest modality for traditional RAG. Flattening a table row-by-row destroys the column-header relationships that give each cell meaning.
+表格是傳統 RAG 最難處理的模態。若逐列將表格壓平成文字，就會破壞每個儲存格賴以成立的欄位—表頭關係。
 
-### Strategy 1: VLM-Based Extraction
+<a id="strategy-1-vlm-based-extraction"></a>
+### 策略 1：基於 VLM 的擷取
 
 ```python
 # Pseudocode: Extract tables using a VLM
@@ -249,7 +271,7 @@ def extract_tables_from_page(page_image: bytes) -> list[dict]:
       "title": "table title or caption",
       "headers": ["col1", "col2", ...],
       "rows": [["val1", "val2", ...], ...],
-      "markdown": "| col1 | col2 |\\n|---|---|\\n| val1 | val2 |"
+      "markdown": "| col1 | col2 |\n|---|---|\n| val1 | val2 |"
     }
     Return JSON array. If no tables, return [].
     """
@@ -257,13 +279,15 @@ def extract_tables_from_page(page_image: bytes) -> list[dict]:
     return json.loads(response)
 ```
 
-### Strategy 2: Specialized Table Parsers
+<a id="strategy-2-specialized-table-parsers"></a>
+### 策略 2：專用表格解析器
 
-- **Tabula / Camelot**: Rule-based PDF table extraction. Fast but brittle on complex layouts.
-- **Table Transformer (DETR-based)**: Detects table boundaries and cell structure from images.
-- **Unstructured.io**: Combines heuristics with ML models for layout-aware parsing.
+- **Tabula / Camelot**：基於規則的 PDF 表格擷取，速度快，但遇到複雜版面很脆弱。
+- **Table Transformer（基於 DETR）**：從影像中偵測表格邊界與儲存格結構。
+- **Unstructured.io**：結合 heuristics 與 ML model，做版面感知解析。
 
-### Strategy 3: Table-Aware Chunking
+<a id="strategy-3-table-aware-chunking"></a>
+### 策略 3：具表格感知的 chunking
 
 ```
   Original Table (20 rows x 8 columns)
@@ -281,25 +305,28 @@ def extract_tables_from_page(page_image: bytes) -> list[dict]:
   At generation time: pass the FULL table to the LLM, not a fragment
 ```
 
-**Key Principle**: Tables must be atomic retrieval units. Never split a table across chunk boundaries.
+**關鍵原則**：表格必須是原子化的檢索單位。絕對不要把表格切開跨越 chunk 邊界。
 
 ---
 
-## Chart and Diagram Understanding
+<a id="chart-and-diagram-understanding"></a>
+## 圖表與示意圖理解
 
-### Chart Types and Extraction Approaches
+<a id="chart-types-and-extraction-approaches"></a>
+### 圖表類型與擷取方法
 
-| Chart Type | What to Extract | Best Approach |
+| 圖表類型 | 需要擷取什麼 | 最佳方法 |
 |-----------|----------------|---------------|
-| **Bar/Line/Pie** | Data values, trends, comparisons | VLM description + data table extraction |
-| **Flow Diagram** | Steps, decisions, connections | VLM structured extraction (nodes + edges) |
-| **Architecture Diagram** | Components, relationships, data flow | VLM description + entity extraction |
-| **Scatter Plot** | Correlations, outliers, clusters | VLM trend description + raw data if available |
-| **Gantt Chart** | Timeline, dependencies, milestones | VLM structured extraction |
+| **長條／折線／圓餅圖** | 數值、趨勢、比較 | VLM 描述 + 資料表擷取 |
+| **流程圖** | 步驟、決策點、連線 | VLM 結構化擷取（nodes + edges） |
+| **架構圖** | 元件、關係、資料流 | VLM 描述 + 實體擷取 |
+| **散佈圖** | 關聯、離群值、群聚 | VLM 趨勢描述 + 可用時附原始資料 |
+| **甘特圖** | 時程、依賴、里程碑 | VLM 結構化擷取 |
 
-### Dual-Representation Strategy
+<a id="dual-representation-strategy"></a>
+### 雙重表示策略
 
-For each chart or diagram, store TWO representations:
+對每一張圖表或示意圖，儲存 **兩種** 表示：
 
 ```
   Chart Image
@@ -313,13 +340,15 @@ For each chart or diagram, store TWO representations:
               Stored with CLIP/SigLIP embedding for image-based queries
 ```
 
-This ensures the chart is retrievable by both text queries ("what was APAC revenue?") and visual queries ("show me the revenue chart").
+這能確保圖表既可透過文字查詢檢索（如「APAC 營收是多少？」），也可透過視覺查詢檢索（如「把營收圖表給我看」）。
 
 ---
 
-## Production Architecture
+<a id="production-architecture"></a>
+## 正式環境架構
 
-### Full Multi-Modal RAG Pipeline
+<a id="full-multi-modal-rag-pipeline"></a>
+### 完整多模態 RAG pipeline
 
 ```
   INGESTION:
@@ -339,21 +368,24 @@ This ensures the chart is retrievable by both text queries ("what was APAC reven
                              Cross-Modal Reranker --> Context Assembly --> VLM --> Response
 ```
 
-### Scaling Considerations
+<a id="scaling-considerations"></a>
+### 擴展考量
 
-| Concern | Solution |
+| 顧慮 | 解法 |
 |---------|----------|
-| **Index Size** | ColPali stores ~1024 vectors/page. For 1M pages = ~1B vectors. Use quantization (binary, PQ). |
-| **Ingestion Latency** | VLM extraction is slow (~2-5s/page). Use async workers with GPU acceleration. |
-| **Query Latency** | Multi-index fan-out adds latency. Use parallel retrieval + aggressive top-k pruning. |
-| **Cost** | VLM calls at ingestion are one-time. Amortize over query volume. Budget $0.01-0.05/page for extraction. |
-| **Storage** | Store page images in object storage (S3). Store embeddings in vector DB. Store text in search index. |
+| **索引大小** | ColPali 每頁約存 ~1024 個向量。100 萬頁約等於 ~10 億向量，需使用量化（binary、PQ）。 |
+| **匯入延遲** | VLM 擷取很慢（約 2–5 秒／頁），需用非同步 worker 搭配 GPU 加速。 |
+| **查詢延遲** | 多索引 fan-out 會增加延遲，需採平行檢索 + 積極的 top-k pruning。 |
+| **成本** | 匯入時的 VLM 呼叫是一次性成本，可攤提至查詢量；預算可抓每頁 $0.01–0.05。 |
+| **儲存** | 將頁面影像放 object storage（S3），embedding 存向量 DB，文字存 search index。 |
 
 ---
 
-## Implementation Example
+<a id="implementation-example"></a>
+## 實作範例
 
-### End-to-End Multi-Modal RAG with ColPali + VLM
+<a id="end-to-end-multi-modal-rag-with-colpali--vlm"></a>
+### 以 ColPali + VLM 建立端到端多模態 RAG
 
 ```python
 # Pseudocode: Production multi-modal RAG pipeline
@@ -481,43 +513,47 @@ def generate_answer(query: str, retrieved_context: list) -> str:
 
 ---
 
-## System Design Interview Angle
+<a id="system-design-interview-angle"></a>
+## 系統設計面試角度
 
-### Q: Design a RAG system for a financial research platform that needs to answer questions about earnings reports containing text, tables, and charts.
+<a id="q-design-a-rag-system-for-a-financial-research-platform-that-needs-to-answer-questions-about-earnings-reports-containing-text-tables-and-charts"></a>
+### Q：設計一個給金融研究平台使用的 RAG 系統，需回答包含文字、表格與圖表的財報問題。
 
-**Strong answer:**
+**強答範例：**
 
-The core challenge is that 60%+ of the information in earnings reports lives in tables and charts, not prose. A text-only RAG pipeline would miss revenue breakdowns, trend lines, and comparative data.
+核心挑戰在於，財報中 60% 以上的重要資訊存在於表格與圖表，而非敘述文字。若只用文字型 RAG pipeline，就會錯過營收拆解、趨勢線與比較性資料。
 
-**Architecture**: I would use a hybrid approach (Pattern 2 + elements of Pattern 3):
+**架構**：我會採用混合方案（模式 2，加上一部分模式 3）：
 
-1. **Ingestion**: Render each PDF page at 300 DPI. Run a VLM extraction pass to convert tables to markdown and charts to structured descriptions. Simultaneously generate ColPali multi-vector embeddings for each page image.
+1. **匯入**：每一頁 PDF 以 300 DPI render。先跑一輪 VLM 擷取，把表格轉為 markdown、把圖表轉成結構化描述；同時為每一頁影像產生 ColPali 多向量 embedding。
 
-2. **Storage**: Three indices -- (a) text chunks with dense embeddings (financial text), (b) table markdown with dense embeddings plus metadata filters for table type, (c) ColPali multi-vector index for page-level visual retrieval.
+2. **儲存**：建立三個索引——（a）文字 chunk 搭配 dense embedding（金融文字）、（b）表格 markdown 搭配 dense embedding，並附加表格類型等 metadata filter、（c）頁面層級視覺檢索用的 ColPali 多向量索引。
 
-3. **Retrieval**: Query analyzer classifies the query type. "What was Q3 revenue?" triggers text + table search. "Show me the revenue trend" triggers visual (ColPali) search. Results are fused via RRF and reranked by a cross-encoder.
+3. **檢索**：由 query analyzer 判定查詢類型。「What was Q3 revenue?」會觸發文字 + 表格搜尋；「Show me the revenue trend」則觸發視覺（ColPali）搜尋。結果再用 RRF 融合，並交給 cross-encoder rerank。
 
-4. **Generation**: A VLM (Claude or Gemini) receives the fused context -- text chunks, table markdown, and relevant page images. It generates a grounded answer with citations to specific pages and tables.
+4. **生成**：VLM（Claude 或 Gemini）接收融合後的脈絡——文字 chunk、表格 markdown 與相關頁面影像，生成帶有頁碼與表格引用的 grounded answer。
 
-**Key trade-offs**: ColPali gives excellent recall on visual content but stores ~1024 vectors per page, so for 100k documents (500k pages), that is ~500M vectors. I would use binary quantization to reduce storage by 32x, accepting a small recall hit. For the text path, BM25 + dense hybrid search handles financial terminology well.
+**關鍵取捨**：ColPali 對視覺內容有很好的 recall，但每頁要儲存約 ~1024 個向量，因此若有 10 萬份文件（50 萬頁），就會是 ~5 億向量。我會使用 binary quantization，把儲存量降 32 倍，接受一點 recall 損失。文字路徑則由 BM25 + dense hybrid search 來處理金融術語。
 
-### Q: How would you handle a query that requires information from BOTH a chart and a table on different pages?
+<a id="q-how-would-you-handle-a-query-that-requires-information-from-both-a-chart-and-a-table-on-different-pages"></a>
+### Q：如果查詢需要同時從不同頁面的圖表與表格取得資訊，你會怎麼處理？
 
-**Strong answer:**
+**強答範例：**
 
-This is the cross-modal, cross-page retrieval problem. The solution has three parts:
+這是 cross-modal、cross-page 的檢索問題。解法有三個部分：
 
-1. **Retrieval diversity**: Ensure the retriever returns results from multiple modalities. Set minimum quotas -- at least 2 text results, 2 table results, and 1 visual result in every retrieval set, regardless of which modality scores highest.
+1. **檢索多樣性**：確保 retriever 會回傳多種模態的結果。可設定最小配額——每次檢索結果中，至少包含 2 個文字結果、2 個表格結果與 1 個視覺結果，不論哪一種模態分數最高。
 
-2. **Context assembly**: When assembling the VLM prompt, include all retrieved content with explicit provenance: "[Table from page 14: Q3 Revenue by Region]" and "[Chart from page 22: Revenue Trend 2024-2026]". The VLM can then reason across both.
+2. **脈絡組裝**：在組裝 VLM prompt 時，把所有檢索內容連同明確來源一起放入，例如「[第 14 頁表格：Q3 Revenue by Region]」與「[第 22 頁圖表：Revenue Trend 2024-2026]」。如此 VLM 才能跨模態推理。
 
-3. **Agentic fallback**: If the initial retrieval does not surface enough cross-modal context, an agentic layer can issue follow-up retrievals: "The table shows revenue numbers but the user asked about trends -- let me also search for charts related to revenue."
+3. **Agentic fallback**：若第一次檢索沒有找出足夠的跨模態內容，agentic layer 可以再發出後續檢索：「表格有營收數字，但使用者問的是趨勢——我還需要再搜尋與營收相關的圖表。」
 
-The key insight is that cross-modal questions are inherently multi-hop. The system needs to retrieve from one modality, recognize the gap, and retrieve from another.
+關鍵洞見是：跨模態問題本質上就是 multi-hop。系統必須先從一種模態檢索、辨識缺口，再去另一種模態補足。
 
 ---
 
-## References
+<a id="references"></a>
+## 參考資料
 
 - Faysse et al. "ColPali: Efficient Document Retrieval with Vision Language Models" (ICLR 2025)
 - Google. "SigLIP 2: Multilingual Vision-Language Encoders" (2025)
@@ -527,4 +563,4 @@ The key insight is that cross-modal questions are inherently multi-hop. The syst
 
 ---
 
-*Previous: [Advanced Retrieval Patterns](09-advanced-retrieval-patterns.md) | Next: [RAG Evaluation Patterns](13-rag-evaluation-patterns.md)*
+*上一篇：[Advanced Retrieval Patterns](09-advanced-retrieval-patterns.md) | 下一篇：[RAG Evaluation Patterns](13-rag-evaluation-patterns.md)*
